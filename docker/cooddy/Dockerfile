@@ -4,10 +4,12 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git ca-certificates cmake g++ python3 libz-dev libtinfo-dev wget unzip \
+    git ca-certificates cmake g++ python3 python3-pip libz-dev libtinfo-dev wget unzip \
     clang-14 libclang-14-dev llvm-14-dev \
     z3 libz3-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    # cooddy 要求 cmake >= 3.25，Ubuntu 22.04 自带 3.22 不足，用 pip 升到 3.25+
+    && pip3 install --no-cache-dir --upgrade 'cmake>=3.25'
 
 # cooddy 的 CMake 需要 Z3_HOME / LLVM_CMAKE 指向系统安装
 ENV Z3_HOME=/usr
