@@ -36,13 +36,18 @@ def line_anchor(src_file: Path, line: int) -> str | None:
 
 
 def convert(track: str, case_id: str, src_dir: Path,
-            cppcheck_bin: str, tool: str, version: str) -> dict:
+            cppcheck_bin: str, tool: str, version: str,
+            include_dirs: list[str] | None = None) -> dict:
     sources = sorted(str(p) for p in src_dir.glob("*.c"))
     if not sources:
         return {"tool": tool, "track": track, "case_id": case_id,
                 "version": version, "findings": []}
     cmd = [cppcheck_bin, "--enable=warning,style,performance,portability,information",
-           "--inconclusive", "--xml", "--xml-version=2"] + sources
+           "--inconclusive", "--xml", "--xml-version=2"]
+    if include_dirs:
+        for d in include_dirs:
+            cmd += ["-I", d]
+    cmd += sources
     proc = subprocess.run(cmd, capture_output=True, text=True)
     raw = proc.stderr
     findings = []
@@ -57,6 +62,9 @@ def convert(track: str, case_id: str, src_dir: Path,
                     "version": version, "findings": []}
         root = ET.fromstring(m.group(0))
     for err in root.iter("error"):
+        sev = err.get("severity", "")
+        if sev in ("information",):  # "include not found" 等噪声，不计入 bench findings
+            continue
         for loc in err.findall("location"):
             abs_file = loc.get("file")
             line = loc.get("line")
@@ -77,7 +85,7 @@ def convert(track: str, case_id: str, src_dir: Path,
                 "anchor": anchor,
                 "message": err.get("msg", ""),
                 "scenario": None,
-                "severity": err.get("severity"),
+                "severity": sev,
                 "function": None,
             })
     return {"tool": tool, "track": track, "case_id": case_id,
@@ -92,6 +100,8 @@ def main():
     ap.add_argument("--cppcheck", default="cppcheck")
     ap.add_argument("--tool", default="cppcheck")
     ap.add_argument("--version", default="unknown")
+    ap.add_argument("--include-dir", action="append", default=[],
+                    help="传给 cppcheck 的 -I 系统头目录（可多次）")
     args = ap.parse_args()
 
     if shutil.which(args.cppcheck) is None:
@@ -103,7 +113,8 @@ def main():
         return
 
     out = convert(args.track, args.case_id, Path(args.src_dir),
-                  args.cppcheck, args.tool, args.version)
+                  args.cppcheck, args.tool, args.version,
+                  include_dirs=args.include_dir or None)
     json.dump(out, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")
 

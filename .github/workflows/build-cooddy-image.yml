@@ -1,0 +1,38 @@
+name: build-cooddy-image
+
+# 独立工作流：build 一次 cooddy 镜像并固化到 GHCR，后续 bench CI 直接 docker pull 复用。
+# 不随 main 推送常跑（避免每次 40+ 分钟 build）；手动 workflow_dispatch 触发即可。
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '镜像 tag'
+        default: 'latest'
+        required: false
+
+permissions:
+  contents: read
+  packages: write   # 推送到 ghcr.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 登录 GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build 并推送 cooddy 镜像
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker/cooddy
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/cooddy:${{ inputs.tag }}
+          # 利用 GitHub 层缓存加速重试
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
