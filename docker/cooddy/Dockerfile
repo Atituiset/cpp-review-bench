@@ -33,14 +33,21 @@ ENV LLVM_CMAKE=/usr/lib/llvm-14/lib/cmake
 ENV CC=gcc
 ENV CXX=g++
 
+# 关键修复：把 z3 的 lib 目录加入 ld.so 默认搜索，并显式声明 Z3_LIBRARIES 为绝对路径，
+# 让 cooddy 直接用绝对路径链接（不产生裸 -lz3）。
+RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/z3.conf && ldconfig \
+    && echo "=== z3 lib 布局（构建前确认 libz3.so 存在）===" \
+    && ls -l /usr/local/lib/libz3.so* /usr/lib/x86_64-linux-gnu/libz3.so* 2>&1 || true
+
 RUN git clone --depth 1 https://github.com/program-analysis-team/cooddy.git /opt/cooddy \
     && cd /opt/cooddy \
     && mkdir -p build && cd build \
     && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -DZ3_HOME=$Z3_HOME -DLLVM_CMAKE=$LLVM_CMAKE \
+        -DZ3_LIBRARIES=/usr/lib/x86_64-linux-gnu/libz3.so \
         -DCMAKE_EXE_LINKER_FLAGS="-L/usr/local/lib -L/usr/lib/x86_64-linux-gnu" \
         -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/local/lib -L/usr/lib/x86_64-linux-gnu" .. \
-    && make -j "$(nproc)" \
+    && make VERBOSE=1 -j "$(nproc)" \
     && echo "cooddy built:" && find /opt/cooddy/build -name cooddy -type f
 
 WORKDIR /workspace

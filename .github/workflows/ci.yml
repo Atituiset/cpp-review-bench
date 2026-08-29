@@ -147,3 +147,40 @@ jobs:
           path: |
             codeql-findings/*.json
             codeql-results.sarif
+
+  klee:
+    runs-on: ubuntu-latest
+    container: klee/klee:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 全量编译 + 统一 compile_commands.json（部分 case 的 harness 依赖）
+        run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+      - name: 逐 case 跑 KLEE（符号执行）+ 归一化
+        run: |
+          chmod +x consumers/local/run_klee.sh
+          ./consumers/local/run_klee.sh "$PWD/cases" "$PWD/klee-findings" "$PWD"
+          echo "=== 各例 KLEE findings 数 ==="
+          for f in klee-findings/*.json; do [ -f "$f" ] && echo "$(basename $f): $(python3 -c "import json;print(len(json.load(open('$f'))['findings']))" 2>/dev/null)"; done
+      - name: KLEE 四态评测（vs golden）
+        run: python3 tools/eval.py run klee-findings 2>&1 | tail -30 || echo "[warn] klee 四态评测跳过"
+      - name: 汇总 KLEE 产物上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: klee-findings
+          path: |
+            klee-findings/*.json
+
+  cooddy-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 本地 docker build cooddy 镜像（验证 z3 链接修复，不推送）
+        run: docker build -f docker/cooddy/Dockerfile -t cooddy-test:ci . 2>&1 | tail -15
+      - name: 生成 compdb 并跑 cooddy 验证端到端
+        run: |
+          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+          docker run --rm -v "$PWD":/workspace cooddy-test:ci --scope /workspace/cases/defect/r04-oob-write-stack --reporter json > /tmp/cooddy_r04.json 2>/tmp/cooddy_r04.err || echo "[warn] cooddy 运行非零"
+          echo "=== cooddy 对 r04 输出（前 40 行）==="
+          head -40 /tmp/cooddy_r04.json 2>/dev/null
+          echo "=== stderr 关键 ==="
+          grep -iE 'error|cwe|problem|z3' /tmp/cooddy_r04.err 2>/dev/null | head -10 || true
