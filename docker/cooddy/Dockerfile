@@ -23,6 +23,7 @@ RUN cd /opt \
     && make install \
     && ldconfig \
     && cp -a /usr/local/lib/libz3.so* /usr/lib/x86_64-linux-gnu/ \
+    && ln -sf /usr/lib/x86_64-linux-gnu/libz3.so.4.8.9.0 /usr/lib/x86_64-linux-gnu/libz3.so \
     && echo "z3 config:" && ls /usr/local/lib/cmake/z3/ 2>/dev/null && ls -l /usr/lib/x86_64-linux-gnu/libz3.so*
 
 ENV Z3_HOME=/usr/local
