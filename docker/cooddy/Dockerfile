@@ -4,7 +4,7 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git ca-certificates cmake g++ python3 python3-pip libz-dev libtinfo-dev wget unzip \
+    git ca-certificates cmake gcc g++ make python3 python3-pip libz-dev libtinfo-dev wget unzip \
     clang-14 libclang-14-dev llvm-14-dev \
     z3 libz3-dev \
     && rm -rf /var/lib/apt/lists/* \
