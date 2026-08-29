@@ -18,7 +18,7 @@ ENV LLVM_CMAKE=/usr/lib/llvm-14/lib/cmake
 RUN git clone --depth 1 https://github.com/program-analysis-team/cooddy.git /opt/cooddy \
     && cd /opt/cooddy \
     && mkdir -p build && cd build \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DZ3_HOME=$Z3_HOME -DLLVM_CMAKE=$LLVM_CMAKE .. \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DZ3_HOME=$Z3_HOME -DLLVM_CMAKE=$LLVM_CMAKE .. \
     && make -j "$(nproc)" \
     && echo "cooddy built:" && find /opt/cooddy/build -name cooddy -type f
 
