@@ -18,7 +18,7 @@ RUN cd /opt \
     && unzip -o z3.zip >/dev/null \
     && cd z3-z3-4.8.9 \
     && mkdir -p build && cd build \
-    && cmake -DZ3_BUILD_LIBZ3_SHARED=TRUE -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release .. \
+    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DZ3_BUILD_LIBZ3_SHARED=TRUE -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release .. \
     && make -j "$(nproc)" \
     && make install \
     && ldconfig \
