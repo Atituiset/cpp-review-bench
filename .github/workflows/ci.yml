@@ -19,10 +19,15 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/llvm21.list
           sudo apt-get update -q
           sudo apt-get install -y clang-21 clang-tools-21
-          # 让脚本默认找到 clang-21 / clang-extdef-mapping-21
+          # 让脚本默认找到 clang-21 / clang-extdef-mapping-21 / clang-tidy-21
           echo "CLANG_BIN=clang-21" >> "$GITHUB_ENV"
           echo "EXTDEF_BIN=clang-extdef-mapping-21" >> "$GITHUB_ENV"
+          # clang-tidy 可能在 /usr/lib/llvm-21/bin，建立可预测路径
+          if [ -x /usr/lib/llvm-21/bin/clang-tidy ]; then
+            sudo ln -sf /usr/lib/llvm-21/bin/clang-tidy /usr/bin/clang-tidy-21
+          fi
           clang-21 --version | head -1
+          echo "clang-tidy-21: $(command -v clang-tidy-21 || echo MISSING)"
 
       - name: 安装 cppcheck（第二个对照工具，apt 直装）
         run: |
