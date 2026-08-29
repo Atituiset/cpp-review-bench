@@ -50,6 +50,12 @@ jobs:
       - name: CppCheck（跨工具对照）
         run: chmod +x consumers/local/run_cppcheck.sh && ./consumers/local/run_cppcheck.sh /tmp/cppcheck
 
+      - name: clang-tidy（编译期检查，clang-21 自带，第三个对照工具）
+        run: |
+          CLANG_TIDY_BIN=clang-tidy-21 chmod +x consumers/local/run_clang_tidy.sh \
+            && ./consumers/local/run_clang_tidy.sh
+          mkdir -p /tmp/clang-tidy && cp reports/evidence/clang-tidy/*.json /tmp/clang-tidy/ 2>/dev/null || true
+
       - name: 汇总全部工具 findings 上传 artifact
         uses: actions/upload-artifact@v4
         with:
@@ -58,3 +64,4 @@ jobs:
             /tmp/csa_singletu/*.json
             /tmp/csa_ctu/*.json
             /tmp/cppcheck/*.json
+            /tmp/clang-tidy/*.json
