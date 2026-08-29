@@ -1,0 +1,33 @@
+{
+  "id": "r07-alloc-size-wrap",
+  "track": "defect",
+  "title": "malloc(n*size) 乘法回绕 → 小分配大写入",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["alloc-wrap", "integer-overflow", "oob-write"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-190+cwe-787",
+        "severity": "important",
+        "file": "src/alloc.c",
+        "anchor": "size_t total = (size_t)(n * size);",
+        "function": "r07_alloc",
+        "line_tolerance": 3,
+        "rationale": "n*size 先以 uint32_t 相乘回绕为小值，强转 size_t 后 malloc 分配不足；后续按 n*size 写入越界，真实 cwe-190 回绕 + cwe-787 越界写"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-190",
+        "note": "r07_alloc_ok 用 (size_t)n*(size_t)size 在 size_t 域乘法不回绕，且 total 受 1MB 界，属安全点；工具若报回绕属误报",
+        "file": "src/alloc.c",
+        "anchor": "size_t total = (size_t)n * (size_t)size;",
+        "function": "r07_alloc_ok"
+      }
+    ]
+  },
+  "context": { "contract": "alloc_wrap", "callchain_hint": "r07_alloc 乘法回绕小分配大写入；r07_alloc_ok size_t 乘法安全" },
+  "difficulty": "medium",
+  "split": "dev"
+}

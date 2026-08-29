@@ -1,0 +1,36 @@
+{
+  "id": "r01-wrap-resume-bug",
+  "track": "defect",
+  "title": "序号回绕时超时恢复选错点（RLC 式，跨函数逻辑）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["wrap", "rlc", "resume", "cross-fn"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-190",
+        "severity": "important",
+        "file": "src/rlc.c",
+        "anchor": "uint8_t delta = (uint8_t)(t->tx_next - t->ack);",
+        "function": "resume_point",
+        "line_tolerance": 3,
+        "rationale": "tx_next/ack 为 uint8_t，跨回绕边界时 (tx_next - ack) 回绕为巨大正数，恢复点 resume 错乱，导致漏发/越界索引 win[resume]，真实 cwe-190 缺陷"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-125",
+        "note": "rlc_fill 的 win[sn] 写入前已 `if (sn < AMAP_MOD)` 受界，属安全点；工具若报越界属误报",
+        "file": "src/rlc.c",
+        "anchor": "t->win[sn] = v;",
+        "function": "rlc_fill"
+      }
+    ]
+  },
+  "context": {
+    "contract": "wrap_resume",
+    "callchain_hint": "resume_point 用 (tx_next-ack) 回绕算恢复点 → win[resume] 错乱"
+  },
+  "difficulty": "hard",
+  "split": "dev"
+}

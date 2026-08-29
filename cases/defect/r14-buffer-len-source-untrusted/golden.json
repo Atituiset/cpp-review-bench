@@ -1,0 +1,33 @@
+{
+  "id": "r14-buffer-len-source-untrusted",
+  "track": "defect",
+  "title": "外部长度字段未约束即用于 memcpy",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["untrusted-len", "memcpy", "oob-write"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "severity": "important",
+        "file": "src/ingest.c",
+        "anchor": "memcpy(buf, payload, hdr_len);",
+        "function": "r14_ingest",
+        "line_tolerance": 2,
+        "rationale": "hdr_len 来自外部报文头未约束，memcpy 进栈缓冲 buf[R14_BUF] 在 hdr_len>R14_BUF 时越界写，真实 cwe-787 缺陷"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-787",
+        "note": "r14_ingest_ok 的 memcpy 前 `if (hdr_len > R14_BUF) return;` 受界，属安全点；工具若报越界属误报",
+        "file": "src/ingest.c",
+        "anchor": "memcpy(buf, payload, hdr_len);",
+        "function": "r14_ingest_ok"
+      }
+    ]
+  },
+  "context": { "contract": "untrusted_len", "callchain_hint": "r14_ingest 外部 len 未约束 memcpy 越界；r14_ingest_ok 受界" },
+  "difficulty": "medium",
+  "split": "dev"
+}

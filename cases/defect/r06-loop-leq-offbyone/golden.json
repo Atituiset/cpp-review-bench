@@ -1,0 +1,33 @@
+{
+  "id": "r06-loop-leq-offbyone",
+  "track": "defect",
+  "title": "循环条件用 <= 导致多越一字节",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["offby-one", "loop", "oob-write"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "severity": "important",
+        "file": "src/fill.c",
+        "anchor": "for (uint8_t i = 0; i <= R06_N; i++) {",
+        "function": "r06_fill",
+        "line_tolerance": 2,
+        "rationale": "循环条件 i <= R06_N 比数组容量 R06_N 多一字节，arr[R06_N] 越界写，真实 cwe-787 off-by-one 缺陷"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-787",
+        "note": "r06_fill_ok 的 i < R06_N 正确受界，属安全点；工具若报越界属误报",
+        "file": "src/fill.c",
+        "anchor": "for (uint8_t i = 0; i < R06_N; i++) {",
+        "function": "r06_fill_ok"
+      }
+    ]
+  },
+  "context": { "contract": "loop_leq", "callchain_hint": "r06_fill i<=N 越界；r06_fill_ok i<N 安全" },
+  "difficulty": "easy",
+  "split": "dev"
+}

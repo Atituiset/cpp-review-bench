@@ -1,0 +1,33 @@
+{
+  "id": "r05-wrong-len-var",
+  "track": "defect",
+  "title": "拷贝长度用错变量导致越界",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["wrong-var", "memcpy", "oob-write"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/copy.c",
+        "anchor": "memcpy(buf, payload, m);",
+        "function": "r05_copy",
+        "line_tolerance": 2,
+        "rationale": "拷贝长度用变量 m 而非期望的 n，m 未约束时 memcpy 进 buf[R05_BUF] 越界写，真实 cwe-125 缺陷（长度变量用错）"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-125",
+        "note": "r05_copy_ok 用正确变量 n 且 `if (n > R05_BUF) return;` 受界，属安全点；工具若报越界属误报",
+        "file": "src/copy.c",
+        "anchor": "memcpy(buf, payload, n);",
+        "function": "r05_copy_ok"
+      }
+    ]
+  },
+  "context": { "contract": "wrong_len_var", "callchain_hint": "r05_copy 用错长度变量越界；r05_copy_ok 用正确变量受界" },
+  "difficulty": "easy",
+  "split": "dev"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "r13-state-missing-transition",
+  "track": "defect",
+  "title": "状态机合法事件无 handler（消息枚举有、表中没有）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["state-machine", "logic", "missing-handler"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "logic",
+        "severity": "important",
+        "file": "src/fsm.c",
+        "anchor": "return g_table[s][e];",
+        "function": "r13_lookup",
+        "line_tolerance": 3,
+        "rationale": "Event 枚举含 EV_C（合法值），但 g_table 各状态均未初始化 EV_C 槽位（NULL handler）；r13_lookup 返回 NULL handler 属状态机缺转换逻辑缺陷（logic）"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "logic",
+        "note": "EV_A/EV_B 在表中有初始化（即便为 0），枚举与表一致点非缺陷；工具若报「未初始化」需区分已显式置 0 与漏填 EV_C",
+        "file": "src/fsm.c",
+        "anchor": "[ST_INIT]  = { [EV_A] = 0, [EV_B] = 0 },",
+        "function": "r13_lookup"
+      }
+    ]
+  },
+  "context": { "contract": "state_missing", "callchain_hint": "事件枚举有 EV_C 但状态表漏填——返回 NULL handler" },
+  "difficulty": "hard",
+  "split": "dev"
+}

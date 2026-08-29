@@ -1,0 +1,33 @@
+{
+  "id": "r03-public-entry-bypass",
+  "track": "defect",
+  "title": "判空仅覆盖单一路径，公开入口可绕过",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["nullguard", "entry-bypass", "public-api"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "severity": "important",
+        "file": "src/entry.c",
+        "anchor": "(void)o->v;",
+        "function": "public_use",
+        "line_tolerance": 3,
+        "rationale": "public_use 未判空直接解引用 o->v，外部调用方可传 NULL 绕过 internal_use 的判空路径，导致 cwe-476 空指针解引用"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-476",
+        "note": "internal_use 已 `if (o == NULL) return;` 判空，调用它安全；工具若报 cwe-476 属误报",
+        "file": "src/entry.c",
+        "anchor": "internal_use(o);",
+        "function": "public_use"
+      }
+    ]
+  },
+  "context": { "contract": "entry_bypass", "callchain_hint": "public_use 未判空解引用；internal_use 路径判空安全" },
+  "difficulty": "medium",
+  "split": "dev"
+}

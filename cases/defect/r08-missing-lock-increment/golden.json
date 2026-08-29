@@ -1,0 +1,33 @@
+{
+  "id": "r08-missing-lock-increment",
+  "track": "defect",
+  "title": "多线程计数器无锁递增",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["race", "lock", "counter"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-362",
+        "severity": "important",
+        "file": "src/cnt.c",
+        "anchor": "g_counter++;",
+        "function": "r08_inc",
+        "line_tolerance": 2,
+        "rationale": "g_counter++ 非原子操作，多线程并发读写存在数据竞争（lost update），真实 cwe-362 缺陷"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-362",
+        "note": "r08_read 单线程读 g_counter，无并发写，无竞争；工具若报 cwe-362 属误报",
+        "file": "src/cnt.c",
+        "anchor": "return g_counter;",
+        "function": "r08_read"
+      }
+    ]
+  },
+  "context": { "contract": "missing_lock", "callchain_hint": "r08_inc 无锁递增竞争；r08_read 单线程安全" },
+  "difficulty": "medium",
+  "split": "dev"
+}

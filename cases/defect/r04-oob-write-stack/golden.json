@@ -1,0 +1,33 @@
+{
+  "id": "r04-oob-write-stack",
+  "track": "defect",
+  "title": "无界拷贝进定长栈缓冲",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["oob-write", "stack", "memcpy"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "severity": "important",
+        "file": "src/recv.c",
+        "anchor": "memcpy(buf, payload, len);",
+        "function": "r04_recv",
+        "line_tolerance": 2,
+        "rationale": "len 来自外部未校验，memcpy 进栈缓冲 buf[STK_BUF] 在 len>STK_BUF 时越界写，真实 cwe-787 栈溢出缺陷"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-787",
+        "note": "r04_recv_ok 的 memcpy 前 `if (len > STK_BUF) return;` 受界，属安全点；工具若报越界属误报",
+        "file": "src/recv.c",
+        "anchor": "memcpy(buf, payload, len);",
+        "function": "r04_recv_ok"
+      }
+    ]
+  },
+  "context": { "contract": "oob_stack", "callchain_hint": "r04_recv 无界 memcpy 越界；r04_recv_ok 受界安全" },
+  "difficulty": "easy",
+  "split": "dev"
+}

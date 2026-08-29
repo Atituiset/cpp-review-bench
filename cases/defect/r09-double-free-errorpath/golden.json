@@ -1,0 +1,33 @@
+{
+  "id": "r09-double-free-errorpath",
+  "track": "defect",
+  "title": "错误路径重复释放",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["double-free", "error-path", "memory"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "severity": "important",
+        "file": "src/ctx.c",
+        "anchor": "free(c->buf);",
+        "function": "r09_open",
+        "line_tolerance": 4,
+        "rationale": "错误路径 `if (sz > 65535) free(c->buf)` 释放后未 return，落到末尾 `free(c->buf)` 再次释放同一指针，双重释放（cwe-415）"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-415",
+        "note": "r09_open_ok 错误路径释放后 `return -2;`，无末尾重复释放，属安全点；工具若报 cwe-415 属误报",
+        "file": "src/ctx.c",
+        "anchor": "free(c->buf);",
+        "function": "r09_open_ok"
+      }
+    ]
+  },
+  "context": { "contract": "double_free", "callchain_hint": "r09_open 错误路径释放未 return → 末尾重复释放；r09_open_ok 释放后 return 安全" },
+  "difficulty": "medium",
+  "split": "dev"
+}

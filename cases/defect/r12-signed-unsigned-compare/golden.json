@@ -1,0 +1,33 @@
+{
+  "id": "r12-signed-unsigned-compare",
+  "track": "defect",
+  "title": "有符号/无符号混用致边界检查失效",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["signed-unsigned", "compare", "integer"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-190",
+        "severity": "important",
+        "file": "src/cmp.c",
+        "anchor": "if (len < LIM) {",
+        "function": "r12_use",
+        "line_tolerance": 3,
+        "rationale": "len 为 int，与无符号 LIM 比较时隐式转为 size_t；len<0 时变成巨大正数，检查通过，buf[len] 负索引越界，真实 cwe-190 符号混用缺陷"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "cwe-190",
+        "note": "r12_use_ok 先 `if (len >= 0 && len < LIM)` 有符号范围检查在前，避免混用转换，属安全点；工具若报越界属误报",
+        "file": "src/cmp.c",
+        "anchor": "if (len >= 0 && len < LIM) {",
+        "function": "r12_use_ok"
+      }
+    ]
+  },
+  "context": { "contract": "sign_unsigned", "callchain_hint": "r12_use 符号混用绕过检查；r12_use_ok 先有符号检查" },
+  "difficulty": "medium",
+  "split": "dev"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "r11-partial-stage-artifact",
+  "track": "defect",
+  "title": "评审过的树 ≠ 提交的树（构建/集成类缺陷）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["stage-artifact", "build", "review-gap"],
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "build",
+        "severity": "important",
+        "file": "src/stage.c",
+        "anchor": "return arr[idx];",
+        "function": "r11_get",
+        "line_tolerance": 4,
+        "rationale": "提交版（STAGED_TREE=0）漏掉边界检查，评审版有检查——实际编译进镜像的树与评审通过的树不一致，属于构建/集成阶段缺陷（build 类），arr[idx] 在 idx>=16 时越界"
+      }
+    ],
+    "must_not_find": [
+      {
+        "scenario": "build",
+        "note": "评审版（STAGED_TREE=1）有 `if (idx >= 16u) return 0;` 边界检查，属安全点；工具若报越界属误报（应评审的是提交版）",
+        "file": "src/stage.c",
+        "anchor": "if (idx >= 16u) return 0;",
+        "function": "r11_get"
+      }
+    ]
+  },
+  "context": { "contract": "partial_stage", "callchain_hint": "评审版有检查 vs 提交版漏检查——树不一致缺陷" },
+  "difficulty": "medium",
+  "split": "dev"
+}
