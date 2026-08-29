@@ -1,0 +1,7 @@
+{
+  "tool": "csa-ctu",
+  "track": "contract",
+  "case_id": "c08-protocol-offset-parse",
+  "version": "Ubuntu clang version 21.1.8 (++20251221032922+2078da43e25a-1~exp1~20251221153059.70)",
+  "findings": []
+}
