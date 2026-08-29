@@ -30,7 +30,7 @@ def convert(track, case_id, src_dir, clang_tidy_bin, tool, version, build_dir=No
         print(f'[warn] {case_id}: 无源文件', file=sys.stderr)
         return None
 
-    cmd = [clang_tidy_bin, f'-p={build_dir or src_dir.parent.parent}']
+    cmd = [clang_tidy_bin, '-checks=bugprone-*,clang-analyzer-*', f'-p={build_dir or src_dir.parent.parent}']
     cmd += sources
     import subprocess
     proc = subprocess.run(cmd, capture_output=True, text=True)

@@ -78,3 +78,27 @@ jobs:
             /tmp/csa_ctu/*.json
             /tmp/cppcheck/*.json
             /tmp/clang-tidy/*.json
+
+  infer:
+    runs-on: ubuntu-latest
+    container: ghcr.io/facebook/infer:main
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 准备：cmake 生成 compile_commands.json
+        run: |
+          apt-get update -q && apt-get install -y cmake 2>/dev/null || true
+          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+          infer --version | head -1
+
+      - name: 逐 case 跑 Infer（抽象解释）
+        run: |
+          chmod +x consumers/local/run_infer.sh
+          ./consumers/local/run_infer.sh /__w/cpp-review-bench/cpp-review-bench/cases /workspace/infer-findings
+          ls -R /workspace/infer-findings | head -20
+
+      - name: 汇总 Infer report.json 上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: infer-raw
+          path: /workspace/infer-findings/**/infer-out-*/report.json
