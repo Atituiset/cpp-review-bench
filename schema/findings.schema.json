@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "findings.schema.json",
+  "title": "cpp-review-bench normalized findings (v1)",
+  "description": "消费方（SA / LLM / Agent）把自家结果统一成此格式后喂给 tools/eval.py。一条 finding = 一个被报出的疑似问题。scenario 缺失时允许设为 null（eval 仅按 file+anchor 做存在性匹配）。",
+  "type": "object",
+  "required": ["tool", "track", "case_id", "findings"],
+  "additionalProperties": false,
+  "properties": {
+    "tool": {
+      "type": "string",
+      "description": "报告工具名（如 csa / csa-ctu / agent-reviewer），写入 baseline 元数据"
+    },
+    "track": {
+      "type": "string",
+      "enum": ["contract", "defect"],
+      "description": "本次 findings 对应的轨（eval 按 case 的 track 取 golden）"
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)+$",
+      "description": "对应 cases/<track>/<case_id>"
+    },
+    "version": {
+      "type": "string",
+      "description": "工具版本（钉死可复现性，design §4.1 四条教训①）"
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "$defs": {
+    "scenario": {
+      "type": ["string", "null"],
+      "pattern": "^(cwe-[0-9]+|build|logic)(\\+cwe-[0-9]+)*$",
+      "description": "场景家族标识；与 golden.scenario 做家族匹配。可空（无 CWE 类标签时）。"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "important", "minor"],
+      "description": "严重度三级；缺失视为未分级，评级正确率统计单列。"
+    },
+    "finding": {
+      "type": "object",
+      "required": ["file", "anchor"],
+      "additionalProperties": false,
+      "properties": {
+        "scenario": { "$ref": "#/$defs/scenario" },
+        "severity": { "$ref": "#/$defs/severity" },
+        "file": {
+          "type": "string",
+          "description": "相对用例根的路径（与 golden 的 file 同口径，如 src/guti.c）"
+        },
+        "function": { "type": "string" },
+        "line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "语句所在行号（锚点优先，行号用于 ±tolerance 兜底匹配）"
+        },
+        "anchor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "被报语句的原文片段（L1 优先匹配键，去空白）。工具无锚点时可用 line + 近似文本"
+        },
+        "message": { "type": "string", "description": "工具原始说明（L2 judge 的候选文本）" },
+        "verified": {
+          "type": "boolean",
+          "description": "是否经编译/最小复现验证（design §4 附加维度）"
+        }
+      }
+    }
+  }
+}

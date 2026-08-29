@@ -1,0 +1,36 @@
+{
+  "id": "c01-upstream-nullguard",
+  "track": "contract",
+  "title": "入口判空后多层转发解引用（单文件）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["nullguard", "callchain", "single-file"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-476",
+        "note": "guti_encode_size 入口对 guti 判空，返回 -1 时不进入转发链；ie_field_len 的解引用在静态可达性上恒非空，属契约安全",
+        "file": "src/guti.c",
+        "anchor": "return ie->len;",
+        "function": "ie_field_len"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-190",
+        "severity": "important",
+        "file": "src/guti.c",
+        "anchor": "total += (uint8_t)ie_wire_size(&ies[i]);",
+        "function": "guti_group_size",
+        "line_tolerance": 3,
+        "rationale": "total 为 uint8_t，IE 数量较多时累加回绕（如 20 个 len=15 的 IE 累计 340 截断为 84），调用方按回绕后的总长分配缓冲区会导致后续拼接越界写"
+      }
+    ]
+  },
+  "context": {
+    "contract": "upstream_nullguard",
+    "callchain_hint": "guti_encode_size 判空后 → guti_body_size → guti_payload_size → ie_wire_size → ie_field_len 解引用"
+  },
+  "difficulty": "easy",
+  "split": "dev"
+}

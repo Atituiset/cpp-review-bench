@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "golden.schema.json",
+  "title": "cpp-review-bench golden.json schema (v2)",
+  "description": "双轨 golden 标注契约，判定语义见 docs/design-v0.4.md §3。锚点优先于行号：anchor 为语句级文本（匹配时去空白），line_tolerance 为行号容差。",
+  "type": "object",
+  "required": ["id", "track", "title", "version", "languages", "tags", "expected", "difficulty", "split"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)+$",
+      "description": "用例 id，与 cases/<track>/<id>/ 目录名一致"
+    },
+    "track": {
+      "type": "string",
+      "enum": ["contract", "defect", "calibration"]
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "version": { "type": "integer", "const": 2 },
+    "languages": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["c", "cpp", "mixed"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "expected": {
+      "type": "object",
+      "required": ["must_not_find", "must_find"],
+      "additionalProperties": false,
+      "properties": {
+        "must_not_find": {
+          "type": "array",
+          "description": "负例：报出即 FP。contract 轨注入 contract.yaml 后仍报的，单列记为契约违反",
+          "items": { "$ref": "#/$defs/mustNotFind" }
+        },
+        "must_find": {
+          "type": "array",
+          "description": "正例：漏报即 FN。defect 轨全为真缺陷；contract 轨混入探「豁免过度」",
+          "items": { "$ref": "#/$defs/mustFind" }
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract": {
+          "type": "string",
+          "description": "契约名，contract 轨必填，与 contract.yaml 的 contract.name 一致"
+        },
+        "callchain_hint": { "type": "string" },
+        "navmap_expect": {
+          "type": "object",
+          "description": "索引/提取类工具的判定锚点（形态以 navmap 提取器产物为准）"
+        }
+      }
+    },
+    "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
+    "split": {
+      "type": "string",
+      "enum": ["dev", "test"],
+      "description": "防泄漏切分；test 子集 golden 细节不展开于公开文档，定期轮换"
+    }
+  },
+  "$defs": {
+    "scenario": {
+      "type": "string",
+      "pattern": "^(cwe-[0-9]+|build|logic)(\\+cwe-[0-9]+)*$",
+      "description": "场景家族标识。L1 匹配按家族等价（如 cwe-476 ≡ null pointer dereference 任意表述）"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "important", "minor"],
+      "description": "严重度三级。报对缺陷但定错级别单独统计，不算完全正确"
+    },
+    "mustFind": {
+      "type": "object",
+      "required": ["scenario", "severity", "file", "anchor", "function", "rationale"],
+      "additionalProperties": false,
+      "properties": {
+        "scenario": { "$ref": "#/$defs/scenario" },
+        "severity": { "$ref": "#/$defs/severity" },
+        "file": {
+          "type": "string",
+          "description": "相对用例根的路径（如 src/foo.c），必须真实存在"
+        },
+        "anchor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "语句级锚点文本，必须在 file 中真实存在（eval.py 自检项）；匹配时去空白"
+        },
+        "function": { "type": "string", "minLength": 1 },
+        "line_tolerance": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 3,
+          "description": "行号容差：finding 行号与 anchor 所在行 ±tolerance 内视为位置匹配"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "为什么这是缺陷。L2 judge 的基准文本"
+        }
+      }
+    },
+    "mustNotFind": {
+      "type": "object",
+      "required": ["scenario", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "scenario": { "$ref": "#/$defs/scenario" },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "为什么此处报出是误报（契约依据）"
+        },
+        "file": { "type": "string", "description": "可选：限定 FP 判定位置" },
+        "anchor": { "type": "string", "description": "可选：语句级锚点，须在 file 中真实存在" },
+        "function": { "type": "string" }
+      }
+    }
+  }
+}

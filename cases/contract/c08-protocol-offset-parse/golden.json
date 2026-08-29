@@ -1,0 +1,36 @@
+{
+  "id": "c08-protocol-offset-parse",
+  "track": "contract",
+  "title": "协议解析步进偏移，入口统一校验（跨文件）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["protocol-parse", "bounds-check", "cross-file"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-125",
+        "note": "u2u_fields.c 的偏移读取依赖 u2u_frame_valid 入口校验：校验已保证两段 IMSI 区域完整落在缓冲区内，步进偏移不越界，属契约安全",
+        "file": "src/u2u_fields.c",
+        "anchor": "return frame[11 + src_len_at(frame)];",
+        "function": "dst_len_at"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/u2u_validate.c",
+        "anchor": "return frame[u2u_payload_offset(frame)];",
+        "function": "u2u_payload_type_peek",
+        "line_tolerance": 3,
+        "rationale": "该旁路入口只检查 size >= 12，未做 IMSI 区域结构校验：src_imsi_len/dst_imsi_len 取自报文（可达 255），payload 偏移可远超 size，读取 frame[offset] 越界。与契约安全的提取路径（先 u2u_frame_valid 后 u2u_payload_offset）只差一步校验"
+      }
+    ]
+  },
+  "context": {
+    "contract": "entry_validated_parse",
+    "callchain_hint": "u2u_payload_offset_checked 先 u2u_frame_valid 后调 u2u_fields.c 的无检查访问器；u2u_payload_type_peek 绕过校验直调"
+  },
+  "difficulty": "medium",
+  "split": "dev"
+}

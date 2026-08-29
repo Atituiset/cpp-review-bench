@@ -1,0 +1,35 @@
+{
+  "id": "r10-odd-length-bcd",
+  "track": "defect",
+  "title": "BCD 编码奇数长度越界读",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["bcd", "odd-length", "oob-read"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-787",
+        "note": "out[j] 写入有 j < cap 守卫，超容时只累计所需长度不写入，属安全写法，不应报越界写",
+        "file": "src/imsi_bcd.c",
+        "anchor": "out[j] = (uint8_t)((lo << 4) | hi);",
+        "function": "imsi_bcd_encode"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/imsi_bcd.c",
+        "anchor": "uint8_t lo = (uint8_t)(digits[i + 1] - '0');",
+        "function": "imsi_bcd_encode",
+        "line_tolerance": 3,
+        "rationale": "digits 是恰好 n 字节的报文字段（非 NUL 结尾），n 为奇数时末轮 i+1 == n，读取越出字段 1 字节；且按 TS 24.008 奇数位应补 0xF 半字节，正确实现需判断 i+1 < n，否则既越界又编出错误码流"
+      }
+    ]
+  },
+  "context": {
+    "callchain_hint": "digits 来自定长报文字段，长度 n 由解析层按字段长度传入"
+  },
+  "difficulty": "easy",
+  "split": "dev"
+}

@@ -1,0 +1,21 @@
+# 入口判空契约（upstream_nullguard）
+#
+# 模块约定：可空的外部指针只在业务入口判空一次，内部静态函数按「入参非空」
+# 契约使用，不再重复防御。判空失败的入口必须直接返回错误，不得落入转发链。
+contract:
+  name: upstream_nullguard
+  summary: 入口判空一次，内部转发链按非空契约解引用
+  guarantees:
+    - id: g1
+      statement: guti_encode_size 对 guti == NULL 返回 -1，该路径不产生任何解引用
+      established_at:
+        file: src/guti.c
+        anchor: "if (!guti)"
+  assumptions:
+    - id: a1
+      statement: ie_field_len / ie_wire_size / guti_payload_size / guti_body_size 为文件内静态函数，仅经 guti_encode_size 判空后可达
+  exemptions:
+    - scenario: cwe-476
+      file: src/guti.c
+      anchor: "return ie->len;"
+      because: 见 g1/a1——唯一可达路径先经入口判空，解引用恒非空

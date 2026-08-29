@@ -1,0 +1,12 @@
+# 构建产物
+build/
+*.o
+*.a
+*.plist
+
+# Python
+__pycache__/
+*.pyc
+
+# 临时 findings 产物（CI 会重新生成）
+cases/*/findings.json

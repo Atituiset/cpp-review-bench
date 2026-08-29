@@ -1,0 +1,22 @@
+# 入口统一校验契约（entry_validated_parse）
+#
+# 模块约定：帧结构校验集中在 u2u_frame_valid 一处；字段访问器（u2u_fields.c）
+# 不做边界检查，只允许在校验通过后的路径上调用。新增入口必须复用
+# u2u_frame_valid，不得自行裁剪校验步骤。
+contract:
+  name: entry_validated_parse
+  summary: 校验集中于入口，访问器按「已校验」契约裸读偏移
+  guarantees:
+    - id: g1
+      statement: u2u_frame_valid 返回非 0 时，固定头与 src/dst 两段 IMSI 区域完整落在 size 内，即 12 + src_len + dst_len <= size
+      established_at:
+        file: src/u2u_validate.c
+        anchor: "if (size < 12 + src_len + dst_len)"
+  assumptions:
+    - id: a1
+      statement: u2u_fields.c 的访问器（src_len_at / dst_len_at / imsi_region_end / u2u_payload_offset）仅在 u2u_frame_valid 通过后的路径上调用
+  exemptions:
+    - scenario: cwe-125
+      file: src/u2u_fields.c
+      anchor: "return frame[11 + src_len_at(frame)];"
+      because: 见 g1/a1——调用点前置校验已覆盖该偏移，读取恒在界内
