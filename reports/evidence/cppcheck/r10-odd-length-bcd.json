@@ -1,0 +1,7 @@
+{
+  "tool": "cppcheck",
+  "track": "defect",
+  "case_id": "r10-odd-length-bcd",
+  "version": "Cppcheck 2.13.0",
+  "findings": []
+}

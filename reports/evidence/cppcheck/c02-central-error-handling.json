@@ -1,0 +1,62 @@
+{
+  "tool": "cppcheck",
+  "track": "contract",
+  "case_id": "c02-central-error-handling",
+  "version": "Cppcheck 2.13.0",
+  "findings": [
+    {
+      "file": "dispatch.c",
+      "line": 39,
+      "anchor": "last = stage_decrypt(c);",
+      "message": "Variable 'last' is reassigned a value before the old one has been used.",
+      "scenario": null,
+      "severity": "style",
+      "function": null
+    },
+    {
+      "file": "dispatch.c",
+      "line": 38,
+      "anchor": "last = stage_auth(c);   /* 不判：错误经 last 统一返回 */",
+      "message": "Variable 'last' is reassigned a value before the old one has been used.",
+      "scenario": null,
+      "severity": "style",
+      "function": null
+    },
+    {
+      "file": "dispatch.c",
+      "line": 40,
+      "anchor": "last = stage_encode(c);",
+      "message": "Variable 'last' is reassigned a value before the old one has been used.",
+      "scenario": null,
+      "severity": "style",
+      "function": null
+    },
+    {
+      "file": "dispatch.c",
+      "line": 39,
+      "anchor": "last = stage_decrypt(c);",
+      "message": "Variable 'last' is reassigned a value before the old one has been used.",
+      "scenario": null,
+      "severity": "style",
+      "function": null
+    },
+    {
+      "file": "dispatch.c",
+      "line": 17,
+      "anchor": "static int stage_auth(Ctx *c) {",
+      "message": "Parameter 'c' can be declared as pointer to const",
+      "scenario": null,
+      "severity": "style",
+      "function": null
+    },
+    {
+      "file": "dispatch.c",
+      "line": 22,
+      "anchor": "static int stage_decrypt(Ctx *c) {",
+      "message": "Parameter 'c' can be declared as pointer to const",
+      "scenario": null,
+      "severity": "style",
+      "function": null
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "tool": "cppcheck",
+  "track": "contract",
+  "case_id": "c06-flexible-array-member",
+  "version": "Cppcheck 2.13.0",
+  "findings": []
+}

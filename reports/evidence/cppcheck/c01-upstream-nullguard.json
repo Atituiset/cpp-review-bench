@@ -1,0 +1,17 @@
+{
+  "tool": "cppcheck",
+  "track": "contract",
+  "case_id": "c01-upstream-nullguard",
+  "version": "Cppcheck 2.13.0",
+  "findings": [
+    {
+      "file": "guti.c",
+      "line": 8,
+      "anchor": "uint8_t tag;",
+      "message": "struct member 'IeField::tag' is never used.",
+      "scenario": null,
+      "severity": "style",
+      "function": null
+    }
+  ]
+}

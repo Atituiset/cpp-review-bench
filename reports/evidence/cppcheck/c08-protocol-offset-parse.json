@@ -1,0 +1,7 @@
+{
+  "tool": "cppcheck",
+  "track": "contract",
+  "case_id": "c08-protocol-offset-parse",
+  "version": "Cppcheck 2.13.0",
+  "findings": []
+}
