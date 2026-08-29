@@ -1,0 +1,8 @@
+{
+  "tool": "infer",
+  "tool_version": "Infer version v1.3.0",
+  "case_id": "r14-buffer-len-source-untrusted",
+  "track": "defect",
+  "generated_by": "infer_to_findings.py",
+  "findings": []
+}

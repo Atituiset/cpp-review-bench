@@ -1,0 +1,8 @@
+{
+  "tool": "infer",
+  "tool_version": "Infer version v1.3.0",
+  "case_id": "r09-double-free-errorpath",
+  "track": "defect",
+  "generated_by": "infer_to_findings.py",
+  "findings": []
+}

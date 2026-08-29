@@ -1,0 +1,8 @@
+{
+  "tool": "infer",
+  "tool_version": "Infer version v1.3.0",
+  "case_id": "c03-assert-guard",
+  "track": "contract",
+  "generated_by": "infer_to_findings.py",
+  "findings": []
+}
