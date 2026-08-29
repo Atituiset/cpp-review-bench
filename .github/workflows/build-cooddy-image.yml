@@ -33,6 +33,3 @@ jobs:
           context: ./docker/cooddy
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/cooddy:${{ inputs.tag }}
-          # 利用 GitHub 层缓存加速重试
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
