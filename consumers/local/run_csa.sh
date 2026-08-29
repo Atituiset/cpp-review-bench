@@ -36,8 +36,33 @@ if [ "$MODE" = "ctu" ]; then
   CTU_DIR="$OUT/ctu"
   mkdir -p "$CTU_DIR"
   if command -v "$EXTDEF_BIN" >/dev/null 2>&1; then
-    "$EXTDEF_BIN" gen "$COMDB" > "$CTU_DIR/externalDefMap.txt" 2>/dev/null || \
-      echo "[warn] clang-extdef-mapping gen 失败，CTU 退化为单 TU" >&2
+    # 收集全部用例源的绝对路径（extdef-mapping 需要绝对/相对于 -p 的路径）
+    SRC_LIST=()
+    while IFS= read -r s; do SRC_LIST+=("$s"); done < <(python3 - "$ROOT" <<'PY'
+import json, glob, os
+root = os.path.abspath(os.sys.argv[1])
+db = json.load(open(os.path.join(root, "build", "compile_commands.json")))
+seen = set()
+for e in db:
+    f = e["file"]
+    if not os.path.isabs(f):
+        f = os.path.join(root, f)
+    if f not in seen:
+        seen.add(f); print(f)
+PY
+)
+    # 方式一：clang-extdef-mapping gen <compdb>（部分版本支持）
+    if ! "$EXTDEF_BIN" gen "$COMDB" > "$CTU_DIR/externalDefMap.txt" 2>/tmp/extdef_err.txt; then
+      # 方式二：clang-extdef-mapping -p <build> <sources...>（Ubuntu 包常用）
+      if ! "$EXTDEF_BIN" -p "$BUILD" "${SRC_LIST[@]}" > "$CTU_DIR/externalDefMap.txt" 2>/tmp/extdef_err.txt; then
+        echo "[warn] clang-extdef-mapping 生成失败，CTU 退化为单 TU：" >&2
+        sed 's/^/    /' /tmp/extdef_err.txt >&2
+        MODE="singletu"
+      fi
+    fi
+    if [ -s "$CTU_DIR/externalDefMap.txt" ]; then
+      echo "[ok] externalDefMap 生成: $(wc -l < "$CTU_DIR/externalDefMap.txt") 行"
+    fi
   else
     echo "[warn] 未找到 $EXTDEF_BIN，CTU 退化为单 TU" >&2
     MODE="singletu"
