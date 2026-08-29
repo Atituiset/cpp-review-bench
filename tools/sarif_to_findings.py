@@ -17,6 +17,19 @@ from pathlib import Path
 LEVEL_SEV = {'error': 'error', 'warning': 'warning', 'note': 'info', 'none': 'info'}
 CWE_RE = re.compile(r'cwe-(\d+)', re.IGNORECASE)
 
+# CodeQL ruleId（cpp/xxx）-> CWE 场景映射（使 eval 的 scenario 家族匹配可用）
+CODEQL_CWE_MAP = {
+    'cpp/integer-overflow': 'cwe-190',
+    'cpp/integer-multiplication-wrap': 'cwe-190',
+    'cpp/overflow': 'cwe-125',          # 保守：buffer over-read；越界写同族归 cwe-787 时另判
+    'cpp/buffer-overflow': 'cwe-787',
+    'cpp/pointer-dereference': 'cwe-476',
+    'cpp/use-after-free': 'cwe-416',
+    'cpp/double-free': 'cwe-415',
+    'cpp/leak': 'cwe-401',
+    'cpp/comparison-with-wrong-type': 'cwe-190',
+}
+
 
 def scenario_from_rule(rule_id: str):
     if not rule_id:
@@ -24,7 +37,11 @@ def scenario_from_rule(rule_id: str):
     m = CWE_RE.search(rule_id)
     if m:
         return f"cwe-{m.group(1)}"
-    return None
+    rid = rule_id.split('/')[-1].lower()
+    if rid in CODEQL_CWE_MAP:
+        return CODEQL_CWE_MAP[rid]
+    # 退化：保留原始 ruleId 作 scenario（便于排查）
+    return rule_id
 
 
 def convert(sarif_path, out_dir, tool='codeql', version='unknown'):
