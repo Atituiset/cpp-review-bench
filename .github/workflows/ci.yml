@@ -24,6 +24,12 @@ jobs:
           echo "EXTDEF_BIN=clang-extdef-mapping-21" >> "$GITHUB_ENV"
           clang-21 --version | head -1
 
+      - name: 安装 cppcheck（第二个对照工具，apt 直装）
+        run: |
+          sudo apt-get install -y cppcheck
+          echo "CPPCHECK_BIN=cppcheck" >> "$GITHUB_ENV"
+          cppcheck --version
+
       - name: 全量编译 + 统一 compile_commands.json
         run: |
           cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
@@ -41,10 +47,14 @@ jobs:
       - name: CSA 原生 CTU（跨文件分析）
         run: ./consumers/local/run_csa.sh ctu /tmp/csa_ctu
 
-      - name: 汇总两类 findings 上传 artifact
+      - name: CppCheck（跨工具对照）
+        run: chmod +x consumers/local/run_cppcheck.sh && ./consumers/local/run_cppcheck.sh /tmp/cppcheck
+
+      - name: 汇总全部工具 findings 上传 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: csa-findings
+          name: all-findings
           path: |
             /tmp/csa_singletu/*.json
             /tmp/csa_ctu/*.json
+            /tmp/cppcheck/*.json
