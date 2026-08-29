@@ -1,0 +1,131 @@
+{
+  "summary": {
+    "contract": {
+      "cases": 2,
+      "pass": 0,
+      "pass_rate": 0.0,
+      "fn_cases": 2,
+      "fp_cases": 0,
+      "extra_cases": 0,
+      "bare_fp": 0,
+      "contract_violations": 0,
+      "recall": 0.0,
+      "severity_accuracy": 0,
+      "verified": 0
+    },
+    "defect": {
+      "cases": 1,
+      "pass": 0,
+      "pass_rate": 0.0,
+      "fn_cases": 1,
+      "fp_cases": 0,
+      "extra_cases": 0,
+      "bare_fp": 0,
+      "contract_violations": 0,
+      "recall": 0.0,
+      "severity_accuracy": 0,
+      "verified": 0
+    }
+  },
+  "cases": [
+    {
+      "case_id": "c01-upstream-nullguard",
+      "track": "contract",
+      "state": "FN",
+      "must_find_total": 1,
+      "must_find_hit": 0,
+      "must_not_total": 1,
+      "must_not_violated": 0,
+      "contract_violations": 0,
+      "bare_fp": 0,
+      "extra": 0,
+      "severity_total": 0,
+      "severity_ok": 0,
+      "verified": 0,
+      "n_findings": 0,
+      "detail": {
+        "must_hit": [
+          {
+            "scenario": "cwe-190",
+            "hit": false,
+            "severity": "important"
+          }
+        ],
+        "not_viol": [
+          {
+            "scenario": "cwe-476",
+            "violated": false,
+            "kind": null
+          }
+        ],
+        "extra": []
+      }
+    },
+    {
+      "case_id": "c08-protocol-offset-parse",
+      "track": "contract",
+      "state": "FN",
+      "must_find_total": 1,
+      "must_find_hit": 0,
+      "must_not_total": 1,
+      "must_not_violated": 0,
+      "contract_violations": 0,
+      "bare_fp": 0,
+      "extra": 0,
+      "severity_total": 0,
+      "severity_ok": 0,
+      "verified": 0,
+      "n_findings": 0,
+      "detail": {
+        "must_hit": [
+          {
+            "scenario": "cwe-125",
+            "hit": false,
+            "severity": "important"
+          }
+        ],
+        "not_viol": [
+          {
+            "scenario": "cwe-125",
+            "violated": false,
+            "kind": null
+          }
+        ],
+        "extra": []
+      }
+    },
+    {
+      "case_id": "r10-odd-length-bcd",
+      "track": "defect",
+      "state": "FN",
+      "must_find_total": 1,
+      "must_find_hit": 0,
+      "must_not_total": 1,
+      "must_not_violated": 0,
+      "contract_violations": 0,
+      "bare_fp": 0,
+      "extra": 0,
+      "severity_total": 0,
+      "severity_ok": 0,
+      "verified": 0,
+      "n_findings": 0,
+      "detail": {
+        "must_hit": [
+          {
+            "scenario": "cwe-125",
+            "hit": false,
+            "severity": "important"
+          }
+        ],
+        "not_viol": [
+          {
+            "scenario": "cwe-787",
+            "violated": false,
+            "kind": null
+          }
+        ],
+        "extra": []
+      }
+    }
+  ]
+}
