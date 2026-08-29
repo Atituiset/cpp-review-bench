@@ -27,8 +27,8 @@ jobs:
           which clang-tidy clang-tidy-21 2>/dev/null || true
           ls -la /usr/lib/llvm-21/bin/ 2>/dev/null | grep -i tidy || true
           dpkg -L clang-tools-21 2>/dev/null | grep -i tidy || true
-          TIDY=$(find /usr -name 'clang-tidy*' -type f 2>/dev/null | head -1)
-          if [ -n "$TIDY" ]; then
+          TIDY=$(command -v clang-tidy || command -v clang-tidy-21 || ls /usr/lib/llvm-21/bin/clang-tidy 2>/dev/null || true)
+          if [ -n "$TIDY" ] && [ -x "$TIDY" ]; then
             sudo ln -sf "$TIDY" /usr/bin/clang-tidy-21
             echo "linked $TIDY -> /usr/bin/clang-tidy-21"
           fi
