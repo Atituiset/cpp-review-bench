@@ -18,6 +18,6 @@ for gj in "$ROOT"/cases/*/*/golden.json; do
   python3 "$ROOT/tools/clang_tidy_to_findings.py" "$track" "$cid" "$src_dir" \
     --clang-tidy "$CLANG_TIDY_BIN" --build-dir "$BUILD" \
     --out "$OUT/$cid.json" --tool clang-tidy --version "$TOOL_VER" \
-    2>"$OUT/$cid.err" || echo "[warn] $cid clang-tidy 失败"
+    > "$OUT/$cid.err" 2>&1 || { echo "[warn] $cid clang-tidy 失败:"; tail -5 "$OUT/$cid.err"; }
 done
 echo "[done] clang-tidy findings -> $OUT"
