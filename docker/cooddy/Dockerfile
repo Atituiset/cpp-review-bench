@@ -24,9 +24,10 @@ RUN cd /opt \
 
 ENV Z3_HOME=/usr/local
 ENV LLVM_CMAKE=/usr/lib/llvm-14/lib/cmake
-# clang 链接器默认不搜 /usr/local/lib，显式加入（z3 4.8.9 装在 /usr/local/lib）
-ENV LDFLAGS="-L/usr/local/lib"
-ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH:-}"
+# 强制用 gcc/g++ 作编译器与链接器驱动：gcc 的 ld 默认搜 /usr/local/lib，
+# 能找到 z3 4.8.9（clang 链接器不搜 /usr/local/lib 导致 -lz3 失败）
+ENV CC=gcc
+ENV CXX=g++
 
 RUN git clone --depth 1 https://github.com/program-analysis-team/cooddy.git /opt/cooddy \
     && cd /opt/cooddy \
