@@ -108,3 +108,39 @@ jobs:
           name: infer-findings
           path: |
             infer-findings/*.json
+
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 初始化 CodeQL（c-cpp，默认 CWE 查询套件）
+        uses: github/codeql-action/init@v3
+        with:
+          languages: c-cpp
+          queries: security-and-quality
+
+      - name: 构建数据库（cmake 全量编译）
+        run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON && cmake --build build -j "$(nproc)"
+
+      - name: 运行 CodeQL 分析
+        uses: github/codeql-action/analyze@v3
+        with:
+          output: codeql-results.sarif
+          upload: false
+
+      - name: 转换 SARIF → 归一化 findings 并四态评测
+        run: |
+          python3 tools/sarif_to_findings.py codeql-results.sarif codeql-findings 2>&1 | tail -5 || echo "[warn] sarif 转换失败"
+          ls codeql-findings/*.json 2>/dev/null | wc -l
+          python3 tools/eval.py run codeql-findings 2>&1 | tail -30 || echo "[warn] codeql 四态评测失败"
+
+      - name: 汇总 CodeQL 产物上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-findings
+          path: |
+            codeql-findings/*.json
+            codeql-results.sarif
