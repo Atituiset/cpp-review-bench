@@ -14,7 +14,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
   track="$(basename "$(dirname "$case_dir")")"
   src_dir="$case_dir/src"
   [ -d "$src_dir" ] || continue
-  harness="$src_dir/klee_harness.c"
+  harness="$(find "$case_dir" -name klee_harness.c | head -1)"
   [ -f "$harness" ] || { echo "[skip] $cid: 无 klee_harness.c"; continue; }
 
   bc="$OUT_ROOT/$cid.bc"

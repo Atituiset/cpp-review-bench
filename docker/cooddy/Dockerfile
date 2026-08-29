@@ -33,8 +33,11 @@ ENV LLVM_CMAKE=/usr/lib/llvm-14/lib/cmake
 ENV CC=gcc
 ENV CXX=g++
 
-# 关键修复：把 z3 的 lib 目录加入 ld.so 默认搜索，并显式声明 Z3_LIBRARIES 为绝对路径，
-# 让 cooddy 直接用绝对路径链接（不产生裸 -lz3）。
+# 关键修复：把 z3 的 lib 目录加入 LIBRARY_PATH（ld 链接 -lz3 时额外搜索路径，
+# 比 CMAKE_*_LINKER_FLAGS 更可靠地让所有 target 解析到 libz3.so），并显式声明
+# Z3_LIBRARIES 为绝对路径，让 cooddy 直接用绝对路径链接（不产生裸 -lz3）。
+ENV LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/lib
+
 RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/z3.conf && ldconfig \
     && echo "=== z3 lib 布局（构建前确认 libz3.so 存在）===" \
     && ls -l /usr/local/lib/libz3.so* /usr/lib/x86_64-linux-gnu/libz3.so* 2>&1 || true

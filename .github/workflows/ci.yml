@@ -184,19 +184,32 @@ jobs:
           echo "CodeChecker: $(CodeChecker --version 2>/dev/null | head -1)"
       - name: 全量编译 + 统一 compile_commands.json
         run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+      - name: 从 compdb 剔除 klee_harness.c（避免 KLEE 头缺失导致 analyze 中断）
+        run: |
+          python3 - <<'PY'
+          import json
+          db = json.load(open('build/compile_commands.json'))
+          db = [e for e in db if 'klee_harness.c' not in e['file']]
+          json.dump(db, open('cc_compdb.json','w'), indent=2)
+          print('compdb entries:', len(db))
+          PY
       - name: CodeChecker analyze（clang SA + clang-tidy，CTU）
         run: |
-          CodeChecker log -b "cmake --build build -j $(nproc)" -o cc_raw.plist 2>/dev/null || true
-          CodeChecker analyze compile_commands.json --ctu --output cc_reports 2>&1 | tail -5 || true
+          CodeChecker analyze cc_compdb.json --ctu --output cc_reports 2>&1 | tail -5 || true
           CodeChecker parse cc_reports -e json > cc_export.json 2>/dev/null || echo "[warn] parse 无结果"
           echo "=== cc_export.json reports 数 ==="
           python3 -c "import json;d=json.load(open('cc_export.json'));print('reports:',len(d.get('reports',[])))" 2>/dev/null || echo "0"
       - name: 归一化 + 四态评测
         run: |
-          python3 tools/codechecker_to_findings.py cc_export.json "$PWD/cases" --out-dir cc-findings 2>&1 | tail -20
-          python3 tools/eval.py run cc-findings 2>&1 | tail -30 || echo "[warn] codechecker 四态评测跳过"
+          if [ -f cc_export.json ]; then
+            python3 tools/codechecker_to_findings.py cc_export.json "$PWD/cases" --out-dir cc-findings 2>&1 | tail -20
+            python3 tools/eval.py run cc-findings 2>&1 | tail -30 || echo "[warn] codechecker 四态评测跳过"
+          else
+            echo "[warn] cc_export.json 不存在，跳过归一化"
+          fi
       - name: 汇总 CodeChecker 产物上传 artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: codechecker-findings
           path: |
