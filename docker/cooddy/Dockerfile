@@ -31,7 +31,10 @@ ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH:-}"
 RUN git clone --depth 1 https://github.com/program-analysis-team/cooddy.git /opt/cooddy \
     && cd /opt/cooddy \
     && mkdir -p build && cd build \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DZ3_HOME=$Z3_HOME -DLLVM_CMAKE=$LLVM_CMAKE .. \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+        -DZ3_HOME=$Z3_HOME -DLLVM_CMAKE=$LLVM_CMAKE \
+        -DCMAKE_EXE_LINKER_FLAGS="-L/usr/local/lib -L/usr/lib/x86_64-linux-gnu" \
+        -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/local/lib -L/usr/lib/x86_64-linux-gnu" .. \
     && make -j "$(nproc)" \
     && echo "cooddy built:" && find /opt/cooddy/build -name cooddy -type f
 
