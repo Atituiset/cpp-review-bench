@@ -133,7 +133,8 @@ jobs:
 
       - name: 转换 SARIF → 归一化 findings 并四态评测
         run: |
-          SARIF=$(find . -path '*codeql-results.sarif*' -name '*.sarif' | head -1)
+          SARIF=$(find . -path '*codeql-results*' -name 'cpp.sarif' -type f 2>/dev/null | head -1)
+          [ -z "$SARIF" ] && SARIF=$(find . -name '*.sarif' -type f 2>/dev/null | head -1)
           echo "SARIF=$SARIF"
           python3 tools/sarif_to_findings.py "$SARIF" codeql-findings 2>&1 | tail -5
           ls codeql-findings/*.json 2>/dev/null | wc -l
