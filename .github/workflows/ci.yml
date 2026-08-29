@@ -151,7 +151,9 @@ jobs:
 
   klee:
     runs-on: ubuntu-latest
-    container: klee/klee:latest
+    container:
+      image: klee/klee:latest
+      options: --user root
     steps:
       - uses: actions/checkout@v4
       - name: 全量编译 + 统一 compile_commands.json（部分 case 的 harness 依赖）
@@ -171,16 +173,48 @@ jobs:
           path: |
             klee-findings/*.json
 
+  codechecker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 clang + CodeChecker（pip，含 clang SA 与 clang-tidy）
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends clang clang-tidy
+          pip3 install --no-cache-dir codechecker
+          echo "CodeChecker: $(CodeChecker --version 2>/dev/null | head -1)"
+      - name: 全量编译 + 统一 compile_commands.json
+        run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+      - name: CodeChecker analyze（clang SA + clang-tidy，CTU）
+        run: |
+          CodeChecker log -b "cmake --build build -j $(nproc)" -o cc_raw.plist 2>/dev/null || true
+          CodeChecker analyze compile_commands.json --ctu --output cc_reports 2>&1 | tail -5 || true
+          CodeChecker parse cc_reports -e json > cc_export.json 2>/dev/null || echo "[warn] parse 无结果"
+          echo "=== cc_export.json reports 数 ==="
+          python3 -c "import json;d=json.load(open('cc_export.json'));print('reports:',len(d.get('reports',[])))" 2>/dev/null || echo "0"
+      - name: 归一化 + 四态评测
+        run: |
+          python3 tools/codechecker_to_findings.py cc_export.json "$PWD/cases" --out-dir cc-findings 2>&1 | tail -20
+          python3 tools/eval.py run cc-findings 2>&1 | tail -30 || echo "[warn] codechecker 四态评测跳过"
+      - name: 汇总 CodeChecker 产物上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codechecker-findings
+          path: |
+            cc-findings/*.json
+
   cooddy-verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: 本地 docker build cooddy 镜像（验证 z3 链接修复，不推送）
-        run: docker build -f docker/cooddy/Dockerfile -t cooddy-test:ci . 2>&1 | tail -15
+        run: |
+          docker build -f docker/cooddy/Dockerfile -t cooddy-test:ci . 2>&1 | tee /tmp/cooddy_build.log | tail -3
+          echo "=== 真实报错（make 阶段）==="
+          grep -iE 'error:|cannot find|cannot be used|libz3|z3' /tmp/cooddy_build.log | tail -30
       - name: 生成 compdb 并跑 cooddy 验证端到端
         run: |
           cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
-          docker run --rm -v "$PWD":/workspace cooddy-test:ci --scope /workspace/cases/defect/r04-oob-write-stack --reporter json > /tmp/cooddy_r04.json 2>/tmp/cooddy_r04.err || echo "[warn] cooddy 运行非零"
+          docker run --rm -v "$PWD":/workspace cooddy-test:ci --scope /workspace/cases/defect/r04-oob-write-stack --reporter json > /tmp/cooddy_r04.json 2>/tmp/cooddy_r04.err || echo "[warn] cooddy 运行非零（镜像可能未构建成功）"
           echo "=== cooddy 对 r04 输出（前 40 行）==="
           head -40 /tmp/cooddy_r04.json 2>/dev/null
           echo "=== stderr 关键 ==="
