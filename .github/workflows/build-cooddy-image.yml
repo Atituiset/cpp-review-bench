@@ -32,4 +32,4 @@ jobs:
         with:
           context: ./docker/cooddy
           push: true
-          tags: ghcr.io/${{ toLower(github.repository_owner) }}/cooddy:${{ inputs.tag }}
+          tags: ghcr.io/atituiset/cooddy:${{ inputs.tag }}
