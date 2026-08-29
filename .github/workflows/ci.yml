@@ -92,14 +92,19 @@ jobs:
           cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
           infer --version | head -1
 
-      - name: 逐 case 跑 Infer（抽象解释）
+      - name: 逐 case 跑 Infer（抽象解释）+ 归一化
         run: |
           chmod +x consumers/local/run_infer.sh
-          ./consumers/local/run_infer.sh "$PWD/cases" "$PWD/infer-findings"
-          ls -R infer-findings | head -20
+          ./consumers/local/run_infer.sh "$PWD/cases" "$PWD/infer-findings" "$PWD"
+          echo "=== 各例 Infer findings 数 ==="
+          for f in infer-findings/*.json; do echo "$(basename $f): $(python3 -c "import json;print(len(json.load(open('$f'))['findings']))" 2>/dev/null)"; done
 
-      - name: 汇总 Infer report.json 上传 artifact
+      - name: Infer 四态评测（vs golden）
+        run: python3 tools/eval.py run infer-findings 2>&1 | tail -40
+
+      - name: 汇总 Infer 产物上传 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: infer-raw
-          path: infer-findings/**/infer-out-*/report.json
+          name: infer-findings
+          path: |
+            infer-findings/*.json

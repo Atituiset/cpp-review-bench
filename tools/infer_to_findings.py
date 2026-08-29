@@ -47,10 +47,44 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('track'); ap.add_argument('case_id'); ap.add_argument('report_json')
     ap.add_argument('--tool', default='infer'); ap.add_argument('--version', default='unknown')
+    ap.add_argument('--out', required=False, default=None, help='输出归一化 findings 路径')
     args = ap.parse_args()
-    out = convert(args.track, args.case_id, args.report_json, args.tool, args.version)
-    Path(args.out).parent.mkdir(parents=True, exist_ok=True) if hasattr(args, 'out') else None
-    print(json.dumps(out, ensure_ascii=False, indent=2))
+
+    import glob as _glob
+    p = Path(args.report_json)
+    bugs = []
+    files = [str(p)] if p.is_file() else sorted(_glob.glob(str(p / '**' / 'report.json'), recursive=True))
+    for rp in files:
+        data = json.load(open(rp, encoding='utf-8'))
+        bugs += data.get('bugs', []) if isinstance(data, dict) else data
+
+    findings = []
+    for b in bugs:
+        fpath = b.get('file', '')
+        try:
+            rel = str(Path(fpath).relative_to(Path.cwd().parent))
+        except ValueError:
+            rel = fpath
+        findings.append({
+            'tool': args.tool,
+            'tool_version': args.version,
+            'scenario': None,
+            'severity': SEV.get(b.get('severity', 'INFO'), 'info'),
+            'file': rel,
+            'line': int(b.get('line', 0)),
+            'column': int(b.get('column', 0)),
+            'message': f"{b.get('bug_type','')}: {b.get('qualifier','')}".strip(': '),
+            'check': b.get('bug_type', ''),
+        })
+    out = {'tool': args.tool, 'tool_version': args.version, 'case_id': args.case_id,
+           'track': args.track, 'generated_by': 'infer_to_findings.py', 'findings': findings}
+    if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        with open(args.out, 'w', encoding='utf-8') as f:
+            json.dump(out, f, ensure_ascii=False, indent=2)
+        print(f'[ok] {args.case_id}: {len(findings)} findings -> {args.out}')
+    else:
+        print(json.dumps(out, ensure_ascii=False, indent=2))
 
 
 if __name__ == '__main__':
