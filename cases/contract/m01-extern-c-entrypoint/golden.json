@@ -1,0 +1,36 @@
+{
+  "id": "m01-extern-c-entrypoint",
+  "track": "contract",
+  "title": "extern \"C\" 导出被 C 侧调用（死代码陷阱）",
+  "version": 2,
+  "languages": ["mixed"],
+  "tags": ["extern-c", "cross-language", "deadcode-trap"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "logic",
+        "note": "m01_entry 经 extern \"C\" 导出，由 C 侧 c_caller 链接调用；C++ TU 内本地零调用≠死代码。工具报「未使用函数」属未理解跨语言链接入口",
+        "file": "src/entry.cpp",
+        "anchor": "(void)buf;",
+        "function": "m01_entry"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/entry.cpp",
+        "anchor": "uint8_t t = buf[n];",
+        "function": "m01_entry",
+        "line_tolerance": 2,
+        "rationale": "m01_entry 内 buf[n] 索引，n 来自 C 侧传入未校验；n 超界时越界读，真实 cwe-125 缺陷（与跨语言无关）"
+      }
+    ]
+  },
+  "context": {
+    "contract": "extern_c_entrypoint",
+    "callchain_hint": "c_caller 调用 m01_entry（extern C）→ buf[n] 越界"
+  },
+  "difficulty": "medium",
+  "split": "dev"
+}

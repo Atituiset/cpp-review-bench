@@ -1,0 +1,36 @@
+{
+  "id": "c16-enum-closed-switch",
+  "track": "contract",
+  "title": "枚举全集闭合、故意无 default",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["enum-closed", "switch", "single-file"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "logic",
+        "note": "switch(e) 覆盖 EVT_A/B/C 全枚举且故意无 default，是「枚举闭合、让编译器查漏」的设计意图；工具报「switch 缺 default 可能漏处理」属误报",
+        "file": "src/evt.c",
+        "anchor": "case EVT_C:",
+        "function": "handle"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/evt.c",
+        "anchor": "res = payload[n];",
+        "function": "handle",
+        "line_tolerance": 2,
+        "rationale": "EVT_C 分支用 payload[n] 索引，n 来自外部未校验；n>=3 时越界读，真实越界读缺陷（与「无 default」无关）"
+      }
+    ]
+  },
+  "context": {
+    "contract": "enum_closed_switch",
+    "callchain_hint": "handle 对枚举全覆盖无 default（设计）；EVT_C 分支 payload[n] 越界"
+  },
+  "difficulty": "easy",
+  "split": "dev"
+}

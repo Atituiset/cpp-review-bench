@@ -1,0 +1,16 @@
+contract:
+  name: assert_guard
+  summary: 自研断言宏 MSG_REQUIRE 在入口守护指针，后续解引用属契约安全
+  guarantees:
+    - id: g1
+      statement: MSG_REQUIRE(msg != NULL) 在 msg_dispatch/msg_build 入口守护；契约保证调用方传入非空 msg
+    - id: g2
+      statement: MSG_REQUIRE(msg->len <= 64) 保证 len 不越定长缓冲 buf[64]
+  assumptions:
+    - id: a1
+      statement: 自研断言宏失败路径直接 return，不会落到后续解引用
+  exemptions:
+    - scenario: cwe-476
+      file: src/parser.c
+      anchor: "uint8_t head = msg->buf[0];"
+      because: 见 g1——断言已守护，解引用运行期恒非空，非 cwe-476

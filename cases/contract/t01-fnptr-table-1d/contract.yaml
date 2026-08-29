@@ -1,0 +1,16 @@
+contract:
+  name: fnptr_table_1d
+  summary: 一维函数指针表 handlers[3]，dispatch 判空后调用
+  guarantees:
+    - id: g1
+      statement: dispatch 先 `if (fn == NULL) return;` 判空再调用，函数指针调用安全
+    - id: g2
+      statement: idx 在 dispatch 开头受 `idx >= 3` 保护（fn 路径），但 handlers[idx+1u] 路径越界——属真实缺陷（见 must_find）
+  assumptions:
+    - id: a1
+      statement: 调用方传入 idx 应在表范围，但本例显式演示越界缺陷
+  exemptions:
+    - scenario: cwe-476
+      file: src/dispatch.c
+      anchor: "fn(v);"
+      because: 见 g1——已判空，非 cwe-476

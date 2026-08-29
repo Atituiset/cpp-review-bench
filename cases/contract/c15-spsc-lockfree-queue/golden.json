@@ -1,0 +1,36 @@
+{
+  "id": "c15-spsc-lockfree-queue",
+  "track": "contract",
+  "title": "单生产单消费（SPSC）无锁环形缓冲",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["lockfree", "spsc", "ringbuf"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-362",
+        "note": "g_head 仅由消费者维护、g_tail 仅由生产者维护，SPSC 语义下无数据竞争；工具报 cwe-362 属未理解 SPSC 无锁正确性",
+        "file": "src/spsc.c",
+        "anchor": "*out = g_q[g_head];",
+        "function": "spsc_dequeue"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "severity": "important",
+        "file": "src/spsc.c",
+        "anchor": "g_q[g_tail] = v;",
+        "function": "spsc_enqueue",
+        "line_tolerance": 4,
+        "rationale": "enqueue 在写 g_q[g_tail] 前虽然检查 next==g_head，但连续满产时 tail 回绕 + 未约束 g_tail<QSZ 的边界，存在覆盖未消费数据/越界写风险（真实并发模式缺陷）"
+      }
+    ]
+  },
+  "context": {
+    "contract": "spsc_lockfree_queue",
+    "callchain_hint": "spsc_enqueue 生产者维护 g_tail；spsc_dequeue 消费者维护 g_head（SPSC 无锁安全）"
+  },
+  "difficulty": "hard",
+  "split": "dev"
+}

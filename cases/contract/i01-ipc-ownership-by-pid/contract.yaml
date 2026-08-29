@@ -1,0 +1,14 @@
+contract:
+  name: ipc_ownership_by_pid
+  summary: 内存由 ipc_alloc(pid) 开辟，ipc_free(pid) 释放归开辟方，使用者只 ipc_use
+  guarantees:
+    - id: g1
+      statement: ipc_use 只使用不释放；释放归开辟方（ipc_free），无双重释放
+  assumptions:
+    - id: a1
+      statement: ipc_use 的 p 来自 ipc_alloc 成功返回（非空）
+  exemptions:
+    - scenario: cwe-415
+      file: src/ipc.c
+      anchor: "((uint8_t *)p)[0] = v;"
+      because: 见 g1——所有权清晰，ipc_use 不释放，非 cwe-415

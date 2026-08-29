@@ -1,0 +1,36 @@
+{
+  "id": "c01b-crossfile-nullguard",
+  "track": "contract",
+  "title": "判空与解引用跨两文件（调用方先 validate 再解引用）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["nullguard", "cross-file", "callchain"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-476",
+        "note": "caller.c 的 consume 先调 util.c 的 validate(p) 判空，通过后才解引用 p->tag；跨文件契约保证 p 非空，单文件视野的工具易误报 cwe-476",
+        "file": "src/caller.c",
+        "anchor": "uint8_t t = p->tag;",
+        "function": "consume"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-190",
+        "severity": "important",
+        "file": "src/caller.c",
+        "anchor": "uint8_t sum = (uint8_t)p->len + 1u;",
+        "function": "consume",
+        "line_tolerance": 3,
+        "rationale": "p->len 为 uint16_t 强转 uint8_t 后 +1u，len>=255 时回绕；下游 payload[sum] 索引错位，真实整数回绕缺陷"
+      }
+    ]
+  },
+  "context": {
+    "contract": "crossfile_nullguard",
+    "callchain_hint": "consume 调 validate(util.c) 判空 → 通过后解引用 p->tag；同时 (uint8_t)p->len+1u 回绕"
+  },
+  "difficulty": "medium",
+  "split": "dev"
+}

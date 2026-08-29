@@ -1,0 +1,36 @@
+{
+  "id": "t02-fnptr-table-2d",
+  "track": "contract",
+  "title": "二维函数指针数组表分发，入口判空",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["fnptr-table", "2d", "dispatch"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-476",
+        "note": "dispatch2 先 `if (fn == NULL) return;` 判空再 fn(v) 调用；二维表索引 row/col 已受界保护；工具报 cwe-476 属未理解判空守护",
+        "file": "src/dispatch2.c",
+        "anchor": "fn(v);",
+        "function": "dispatch2"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/dispatch2.c",
+        "anchor": "(void)handlers[row + 1u][col];",
+        "function": "dispatch2",
+        "line_tolerance": 3,
+        "rationale": "row 为 uint8_t，dispatch2 开头检查 row>=2，但 handlers[row+1u][col] 在 row=1 时读 handlers[2][col] 越界（真实二维表越界读缺陷）"
+      }
+    ]
+  },
+  "context": {
+    "contract": "fnptr_table_2d",
+    "callchain_hint": "dispatch2 判空 fn 后调用（安全）；handlers[row+1u][col] 越界读"
+  },
+  "difficulty": "hard",
+  "split": "dev"
+}

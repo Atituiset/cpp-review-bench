@@ -1,0 +1,14 @@
+contract:
+  name: crossfile_nullguard
+  summary: validate() 跨文件判空+边界，consume 先调 validate 再解引用
+  guarantees:
+    - id: g1
+      statement: validate() 解引用前判空且校验 len<=128；契约保证 consume 先调 validate 通过后才解引用
+  assumptions:
+    - id: a1
+      statement: 调用方遵守「先 validate 再 consume」的跨文件契约
+  exemptions:
+    - scenario: cwe-476
+      file: src/caller.c
+      anchor: "uint8_t t = p->tag;"
+      because: 见 g1——validate 已跨文件守护，解引用运行期恒非空，非 cwe-476

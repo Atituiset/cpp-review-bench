@@ -1,0 +1,36 @@
+{
+  "id": "c12-intended-wrap-seq",
+  "track": "contract",
+  "title": "有意的序号回绕模运算（契约声明）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["intended-wrap", "sequence", "single-file"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-190",
+        "note": "seq_next 的 seq+1 回绕是协议序号模 256 的设计意图，下游按模运算使用；工具报 cwe-190 属未理解回绕契约",
+        "file": "src/seq.c",
+        "anchor": "return (uint8_t)(seq + 1u);",
+        "function": "seq_next"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "severity": "important",
+        "file": "src/seq.c",
+        "anchor": "uint8_t pos = (uint8_t)(seq + idx);",
+        "function": "ring_get",
+        "line_tolerance": 3,
+        "rationale": "pos 由 seq+idx 回绕得到，未对 SEQ_MOD 约简；idx 较大时 pos 越界 ring[256]，真实越界读缺陷"
+      }
+    ]
+  },
+  "context": {
+    "contract": "intended_wrap_seq",
+    "callchain_hint": "seq_next 回绕设计意图；ring_get 缺模约导致 pos 越界"
+  },
+  "difficulty": "medium",
+  "split": "dev"
+}

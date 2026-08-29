@@ -1,0 +1,16 @@
+contract:
+  name: intended_wrap_seq
+  summary: 协议序号按模回绕是设计意图，下游按模运算使用
+  guarantees:
+    - id: g1
+      statement: seq_next 的 seq+1 回绕是契约行为（序号 mod 256），非缺陷
+    - id: g2
+      statement: ring_get 的 pos 应受 SEQ_MOD 约束，但本例缺模约——属真实缺陷（见 must_find），与上一条"意图回绕"区分
+  assumptions:
+    - id: a1
+      statement: 序号域为 [0, SEQ_MOD)，回绕点合法
+  exemptions:
+    - scenario: cwe-190
+      file: src/seq.c
+      anchor: "return (uint8_t)(seq + 1u);"
+      because: 见 g1——回绕是设计意图，非 cwe-190

@@ -1,0 +1,36 @@
+{
+  "id": "i06-ipc-handler-entrypoint",
+  "track": "contract",
+  "title": "IPC 注册 handler 本地零调用（死代码陷阱）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["ipc", "handler", "deadcode-trap"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "logic",
+        "note": "on_msg 经 REGISTER_HANDLER 注册入框架，由框架在 IPC 消息到达时回调；本地零直接调用≠死代码。工具报「未使用函数/死代码」属未理解框架回调契约",
+        "file": "src/ipc_h.c",
+        "anchor": "void ipc_setup(void)",
+        "function": "ipc_setup"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/ipc_h.c",
+        "anchor": "uint8_t tag = payload[n];",
+        "function": "on_msg",
+        "line_tolerance": 2,
+        "rationale": "on_msg 内部 payload[n] 索引，n 来自 IPC 消息未校验；n 超界时越界读，真实 cwe-125 缺陷（与「死代码」无关）"
+      }
+    ]
+  },
+  "context": {
+    "contract": "ipc_handler_entrypoint",
+    "callchain_hint": "ipc_setup 注册 on_msg → 框架在消息到达时回调 on_msg → payload[n] 越界"
+  },
+  "difficulty": "medium",
+  "split": "dev"
+}

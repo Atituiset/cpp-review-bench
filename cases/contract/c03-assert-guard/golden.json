@@ -1,0 +1,36 @@
+{
+  "id": "c03-assert-guard",
+  "track": "contract",
+  "title": "自定义断言宏守护的解引用",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["assert", "nullguard", "single-file"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-476",
+        "note": "MSG_REQUIRE(msg != NULL) 已在入口断言守护，msg->buf[0] 解引用运行期恒非空；工具若报 cwe-476 属过度敏感（未理解自研断言宏语义）",
+        "file": "src/parser.c",
+        "anchor": "uint8_t head = msg->buf[0];",
+        "function": "msg_dispatch"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-190",
+        "severity": "important",
+        "file": "src/parser.c",
+        "anchor": "uint8_t total = msg->len + 1u;",
+        "function": "msg_dispatch",
+        "line_tolerance": 3,
+        "rationale": "msg->len 为 uint8_t，len=255 时 +1 回绕为 0，total 计算失真；下游按回绕后的 total 索引会错位，属真实整数回绕缺陷"
+      }
+    ]
+  },
+  "context": {
+    "contract": "assert_guard",
+    "callchain_hint": "MSG_REQUIRE(msg!=NULL) 守护 → msg->buf[0] 解引用；同时 msg->len+1u 回绕"
+  },
+  "difficulty": "easy",
+  "split": "dev"
+}

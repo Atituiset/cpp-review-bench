@@ -1,0 +1,36 @@
+{
+  "id": "t01-fnptr-table-1d",
+  "track": "contract",
+  "title": "一维裸函数指针数组分发，入口判空",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["fnptr-table", "dispatch", "single-file"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-476",
+        "note": "dispatch 先 `if (fn == NULL) return;` 判空再 fn(v) 调用；工具报 cwe-476 属未理解入口判空守护",
+        "file": "src/dispatch.c",
+        "anchor": "fn(v);",
+        "function": "dispatch"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/dispatch.c",
+        "anchor": "handlers[idx + 1u] = h_a;",
+        "function": "dispatch",
+        "line_tolerance": 3,
+        "rationale": "idx 为 uint8_t，dispatch 开头虽检查 idx>=3，但 handlers[idx+1u] 在 idx=2 时写 handlers[3] 越界（演示函数指针表越界写真实缺陷）"
+      }
+    ]
+  },
+  "context": {
+    "contract": "fnptr_table_1d",
+    "callchain_hint": "dispatch 判空 fn 后调用（安全）；handlers[idx+1u] 越界写"
+  },
+  "difficulty": "hard",
+  "split": "dev"
+}

@@ -22,7 +22,8 @@ RUN cd /opt \
     && make -j "$(nproc)" \
     && make install \
     && ldconfig \
-    && echo "z3 config:" && ls /usr/local/lib/cmake/z3/ 2>/dev/null && ls -l /usr/local/lib/libz3.so*
+    && cp -a /usr/local/lib/libz3.so* /usr/lib/x86_64-linux-gnu/ \
+    && echo "z3 config:" && ls /usr/local/lib/cmake/z3/ 2>/dev/null && ls -l /usr/lib/x86_64-linux-gnu/libz3.so*
 
 ENV Z3_HOME=/usr/local
 ENV LLVM_CMAKE=/usr/lib/llvm-14/lib/cmake

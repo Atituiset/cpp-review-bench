@@ -1,0 +1,36 @@
+{
+  "id": "c21-startup-global-init",
+  "track": "contract",
+  "title": "全局量启动期 malloc，业务期使用",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["global-init", "lifetime", "single-file"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-476",
+        "note": "g_buf 在 gbuf_init 启动期分配，gbuf_write_at 业务期使用；契约保证 init 先于 use，g_buf 非空。工具若报 cwe-476 属未理解生命周期契约",
+        "file": "src/global.c",
+        "anchor": "g_buf[off] = val;",
+        "function": "gbuf_write_at"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-190",
+        "severity": "important",
+        "file": "src/global.c",
+        "anchor": "uint8_t end = off + 1u;",
+        "function": "gbuf_write_at",
+        "line_tolerance": 3,
+        "rationale": "off 为 uint8_t，off=255 时 +1 回绕为 0，end 计算失真导致边界检查失效，下游 g_buf[end] 索引错位，真实整数回绕缺陷"
+      }
+    ]
+  },
+  "context": {
+    "contract": "startup_global_init",
+    "callchain_hint": "gbuf_init 启动期 malloc → gbuf_write_at 业务期使用 g_buf[off]；同时 off+1u 回绕"
+  },
+  "difficulty": "medium",
+  "split": "dev"
+}

@@ -1,0 +1,14 @@
+contract:
+  name: c_guard_cpp_deref
+  summary: C 侧 c_entry 判空后跨语言调 C++ 引擎 Engine::process 解引用
+  guarantees:
+    - id: g1
+      statement: c_entry 先 `if (e == NULL) return;` 判空，再跨语言调 C++ 引擎；e 非空由 C 侧守护
+  assumptions:
+    - id: a1
+      statement: C 侧调用方遵守判空契约；C++ 引擎假设 e 非空
+  exemptions:
+    - scenario: cwe-476
+      file: src/centry.c
+      anchor: "(void)m03_engine_process(e, idx);"
+      because: 见 g1——C 侧判空守护，跨语言解引用安全，非 cwe-476

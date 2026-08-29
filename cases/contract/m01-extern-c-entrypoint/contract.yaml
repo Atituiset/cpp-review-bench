@@ -1,0 +1,14 @@
+contract:
+  name: extern_c_entrypoint
+  summary: C++ 经 extern "C" 导出 m01_entry，由 C 侧 c_caller 链接调用
+  guarantees:
+    - id: g1
+      statement: m01_entry 是 C 侧链接入口，本地零直接调用≠死代码
+  assumptions:
+    - id: a1
+      statement: C 侧 c_caller 经链接调用 m01_entry
+  exemptions:
+    - scenario: logic
+      file: src/entry.cpp
+      anchor: "(void)buf;"
+      because: 见 g1——m01_entry 为跨语言链接入口，非死代码，误报「未使用」属过度敏感

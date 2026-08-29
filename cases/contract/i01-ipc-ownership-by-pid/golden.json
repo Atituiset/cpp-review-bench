@@ -1,0 +1,36 @@
+{
+  "id": "i01-ipc-ownership-by-pid",
+  "track": "contract",
+  "title": "按 PID 申请内存，释放归开辟方（IPC 所有权模型）",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["ipc", "ownership", "single-file"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-415",
+        "note": "ipc_use 只使用不释放，释放归 ipc_free（开辟方）；所有权模型清晰，无双重释放风险。工具报 cwe-415 属未理解所有权契约",
+        "file": "src/ipc.c",
+        "anchor": "((uint8_t *)p)[0] = v;",
+        "function": "ipc_use"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "severity": "important",
+        "file": "src/ipc.c",
+        "anchor": "((uint8_t *)p)[v] = 0xFF;",
+        "function": "ipc_use",
+        "line_tolerance": 2,
+        "rationale": "v 作为索引未约束，ipc_use 写入 ((uint8_t*)p)[v] 在 v 大于分配尺寸时越界写，真实 cwe-787 缺陷"
+      }
+    ]
+  },
+  "context": {
+    "contract": "ipc_ownership_by_pid",
+    "callchain_hint": "ipc_alloc 开辟 → ipc_use 使用（不释放）→ ipc_free 开辟方释放"
+  },
+  "difficulty": "hard",
+  "split": "dev"
+}

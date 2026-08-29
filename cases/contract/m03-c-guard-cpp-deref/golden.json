@@ -1,0 +1,36 @@
+{
+  "id": "m03-c-guard-cpp-deref",
+  "track": "contract",
+  "title": "C 入口判空 → C++ 引擎解引用（跨语言）",
+  "version": 2,
+  "languages": ["mixed"],
+  "tags": ["cross-language", "nullguard", "cpp-engine"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-476",
+        "note": "c_entry 已 `if (e == NULL) return;` 判空，再跨语言调 C++ 引擎；e 非空由 C 侧守护，C++ 引擎解引用安全。工具报 cwe-476 属未理解跨语言判空守护",
+        "file": "src/centry.c",
+        "anchor": "(void)m03_engine_process(e, idx);",
+        "function": "c_entry"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-125",
+        "severity": "important",
+        "file": "src/engine.cpp",
+        "anchor": "return buf[idx];",
+        "function": "Engine::process",
+        "line_tolerance": 2,
+        "rationale": "Engine::process 内 buf[idx] 索引，idx 未与 len 比较约束；idx>=len 时越界读，真实 cwe-125 缺陷（跨语言调用不豁免 C++ 内部越界）"
+      }
+    ]
+  },
+  "context": {
+    "contract": "c_guard_cpp_deref",
+    "callchain_hint": "c_entry 判空 → m03_engine_process → Engine::process → buf[idx] 越界"
+  },
+  "difficulty": "hard",
+  "split": "dev"
+}

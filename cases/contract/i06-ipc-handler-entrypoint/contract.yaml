@@ -1,0 +1,14 @@
+contract:
+  name: ipc_handler_entrypoint
+  summary: handler 经 REGISTER_HANDLER 注册，由框架在 IPC 消息到达时回调（本地零直接调用）
+  guarantees:
+    - id: g1
+      statement: on_msg 被注册入框架 g_registry，框架持有引用并在消息到达时回调——本地零直接调用不等于死代码
+  assumptions:
+    - id: a1
+      statement: 框架在 IPC 消息到达时按 slot 调用 g_registry[slot]
+  exemptions:
+    - scenario: logic
+      file: src/ipc_h.c
+      anchor: "void ipc_setup(void)"
+      because: 见 g1——on_msg 由框架回调，非死代码，误报「未使用函数」属过度敏感

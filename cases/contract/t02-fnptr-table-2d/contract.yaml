@@ -1,0 +1,16 @@
+contract:
+  name: fnptr_table_2d
+  summary: 二维函数指针表 handlers[2][2]，dispatch2 判空后调用
+  guarantees:
+    - id: g1
+      statement: dispatch2 先 `if (fn == NULL) return;` 判空再调用；row/col 在 fn 路径受界保护
+    - id: g2
+      statement: handlers[row+1u][col] 路径越界——属真实缺陷（见 must_find）
+  assumptions:
+    - id: a1
+      statement: 调用方传入 row/col 应在表范围，但本例演示越界缺陷
+  exemptions:
+    - scenario: cwe-476
+      file: src/dispatch2.c
+      anchor: "fn(v);"
+      because: 见 g1——已判空，非 cwe-476

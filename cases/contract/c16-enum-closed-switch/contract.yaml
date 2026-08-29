@@ -1,0 +1,14 @@
+contract:
+  name: enum_closed_switch
+  summary: 枚举 Evt 仅 A/B/C，switch 全覆盖故意无 default（设计意图）
+  guarantees:
+    - id: g1
+      statement: Evt 枚举闭合（仅 A/B/C），switch 全覆盖无 default 是「让编译器查漏新增枚举值」的设计意图，非缺陷
+  assumptions:
+    - id: a1
+      statement: 调用方传入的 e 必为合法枚举值
+  exemptions:
+    - scenario: logic
+      file: src/evt.c
+      anchor: "case EVT_C:"
+      because: 见 g1——无 default 是枚举闭合设计，非逻辑缺陷

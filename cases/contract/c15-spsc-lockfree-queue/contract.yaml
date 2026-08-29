@@ -1,0 +1,14 @@
+contract:
+  name: spsc_lockfree_queue
+  summary: 单生产者单消费者无锁环形队列，head/tail 各自由一方维护
+  guarantees:
+    - id: g1
+      statement: SPSC 语义下 g_head 仅消费者写、g_tail 仅生产者写，无并发写同一变量，无需加锁
+  assumptions:
+    - id: a1
+      statement: 生产者和消费者各为单一线程
+  exemptions:
+    - scenario: cwe-362
+      file: src/spsc.c
+      anchor: "*out = g_q[g_head];"
+      because: 见 g1——SPSC 下无竞争，非 cwe-362
