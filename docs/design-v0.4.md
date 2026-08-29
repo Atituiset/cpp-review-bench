@@ -14,8 +14,8 @@
 - 场景来源：`agent-reviewer/docs/design/high-fp-scenarios.md`（C/C++/混合编程/IPC 四篇 70 条误报地图）
 - 评测协议与 golden 规范：参考《C/C++ Code Review 评测集建设：深度调研报告》（OCR 仓 `papers/cpp-review-benchmark-research.md`）——golden comment schema（CWE tag / severity / 语句级锚点 / function / rationale）、两层匹配协议（规则匹配 + 轻量 judge）、per-CWE 分层报表、防泄漏切分、hard case 子集、标注审计（每类抽检复核）。本文将其「真缺陷 PR 轨」作为 Defect Track 的二期来源，一期用合成 TP 先行
 - 真实缺陷采集管线：参考 `vul-auto-private/gen-auto`——多静态分析器（Infer / Clang SA / CppCheck）扫描开源仓 → SARIF 归一化（`parse_sarif.py` / `materialize.py`）→ 多工具投票共识（`vote.py`）→ 人审入 golden。该管线是 Defect Track 真实 TP 的低成本来源（见 §5.3）
-- 对标：[Martian Code Review Bench](https://codereview.withmartian.com/)（50 PR，社区新兴的 AI 评审工具榜）——v1.1 起输出 Martian 兼容报告，目标进入该榜（见 §7.4）；同时吸取其第三方复测暴露的四条教训（版本一致性 / 子集漂移 / 标注口径 / recall 粒度），对应设计见 §4.2
-- 差异化（对社区的话术）：现有 C/C++ 漏洞检测集（PrimeVul/DiverseVul/CASTLE 等）全部是**函数级、二分类、只测检测**；Martian 是 PR 级但仍只测检测；本仓是**PR/场景级、双轨、含契约语义**——第一次把「上游判空/分发表/IPC 所有权/启动期初始化」这类电信/嵌入式契约形态做成可机器判定的标准用例
+- 对标：[Martian Code Review Bench](https://codereview.withmartian.com/)（50 PR，社区新兴的 AI 评审工具榜）——v1.1 起输出 Martian 兼容报告，便于与既有 PR 级评测交叉对照；同时吸取其第三方复测暴露的四条教训（版本一致性 / 子集漂移 / 标注口径 / recall 粒度），对应设计见 §4.2
+- 差异化定位：现有 C/C++ 漏洞检测集（PrimeVul/DiverseVul/CASTLE 等）全部是**函数级、二分类、只测检测**；Martian 是 PR 级但仍只测检测；本仓是**PR/场景级、双轨、含契约语义**——第一次把「上游判空/分发表/IPC 所有权/启动期初始化」这类电信/嵌入式契约形态做成可机器判定的标准用例
 
 ## 1. 定位与原则
 
@@ -215,7 +215,6 @@ L2 语义判等（可选，轻量 judge）:
 ## 4.1 与 Martian Code Review Bench 的对齐
 
 - **报告兼容**：v1.1 起 eval.py 支持输出 Martian 形态报表（per-PR findings + precision/recall），Defect Track 的 R/C 级用例可与 Martian 的 50 PR 交叉对照
-- **入榜路径**：以「Martian-compatible detection track + first-of-kind contract track」叙事提交——先自测自证，再争取收录或并列引用
 - **从 OCR 第三方复测学到的四条**（`open-code-review/docs/src/appendix/benchmark.md`）：① 评测版本必须钉死并在报告中注明；② 子集/全量分开报告，不混用；③ ground-truth 判定口径必须显式文档化（本仓 §3.3 判定语义 + 口径审计记录公开）；④ recall 粒度（逐条 finding vs 逐 PR）在报表中显式标注
 
 ## 5.4 自动入库管线（cpp-review-harvest）
@@ -264,24 +263,13 @@ workflow 内部：checkout 本仓（pinned ref）→ AllCases 构建 + compdb �
 - 双人复核制：任何 golden 变更需第二名复核者签字（借鉴 research.md 双人共识协议）
 - 用例状态机：`draft → reviewed → active → retired`（与契约库的 quarantine 治理同构）
 
-## 7.4 曝光与公信力工程
+### 7.4 公信力约定（工程治理，非对外动作）
 
-**公信力先于曝光**（OCR 在 HN 被复测的教训：主动提供可复现性，才扛得住第三方复测）：
+基准的公信力来自可复现与口径公开，与任何对外曝光动作无关：
 
 1. **可复现**：`README` 一条命令完成「构建 → 评分 → 出报表」；评测环境（编译器版本、judge 模型版本）钉死并记录
-2. **口径公开**：判定语义（§3.3）、golden 评审记录、标注审计报告全部随仓公开——「标注主观性」是社区对 review benchmark 的第一质疑点，用公开对冲
+2. **口径公开**：判定语义（§3.3）、golden 评审记录、标注审计报告全部随仓公开——「标注主观性」是 review benchmark 的第一质疑点，用公开对冲
 3. **欢迎复测**：reports/ 接受第三方复测 PR；基准数字一律标注「自测口径」，不做绝对质量承诺
-
-**曝光路线（按可信度积累排序）**：
-
-| 阶段 | 动作 | 目标 |
-|---|---|---|
-| v1 建成 | 在 [Martian 榜](https://codereview.withmartian.com/) 社区提出对照/收录；输出兼容报表 | 进入社区视野 |
-| v1.1（R 级数据） | 技术博客：双轨设计与「契约场景」方法论（契合照搬四篇误报地图的叙事） | 方法论传播 |
-| v1.1 | 在 open-code-review（Alibaba OCR）Discussions 交流 benchmark 对照（其仓有 benchmark 外部核查文化）；向其他 AI 评审工具（CodeRabbit 类）社区提供复测 harness | 工具方对照 |
-| v2（C 级数据） | 向更大社区（Meta CQS 相关工作、SWE-bench 社区）投稿；正式争取进入 Martian 榜 | 社区认可 |
-
-「进入 Martian 榜」作为社区认可的**外部锚点**：在那之前，内部质量锚点是 §7.1 的建成线与标注审计。
 
 ## 8. 演进路线
 

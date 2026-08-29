@@ -65,4 +65,4 @@
 
 - `docs/design-v0.4.md` 已定稿（用户审过）；实现尚未开始（cases/ 为空）
 - 12 个场景种子分支在 AetherStack 等用户检查（与本仓 S 级用例有重叠，移植时对齐）
-- benchmark 先行、harvest 后行；社区目标：Martian Code Review Bench 入榜（先输出兼容报表）
+- benchmark 先行、harvest 后行；格式上输出 Martian 兼容报表（便于与既有 PR 级评测交叉对照）

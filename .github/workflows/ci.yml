@@ -1,0 +1,50 @@
+name: bench-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 clang-21 全套（含 clang-extdef-mapping，供原生 CTU）
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/llvm.asc
+          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-21 main" \
+            | sudo tee /etc/apt/sources.list.d/llvm21.list
+          sudo apt-get update -q
+          sudo apt-get install -y clang-21 clang-tools-21
+          # 让脚本默认找到 clang-21 / clang-extdef-mapping-21
+          echo "CLANG_BIN=clang-21" >> "$GITHUB_ENV"
+          echo "EXTDEF_BIN=clang-extdef-mapping-21" >> "$GITHUB_ENV"
+          clang-21 --version | head -1
+
+      - name: 全量编译 + 统一 compile_commands.json
+        run: |
+          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
+          python3 -c "import json;print('compdb entries:', len(json.load(open('build/compile_commands.json'))))"
+
+      - name: 用例自检（schema + anchor 真实存在）
+        run: python3 tools/check_cases.py
+
+      - name: 评测器自检（构造 findings 1FP+1FN+1契约违反）
+        run: python3 tools/eval.py selftest
+
+      - name: CSA 单 TU 默认配置
+        run: ./consumers/local/run_csa.sh singletu /tmp/csa_singletu
+
+      - name: CSA 原生 CTU（跨文件分析）
+        run: ./consumers/local/run_csa.sh ctu /tmp/csa_ctu
+
+      - name: 汇总两类 findings 上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: csa-findings
+          path: |
+            /tmp/csa_singletu/*.json
+            /tmp/csa_ctu/*.json

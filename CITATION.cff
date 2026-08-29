@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: cpp-review-bench
+message: >-
+  A dual-track benchmark for C/C++ code review: measure both what your
+  reviewer catches (defect track) and what it wrongly flags (contract track).
+type: software
+authors:
+  - name: cpp-review-bench contributors
+repository-code: 'https://github.com/Atituiset/cpp-review-bench'
+license: Apache-2.0
+keywords:
+  - code review
+  - benchmark
+  - static analysis
+  - C
+  - C++
+  - contract-aware
+  - false-positive
+  - defect-detection
