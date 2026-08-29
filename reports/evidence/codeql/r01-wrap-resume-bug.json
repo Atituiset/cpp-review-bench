@@ -1,0 +1,20 @@
+{
+  "tool": "codeql",
+  "tool_version": "unknown",
+  "case_id": "r01-wrap-resume-bug",
+  "track": "defect",
+  "generated_by": "sarif_to_findings.py",
+  "findings": [
+    {
+      "tool": "codeql",
+      "tool_version": "unknown",
+      "scenario": "cpp/constant-comparison",
+      "severity": "warning",
+      "file": "cases/defect/r01-wrap-resume-bug/src/rlc.c",
+      "line": 34,
+      "column": 9,
+      "message": "Comparison is always true because sn <= 255.",
+      "check": "cpp/constant-comparison"
+    }
+  ]
+}

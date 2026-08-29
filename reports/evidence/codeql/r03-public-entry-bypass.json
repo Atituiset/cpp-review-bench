@@ -1,0 +1,20 @@
+{
+  "tool": "codeql",
+  "tool_version": "unknown",
+  "case_id": "r03-public-entry-bypass",
+  "track": "defect",
+  "generated_by": "sarif_to_findings.py",
+  "findings": [
+    {
+      "tool": "codeql",
+      "tool_version": "unknown",
+      "scenario": "cpp/unused-static-variable",
+      "severity": "warning",
+      "file": "cases/defect/r03-public-entry-bypass/src/entry.c",
+      "line": 7,
+      "column": 13,
+      "message": "Static variable g_shared is never read.",
+      "check": "cpp/unused-static-variable"
+    }
+  ]
+}
