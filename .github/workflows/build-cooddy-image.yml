@@ -33,3 +33,5 @@ jobs:
           context: ./docker/cooddy
           push: true
           tags: ghcr.io/atituiset/cooddy:${{ inputs.tag }}
+          # 禁用层缓存强制重建：避免复用早期失败的 RUN 层（cooddy make 层曾 exit 2 被缓存）
+          no-cache: true
