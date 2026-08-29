@@ -51,9 +51,11 @@ jobs:
         run: chmod +x consumers/local/run_cppcheck.sh && ./consumers/local/run_cppcheck.sh /tmp/cppcheck
 
       - name: clang-tidy（编译期检查，clang-21 自带，第三个对照工具）
+        env:
+          CLANG_TIDY_BIN: clang-tidy-21
         run: |
-          CLANG_TIDY_BIN=clang-tidy-21 chmod +x consumers/local/run_clang_tidy.sh \
-            && ./consumers/local/run_clang_tidy.sh
+          chmod +x consumers/local/run_clang_tidy.sh
+          ./consumers/local/run_clang_tidy.sh
           mkdir -p /tmp/clang-tidy && cp reports/evidence/clang-tidy/*.json /tmp/clang-tidy/ 2>/dev/null || true
 
       - name: 汇总全部工具 findings 上传 artifact
