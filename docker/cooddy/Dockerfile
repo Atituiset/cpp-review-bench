@@ -10,17 +10,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # cooddy 要求 cmake >= 3.25，Ubuntu 22.04 自带 3.22 不足，用 pip 升到 3.25+
     && pip3 install --no-cache-dir --upgrade 'cmake>=3.25'
 
-# z3：cooddy 官方要求 4.8.9（系统 4.8.12 链接期 -lz3 异常），源码 build 到 /usr/local
-# 产出标准 /usr/local/lib/libz3.so，链接器默认搜索路径可达
+# z3：cooddy 官方要求 4.8.9 且需源码 build（Z3_BUILD_LIBZ3_SHARED），
+# 产生 /usr/local/lib/cmake/z3/Z3Config.cmake，让 coooddy 的 find_package(Z3) 正确链接 -lz3
+# （预编译二进制缺 cmake config，导致裸 -lz3 链接失败）
 RUN cd /opt \
-    && wget -q https://github.com/Z3Prover/z3/releases/download/z3-4.8.9/z3-4.8.9-x64-ubuntu-16.04.zip -O z3.zip \
-    && unzip -o z3.zip -d z3_extract >/dev/null \
-    && Z3DIR=$(find /opt/z3_extract -maxdepth 1 -type d -name 'z3-4.8.9-*' | head -1) \
-    && cp -r "$Z3DIR/bin/libz3.so" /usr/local/lib/ \
-    && cp -r "$Z3DIR/include/"* /usr/local/include/ 2>/dev/null || true \
-    && cp -r "$Z3DIR/lib/"* /usr/local/lib/ 2>/dev/null || true \
+    && wget -q https://github.com/Z3Prover/z3/archive/refs/tags/z3-4.8.9.zip -O z3.zip \
+    && unzip -o z3.zip >/dev/null \
+    && cd z3-z3-4.8.9 \
+    && mkdir -p build && cd build \
+    && cmake -DZ3_BUILD_LIBZ3_SHARED=TRUE -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release .. \
+    && make -j "$(nproc)" \
+    && make install \
     && ldconfig \
-    && echo "z3 lib:" && ls -l /usr/local/lib/libz3.so
+    && echo "z3 config:" && ls /usr/local/lib/cmake/z3/ 2>/dev/null && ls -l /usr/local/lib/libz3.so*
 
 ENV Z3_HOME=/usr/local
 ENV LLVM_CMAKE=/usr/lib/llvm-14/lib/cmake
