@@ -16,8 +16,11 @@ ENV Z3_HOME=/usr
 ENV LLVM_CMAKE=/usr/lib/llvm-14/lib/cmake
 
 # Ubuntu 的 libz3-dev 只提供版本化 soname (libz3.so.4)，coooddy 链接要 -lz3
-# 需补一个 libz3.so 符号链接
-RUN ln -sf /usr/lib/x86_64-linux-gnu/libz3.so.4 /usr/lib/x86_64-linux-gnu/libz3.so || true
+# 动态定位并补 libz3.so 符号链接
+RUN Z3LIB=$(find /usr/lib -name 'libz3.so*' 2>/dev/null | head -1) \
+    && echo "found z3 lib: $Z3LIB" \
+    && ln -sf "$Z3LIB" "$(dirname "$Z3LIB")/libz3.so" \
+    && ls -l "$(dirname "$Z3LIB")/libz3.so"
 
 RUN git clone --depth 1 https://github.com/program-analysis-team/cooddy.git /opt/cooddy \
     && cd /opt/cooddy \
