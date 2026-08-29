@@ -1,0 +1,22 @@
+# 错误码集中处理契约（centralized_error_handling）
+#
+# 模块约定：管线各 stage 返回 int 错误码（0 成功，<0 失败），调度层
+# run_pipeline 统一以最后一次调用结果 last 上报，中间 stage 调用不逐个判
+# 返回值。错误处理的「唯一出口」是 run_pipeline 的 return last。
+contract:
+  name: centralized_error_handling
+  summary: 错误码集中上报，中间 stage 调用不逐个判返回值
+  guarantees:
+    - id: g1
+      statement: run_pipeline 以 last（最后一次 stage 返回值）作为唯一错误出口，中间 stage_auth/stage_decrypt/stage_encode 调用不判返回值属约定行为
+      established_at:
+        file: src/dispatch.c
+        anchor: "last = stage_auth(c);"
+  assumptions:
+    - id: a1
+      statement: stage_* 仅由 run_pipeline 调度，错误经 last 上报至业务层，调用方据此处理
+  exemptions:
+    - scenario: cwe-252
+      file: src/dispatch.c
+      anchor: "last = stage_auth(c);"
+      because: 见 g1/a1——不判返回值是集中错误出口契约的一部分，非未处理错误

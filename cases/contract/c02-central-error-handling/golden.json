@@ -1,0 +1,36 @@
+{
+  "id": "c02-central-error-handling",
+  "track": "contract",
+  "title": "错误码上层集中处理，本层不查返回值",
+  "version": 2,
+  "languages": ["c"],
+  "tags": ["error-handling", "return-value", "centralized"],
+  "expected": {
+    "must_not_find": [
+      {
+        "scenario": "cwe-252",
+        "note": "run_pipeline 对 stage_auth/stage_decrypt/stage_encode 的返回值不逐个判，是集中错误出口契约（last 统一上报），非未处理错误",
+        "file": "src/dispatch.c",
+        "anchor": "last = stage_auth(c);",
+        "function": "run_pipeline"
+      }
+    ],
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "severity": "important",
+        "file": "src/dispatch.c",
+        "anchor": "for (int i = 0; i <= c->n; ++i)",
+        "function": "stage_encode",
+        "line_tolerance": 3,
+        "rationale": "stage_encode 循环条件 i<=c->n 越界写 1 字节（应 i<c->n）；c->buf 按 c->n 分配时该循环写入下标 n 越界，且 c->n 无上限校验，调用方按回绕/越界值分配则越界写"
+      }
+    ]
+  },
+  "context": {
+    "contract": "centralized_error_handling",
+    "callchain_hint": "run_pipeline 统一调度 stage_auth→stage_decrypt→stage_encode，错误经 last 返回"
+  },
+  "difficulty": "medium",
+  "split": "dev"
+}

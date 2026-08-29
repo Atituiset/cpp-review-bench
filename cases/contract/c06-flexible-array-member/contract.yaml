@@ -1,0 +1,22 @@
+# 变长结构体分配访问契约（fam_safe_alloc）
+#
+# 模块约定：Msg 用柔性数组成员 data[]，分配时 malloc(sizeof(Msg) + len) 已含
+# data 区；访问 data[i] 必须 i < m->len。带守卫的访问器（msg_fill）属契约安全，
+# 不应报越界。
+contract:
+  name: fam_safe_alloc
+  summary: FAM 按 len 分配含 data 区，访问带 i<len 守卫即安全
+  guarantees:
+    - id: g1
+      statement: msg_new 分配 sizeof(Msg)+len 字节，data 区完整落于缓冲内；msg_fill 的 i<m->len 守卫保证读取不越界
+      established_at:
+        file: src/msg.c
+        anchor: "for (uint16_t i = 0; i < n && i < m->len; ++i)"
+  assumptions:
+    - id: a1
+      statement: msg_fill 的 n 由调用方保证 <= m->len（分配契约），或循环内 i<m->len 已兜底
+  exemptions:
+    - scenario: cwe-125
+      file: src/msg.c
+      anchor: "m->data[i] = src[i];"
+      because: 见 g1/a1——data 区已随 Msg 分配，且 i<m->len 守卫，读取恒在界内
