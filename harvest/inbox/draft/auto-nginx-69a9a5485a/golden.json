@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_mail_auth_http_module.c",
+      "anchor": "if (s->auth_method != NGX_MAIL_AUTH_PLAIN && s->salt.len) {",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #842 smtp module fixes :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

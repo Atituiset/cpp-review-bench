@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_event_openssl.c",
+      "anchor": "#if (OPENSSL_VERSION_NUMBER >= 0x3000001fL)",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #775 OPENSSL_VERSION_NUMBER fix for OpenSSL 3.0 :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
