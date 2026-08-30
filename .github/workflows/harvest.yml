@@ -10,8 +10,16 @@ on:
         default: all
       repo:
         type: choice
-        options: [all, curl, sqlite, redis, aetherstack]
+        options: [all, curl, sqlite, redis, nginx, libuv, openssl, vim, postgres, leveldb, ninja, aetherstack]
         default: all
+      since:
+        type: string
+        description: "历史批扫起点（YYYY-MM-DD）；留空=增量（昨天起）"
+        default: ""
+      max_prs:
+        type: string
+        description: "每仓每轮 PR 上限；历史批扫可调大（如 300）"
+        default: "50"
 
 permissions:
   contents: write
@@ -42,9 +50,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # 增量默认=昨天；历史批扫用 dispatch --since 覆盖
+          SINCE="${{ github.event.inputs.since }}"
+          [ -z "$SINCE" ] && SINCE="$(date -d yesterday +%Y-%m-%d)"
+          MAXPRS="${{ github.event.inputs.max_prs }}"
+          [ -z "$MAXPRS" ] && MAXPRS="50"
           python3 harvest/tools/pr_mine.py \
             --config harvest/config/repos.yaml \
             --repo-name "${{ matrix.repo }}" \
+            --since "$SINCE" \
+            --max-prs "$MAXPRS" \
             --out /tmp/pr-findings-${{ matrix.repo }} 2>&1 | tail -5
 
       - name: 上传 artifact（pr-mining）

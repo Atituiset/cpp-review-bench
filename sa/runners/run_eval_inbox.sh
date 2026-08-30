@@ -19,24 +19,20 @@ INBOX="${2:?}"
 OUT="${3:?}"
 mkdir -p "$OUT"
 
-csa_hit() {  # $1=src 文件；stdout: 命中的 checker 名列表（去重）
-  local f="$1"
-  local plist; plist="$(mktemp --suffix=.plist)"
+csa_hit() {
+  local f="$1" plist
+  plist="$(mktemp --suffix=.plist)"
   clang --analyze -Xanalyzer -analyzer-output=plist "$f" -o "$plist" >/dev/null 2>&1 || true
   if [ -f "$plist" ]; then
-    # 从 plist 提 description（含 checker 族）
     grep -aoE 'core\.[A-Za-z]+|cplusplus\.[A-Za-z]+|alpha\.[A-Za-z.]+' "$plist" 2>/dev/null | sort -u
   fi
   rm -f "$plist"
 }
 cppcheck_hit() {
-  local f="$1"
-  cppcheck --enable=warning,style,performance,portability --xml --xml-version=2 "$f" 2>/dev/null \
+  cppcheck --enable=warning,style,performance,portability --xml --xml-version=2 "$1" 2>/dev/null \
     | grep -aoE '<error id="[^"]+"' | sed -E 's/<error id="//; s/"//' | sort -u
 }
-
 verdict() {
-  # $1=csa_hits(空格分隔) $2=cppcheck_hits $3=scenario
   local csa="$1" cpp="$2" scen="$3"
   if echo "$csa" | grep -qi "${scen#cwe-}"; then echo "detected-by-csa"; return; fi
   if echo "$cpp" | grep -qi "${scen#cwe-}"; then echo "detected-by-cppcheck"; return; fi
@@ -45,11 +41,12 @@ verdict() {
 }
 
 echo "=== 评测 inbox 候选（轻量单文件 SA）==="
+rows_jsonl="$OUT/_rows.jsonl"
+: > "$rows_jsonl"
 find "$INBOX/draft" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | while read -r casedir; do
   cid="$(basename "$casedir")"
-  # 读 golden 草稿的 scenario
-  scen="$(python3 -c "import json,sys; g=json.load(open('$casedir/golden.json')); print(g['must_find'][0]['scenario'])" 2>/dev/null || echo unknown)"
-  srcf="$(find "$casedir/src" -name '*.c' -o -name '*.cpp' -o -name '*.cc' 2>/dev/null | head -1)"
+  scen="$(python3 -c "import json; g=json.load(open('$casedir/golden.json')); print(g['must_find'][0]['scenario'])" 2>/dev/null || echo unknown)"
+  srcf="$(find "$casedir/src" \( -name '*.c' -o -name '*.cpp' -o -name '*.cc' \) 2>/dev/null | head -1)"
   csa="" cpp=""
   if [ -n "$srcf" ]; then
     csa="$(csa_hit "$srcf" | tr '\n' ' ')"
@@ -57,37 +54,39 @@ find "$INBOX/draft" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | while read -r 
   fi
   v="$(verdict "$csa" "$cpp" "$scen")"
   echo "  $cid: scenario=$scen -> $v"
-  # 累积 json
-  python3 - "$cid" "$scen" "$v" "$csa" "$cpp" <<'PY' >> "$OUT/_rows.jsonl"
-import json,sys
-cid,scen,v,csa,cpp=sys.argv[1:6]
-row={"case_id":cid,"scenario":scen,"csa_hits":csa.strip().split(),"cppcheck_hits":cpp.strip().split(),"verdict":v}
-print(json.dumps(row,ensure_ascii=False))
+  python3 - "$cid" "$scen" "$v" "$csa" "$cpp" "$rows_jsonl" <<'PY'
+import json, sys
+cid, scen, v, csa, cpp, path = sys.argv[1:7]
+row = {"case_id": cid, "scenario": scen,
+       "csa_hits": csa.strip().split(), "cppcheck_hits": cpp.strip().split(), "verdict": v}
+with open(path, "a") as f:
+    f.write(json.dumps(row, ensure_ascii=False) + "\n")
 PY
 done
 
-# 汇总 json + md
-python3 - <<'PY'
-import json,collections
-rows=[json.loads(l) for l in open("/tmp/_rows.jsonl")] if False else []
-# 上面 while 子 shell 的 _rows.jsonl 在 $OUT
-import os
-p="$OUT/_rows.jsonl"
-rows=[]
+python3 - "$OUT" <<'PY'
+import json, collections, os
+out = sys.argv[1]
+rows = []
+p = os.path.join(out, "_rows.jsonl")
 if os.path.exists(p):
-    rows=[json.loads(l) for l in open(p)]
-vc=collections.Counter(r["verdict"] for r in rows)
-summary={"total":len(rows),"verdicts":dict(vc)}
-with open("$OUT/eval_inbox_report.json","w") as f:
-    json.dump({"summary":summary,"cases":rows},f,indent=2,ensure_ascii=False)
-with open("$OUT/eval_inbox_report.md","w") as f:
+    with open(p) as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+vc = collections.Counter(r["verdict"] for r in rows)
+summary = {"total": len(rows), "verdicts": dict(vc)}
+with open(os.path.join(out, "eval_inbox_report.json"), "w") as f:
+    json.dump({"summary": summary, "cases": rows}, f, indent=2, ensure_ascii=False)
+with open(os.path.join(out, "eval_inbox_report.md"), "w") as f:
     f.write(f"# inbox 候选 SA 评测报表（{len(rows)} 条）\n\n")
     f.write("| 候选 | scenario | CSA | CppCheck | 结论 |\n|---|---|---|---|---|\n")
     for r in rows:
         f.write(f"| {r['case_id']} | {r['scenario']} | {';'.join(r['csa_hits']) or '-'} | {';'.join(r['cppcheck_hits']) or '-'} | {r['verdict']} |\n")
-    f.write(f"\n**汇总**：{json.dumps(summary['verdicts'],ensure_ascii=False)}\n")
+    f.write(f"\n**汇总**：{json.dumps(summary['verdicts'], ensure_ascii=False)}\n")
     f.write("\n> 说明：轻量单文件 SA（clang --analyze + cppcheck）仅评估片段自身能否被标出；")
     f.write("确认进 cases/ 后走完整 9 工具（仓根 ci.yml）。\n")
-print("报表 →", "$OUT/eval_inbox_report.md")
+print("报表 →", os.path.join(out, "eval_inbox_report.md"))
 PY
-rm -f "$OUT/_rows.jsonl"
+rm -f "$rows_jsonl"

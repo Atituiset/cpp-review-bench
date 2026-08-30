@@ -4,43 +4,87 @@
 repos:
   - name: curl
     url: https://github.com/curl/curl
-    ref: curl-8_9_1      # 钉到 tag/commit
+    ref: curl-8_9_1
     build: make-compiledb
-    scope:
-      include: ["lib/", "src/"]
-      exclude: ["tests/", "docs/"]
+    scope: { include: ["lib/", "src/"], exclude: ["tests/", "docs/"] }
     languages: [c]
   - name: sqlite
     url: https://github.com/sqlite/sqlite
     ref: version-3.46.1
     build: make-compiledb
-    scope:
-      include: ["src/"]
-      exclude: ["test/", "tool/"]
+    scope: { include: ["src/"], exclude: ["test/", "tool/"] }
     languages: [c]
   - name: redis
     url: https://github.com/redis/redis
     ref: 7.4.0
     build: make-compiledb
-    scope:
-      include: ["src/"]
-      exclude: ["tests/", "deps/"]
+    scope: { include: ["src/"], exclude: ["tests/", "deps/"] }
     languages: [c]
+  - name: nginx
+    url: https://github.com/nginx/nginx
+    ref: release-1.27.1
+    build: make-compiledb
+    scope: { include: ["src/"], exclude: ["tests/"] }
+    languages: [c]
+  - name: libuv
+    url: https://github.com/libuv/libuv
+    ref: v1.48.0
+    build: make-compiledb
+    scope: { include: ["src/"], exclude: ["test/"] }
+    languages: [c]
+  - name: openssl
+    url: https://github.com/openssl/openssl
+    ref: openssl-3.3.1
+    build: make-compiledb
+    scope: { include: ["crypto/", "ssl/", "apps/"], exclude: ["test/", "doc/"] }
+    languages: [c]
+  - name: vim
+    url: https://github.com/vim/vim
+    ref: v9.1.0000
+    build: make-compiledb
+    scope: { include: ["src/"], exclude: ["testdir/"] }
+    languages: [c]
+  - name: postgres
+    url: https://github.com/postgres/postgres
+    ref: REL_16_3
+    build: make-compiledb
+    scope: { include: ["src/backend/", "src/bin/"], exclude: ["src/test/", "contrib/"] }
+    languages: [c]
+  - name: leveldb
+    url: https://github.com/google/leveldb
+    ref: 1.23
+    build: cmake
+    scope: { include: ["db/", "include/"], exclude: ["tests/"] }
+    languages: [c, cpp]
+  - name: ninja
+    url: https://github.com/ninja-build/ninja
+    ref: v1.12.1
+    build: cmake
+    scope: { include: ["src/"], exclude: ["misc/"] }
+    languages: [c, cpp]
   - name: aetherstack
     url: https://github.com/<org>/aetherstack   # smoke：占位，实际地址人审填
     ref: main
     build: cmake
-    scope:
-      include: ["src/"]
-      exclude: ["test/"]
+    scope: { include: ["src/"], exclude: ["test/"] }
     languages: [c, cpp]
 
-# pr-mining 采集源专用：爬哪些仓的 PR（可用 GitHub search 语法）
+# pr-mining 采集源专用：爬哪些仓的 PR（GitHub search 语法）
+# 默认 query 用 fix in:title（C/C++ 仓普遍以 fix: 前缀标记修复 PR，精度高）；
+# 去掉 label:bug（多数仓不给 merged PR 打 bug 标签，导致 0 候选）。
+# 单查询 OR 算子 ≤5（GitHub search 限制）；需要更多词时拆多个 targets 或用 since 分片。
 pr_mining:
   targets:
     - repo: curl/curl
     - repo: sqlite/sqlite
     - repo: redis/redis
-  query: "is:pr is:merged label:bug"   # 或评论含 bug 关键词，见 pr_mine.py
-  max_prs_per_run: 50
-  since: "2024-01-01"
+    - repo: nginx/nginx
+    - repo: libuv/libuv
+    - repo: openssl/openssl
+    - repo: vim/vim
+    - repo: postgres/postgres
+    - repo: google/leveldb
+    - repo: ninja-build/ninja
+  query: "fix in:title"          # 高精度的修复类 merged PR
+  max_prs_per_run: 50            # 每仓每轮上限（历史批扫可 dispatch 覆盖调大）
+  since: "2024-01-01"            # 历史批扫起点；日常增量由 harvest.yml 动态覆盖为「昨天」
