@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/t_stream.c",
+      "anchor": "size_t streamReplyWithRangeFromConsumerPEL(client *c, stream *s, streamID *start, streamID *end, size_t count, streamCG *group, streamConsumer *consumer);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #15282 Add MAXCOUNT and MAXSIZE options to XREAD and XREADGROUP :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_upstream_ip_hash_module.c",
+      "anchor": "if (iphp->tries > 20 || iphp->rrp.peers->single) {",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #208 Upstream: re-resolvable servers :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

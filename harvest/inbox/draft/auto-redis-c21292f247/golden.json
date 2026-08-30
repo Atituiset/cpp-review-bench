@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/debug.c",
+      "anchor": "double dtime = fast_float_strtod(c->argv[2]->ptr,NULL);",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #14661 Replace fast_float C++ library with pure C implementation :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

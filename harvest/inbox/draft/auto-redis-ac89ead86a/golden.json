@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/sds.c",
+      "anchor": "test_cond(\"sdsresize() expand alloc\", sdsalloc(x) == 200);",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #14927 Fix sds unit test and improve unittest output formatting :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_quic_reuseport_helper.c",
+      "anchor": "struct bpf_map_def SEC(\"maps\") ngx_quic_sockmap;",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #215 QUIC: fixed bpf compilation with newer Linux kernels. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

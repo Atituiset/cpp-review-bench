@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_event_quic_ack.c",
+      "anchor": "&& ctx->largest_ack - start->pnum < NGX_QUIC_PKT_THR)",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #443 CUBIC congestion control in QUIC :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

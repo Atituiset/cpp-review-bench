@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ae.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #15391 Fix NULL deref in usUntilEarliestTimer when all time events are deleted :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

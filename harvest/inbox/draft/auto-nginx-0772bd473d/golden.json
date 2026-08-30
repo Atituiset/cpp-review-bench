@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_event_quic.c",
+      "anchor": "ngx_quic_discard_ctx(c, ssl_encryption_early_data);",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #353 QUIC: fixed client request timeout in 0-RTT scenarios. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

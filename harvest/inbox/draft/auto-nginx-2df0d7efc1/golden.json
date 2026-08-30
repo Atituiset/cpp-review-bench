@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_stream_ssl_module.c",
+      "anchor": "NGX_STREAM_MAIN_CONF|NGX_STREAM_SRV_CONF|NGX_CONF_FLAG,",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #938 OCSP: fixed invalid type for the 'ssl_ocsp' directive. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/tls.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #14855 Fix X509 memory leak in connTLSGetPeerCert :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

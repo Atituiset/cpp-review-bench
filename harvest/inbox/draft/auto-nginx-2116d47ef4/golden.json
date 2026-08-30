@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_request.c",
+      "anchor": "sscf = ngx_http_get_module_srv_conf(hc->conf_ctx, ngx_http_ssl_module);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #493 SNI: added restriction for TLSv1.3 cross-SNI session resumption. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/rax.c",
+      "anchor": "if (value != NULL) *value = raxGetData(h);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #15252 Avoid double-walk on find-then-insert via raxFindLink + raxInsertAt :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

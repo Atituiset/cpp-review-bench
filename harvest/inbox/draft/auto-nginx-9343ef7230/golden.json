@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_event_quic.c",
+      "anchor": "qc->congestion.window = ngx_min(10 * qc->tp.max_udp_payload_size,",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #443 CUBIC congestion control in QUIC :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

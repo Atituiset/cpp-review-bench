@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_event_quic_output.c",
+      "anchor": "ngx_quic_send_ctx_t *ctx, u_char *data, size_t max, size_t min);",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #655 QUIC: fixed sending acknowledgments with limited congestion window. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

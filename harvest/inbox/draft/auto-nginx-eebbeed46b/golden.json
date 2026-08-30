@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_event_connect.c",
+      "anchor": "(const void *) &pc->rcvbuf, sizeof(int)) == -1)",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #1298 Stream and HTTP: rcvbuf and sndbuf directives for upstream sockets :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
