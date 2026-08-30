@@ -43,16 +43,18 @@ RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/z3.conf && ldconfig \
     && ls -l /usr/local/lib/libz3.so* /usr/lib/x86_64-linux-gnu/libz3.so* 2>&1 || true
 
 RUN git clone --depth 1 https://github.com/program-analysis-team/cooddy.git /opt/cooddy \
-    # 关键修复：在 cooddy 根 CMakeLists 顶部注入 link_directories，
-    # 让所有 target（含 Solver）的链接命令都带 -L 搜到 libz3.so（ld 直接调用也生效）
-    && sed -i '1i link_directories(/usr/lib/x86_64-linux-gnu /usr/local/lib)' /opt/cooddy/CMakeLists.txt \
-    && head -3 /opt/cooddy/CMakeLists.txt \
+    # 关键修复：在 cmake_minimum_required 之后注入 link_directories，
+    # 让所有 target（含 Solver）的链接命令带 -L 搜到 libz3.so；
+    # 同时强制 -fuse-ld=bfd（GNU ld 默认搜索 /usr/lib/x86_64-linux-gnu），
+    # 避免 clang/lld 不搜索 gcc 默认路径导致 -lz3 找不到
+    && sed -i '/cmake_minimum_required/a link_directories(/usr/lib/x86_64-linux-gnu /usr/local/lib)' /opt/cooddy/CMakeLists.txt \
+    && head -5 /opt/cooddy/CMakeLists.txt \
     && cd /opt/cooddy \
     && mkdir -p build && cd build \
     && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -DZ3_HOME=$Z3_HOME -DLLVM_CMAKE=$LLVM_CMAKE \
-        -DCMAKE_EXE_LINKER_FLAGS="-L/usr/local/lib -L/usr/lib/x86_64-linux-gnu" \
-        -DCMAKE_SHARED_LINKER_FLAGS="-L/usr/local/lib -L/usr/lib/x86_64-linux-gnu" .. \
+        -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=bfd -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu" \
+        -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=bfd -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu" .. \
     && make VERBOSE=1 -j "$(nproc)" \
     && echo "cooddy built:" && find /opt/cooddy/build -name cooddy -type f
 
