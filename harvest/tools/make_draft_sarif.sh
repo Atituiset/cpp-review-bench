@@ -57,12 +57,16 @@ print(mf.get('scenario','unknown'), mf.get('line',1) or 1, (mf.get('rationale','
   # 合成 findings.json（file 用 PR 内完整路径，line 用真实 bug 行）
   rel="${casedir#$REPO_ROOT/}"
   furi="$rel/src/$(basename "$srcf")"
-  python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$furi" "$anchorline" "$casedir" "$OUT/findings" <<'PY'
+  # 用环境变量传参，避免 sys.argv 个数不匹配
+  CID="$cid" SCEN="$scen" STATE="$state" CSA="$csa" CPP="$cpp" \
+  FURI="$furi" ANCHORLINE="$anchorline" CDIR="$casedir" FOUT="$OUT/findings" \
+  python3 <<'PY'
 import json, sys, os
-cid, scen, state, csa, cpp, furi, anchorline, cdir, fout = sys.argv[1:9]
+cid=os.environ['CID']; scen=os.environ['SCEN']; state=os.environ['STATE']
+csa=os.environ['CSA']; cpp=os.environ['CPP']; furi=os.environ['FURI']
+anchorline=os.environ['ANCHORLINE']; cdir=os.environ['CDIR']; fout=os.environ['FOUT']
 ev = {}
 nr = os.path.join(cdir, "notes.md")
-# 从 notes 反向取源 PR（pack_case 已写），避免重复解析
 import re as _re
 if os.path.isfile(nr):
     txt = open(nr, encoding="utf-8", errors="replace").read()
@@ -80,9 +84,13 @@ with open(os.path.join(fout, f"{cid}.json"), "w", encoding="utf-8") as f:
     json.dump(doc, f, ensure_ascii=False, indent=2)
 PY
   echo "  $cid: scenario=$scen line=$anchorline -> $state" >&2
-  python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$anchorline" "$casedir" "$rows_jsonl" <<'PY'
+  CID="$cid" SCEN="$scen" STATE="$state" CSA="$csa" CPP="$cpp" \
+  ANCHORLINE="$anchorline" CDIR="$casedir" ROWS="$rows_jsonl" \
+  python3 <<'PY'
 import json, sys, re as _re, os
-cid, scen, state, csa, cpp, anchorline, cdir, path = sys.argv[1:8]
+cid=os.environ['CID']; scen=os.environ['SCEN']; state=os.environ['STATE']
+csa=os.environ['CSA']; cpp=os.environ['CPP']; anchorline=os.environ['ANCHORLINE']
+cdir=os.environ['CDIR']; path=os.environ['ROWS']
 ev = {}
 nr = os.path.join(cdir, "notes.md")
 if os.path.isfile(nr):
@@ -90,11 +98,10 @@ if os.path.isfile(nr):
     m = _re.search(r"源 PR: #(\d+) \((https?://[^)]+)\)", txt)
     if m:
         ev = {"pr": int(m.group(1)), "pr_url": m.group(2)}
-row = {"case_id": cid, "scenario": scen, "state": state,
-       "csa": csa.strip(), "cppcheck": cpp.strip(), "anchorline": anchorline,
-       "pr": ev.get("pr"), "pr_url": ev.get("pr_url")}
 with open(path, "a") as f:
-    f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    f.write(json.dumps({"case_id": cid, "scenario": scen, "state": state,
+        "csa": csa.strip(), "cppcheck": cpp.strip(), "anchorline": anchorline,
+        "pr": ev.get("pr"), "pr_url": ev.get("pr_url")}, ensure_ascii=False) + "\n")
 PY
 done
 
