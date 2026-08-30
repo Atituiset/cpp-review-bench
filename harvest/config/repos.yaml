@@ -68,6 +68,12 @@ repos:
     build: cmake
     scope: { include: ["src/"], exclude: ["test/"] }
     languages: [c, cpp]
+  - name: linux
+    url: https://github.com/torvalds/linux
+    ref: v6.11
+    build: make-compiledb
+    scope: { include: ["kernel/", "mm/", "fs/", "net/", "ipc/", "security/"], exclude: ["tools/", "Documentation/", "arch/"] }
+    languages: [c]
 
 # pr-mining 采集源专用：爬哪些仓的 PR（GitHub search 语法）
 # 默认 query 用 fix in:title（C/C++ 仓普遍以 fix: 前缀标记修复 PR，精度高）；
@@ -85,6 +91,7 @@ pr_mining:
     - repo: postgres/postgres
     - repo: google/leveldb
     - repo: ninja-build/ninja
+    - repo: torvalds/linux
   query: "fix in:title"          # 高精度的修复类 merged PR
   max_prs_per_run: 50            # 每仓每轮上限（历史批扫可 dispatch 覆盖调大）
   since: "2024-01-01"            # 历史批扫起点；日常增量由 harvest.yml 动态覆盖为「昨天」

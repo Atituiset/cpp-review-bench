@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         source: [sa-scan, pr-mining]
-        repo: [curl, sqlite, redis, nginx, vim, postgres]
+        repo: [curl, sqlite, redis, nginx, vim, postgres, linux]
     steps:
       - uses: actions/checkout@v4
 
