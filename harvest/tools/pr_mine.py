@@ -236,25 +236,31 @@ def main():
             sys.exit(2)
         repos = [{"repo": entry["url"].split("github.com/")[-1]}]
         pm = cfg.get("pr_mining", {})
-        args.query = pm.get("query", args.query)
+        # 优先用 targets 里该仓的 per-repo query，否则全局 query
+        tgt = next((t for t in pm.get("targets", []) if t.get("repo") == entry["url"].split("github.com/")[-1]), {})
+        args.query = tgt.get("query", pm.get("query", args.query))
         args.max_prs = pm.get("max_prs_per_run", args.max_prs)
         args.since = pm.get("since", args.since)
     elif args.config:
         cfg = yaml_safe_load(args.config)
-        repos = [{"repo": t["repo"]} for t in cfg.get("pr_mining", {}).get("targets", [])]
         pm = cfg.get("pr_mining", {})
+        repos = []
+        for t in pm.get("targets", []):
+            repos.append({"repo": t["repo"], "query": t.get("query")})
         args.query = pm.get("query", args.query)
         args.max_prs = pm.get("max_prs_per_run", args.max_prs)
         args.since = pm.get("since", args.since)
     else:
+
         sys.stderr.write("ERROR: 需 --repo / --repo-name / --config\n")
         sys.exit(2)
 
     total = 0
     for entry in repos:
         repo = entry["repo"]
-        sys.stderr.write(f"[pr_mine] 爬 {repo} (query='{args.query}') ...\n")
-        prs = fetch_merged_prs(repo, args.query, args.max_prs, args.since)
+        q = entry.get("query") or args.query
+        sys.stderr.write(f"[pr_mine] 爬 {repo} (query='{q}') ...\n")
+        prs = fetch_merged_prs(repo, q, args.max_prs, args.since)
         sys.stderr.write(f"[pr_mine] {repo}: 命中 PR {len(prs)} 条\n")
         per_pr_count = {}
         seen = set()  # (pr_number, filename) 去重，避免同一文件多切片重复

@@ -76,22 +76,34 @@ repos:
     languages: [c]
 
 # pr-mining 采集源专用：爬哪些仓的 PR（GitHub search 语法）
-# 默认 query 用 fix in:title（C/C++ 仓普遍以 fix: 前缀标记修复 PR，精度高）；
-# 去掉 label:bug（多数仓不给 merged PR 打 bug 标签，导致 0 候选）。
-# 单查询 OR 算子 ≤5（GitHub search 限制）；需要更多词时拆多个 targets 或用 since 分片。
+# 默认 query 太窄（fix in:title 命中极少，curl 仅 3、sqlite/postgres/linux 0）。
+# 改为更宽的缺陷信号词；单查询 OR 算子 ≤5（GitHub 限制），按仓定制。
+#   - 通用 C/C++ 仓：标题含 fix/bug/leak/overflow/crash/null 之一
+#   - linux 内核：社区用 fixes:/子系统风格，用 fixes/bug/leak/overflow
 pr_mining:
   targets:
     - repo: curl/curl
+      query: "(fix OR bug OR leak OR overflow) in:title"
     - repo: sqlite/sqlite
+      query: "(fix OR bug OR leak OR overflow) in:title"
     - repo: redis/redis
+      query: "(fix OR bug OR leak OR overflow) in:title"
     - repo: nginx/nginx
+      query: "(fix OR bug OR leak OR crash) in:title"
     - repo: libuv/libuv
+      query: "(fix OR bug OR leak OR crash) in:title"
     - repo: openssl/openssl
+      query: "(fix OR bug OR leak OR overflow) in:title"
     - repo: vim/vim
+      query: "(fix OR bug OR leak OR crash) in:title"
     - repo: postgres/postgres
+      query: "(fix OR bug OR leak OR overflow) in:title"
     - repo: google/leveldb
+      query: "(fix OR bug OR leak OR overflow) in:title"
     - repo: ninja-build/ninja
+      query: "(fix OR bug OR leak OR crash) in:title"
     - repo: torvalds/linux
-  query: "fix in:title"          # 高精度的修复类 merged PR
+      query: "(fixes OR bug OR leak OR overflow) in:title"
+  query: "(fix OR bug OR leak OR overflow) in:title"   # 全局兜底（无 per-repo query 时用）
   max_prs_per_run: 50            # 每仓每轮上限（历史批扫可 dispatch 覆盖调大）
   since: "2024-01-01"            # 历史批扫起点；日常增量由 harvest.yml 动态覆盖为「昨天」
