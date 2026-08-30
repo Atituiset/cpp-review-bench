@@ -108,30 +108,104 @@ def slice_before(patch):
     return "\n".join(before).strip()
 
 
-# 轻量 scenario 启发式（占位，后续接 LLM judge 替换）
-SCENARIO_HINTS = [
-    (r"\bmemcpy\s*\(|\bstrcpy\b|\bstrncpy\b|\bmemmove\b", "cwe-787"),
-    (r"->\w+\s*\[|\barr\[|\bbuf\[|\b\[[a-z_]+\]\s*=", "cwe-787"),
-    (r"malloc|free|alloc|realloc|calloc", "cwe-415"),
-    (r"\*\s*\w+|->\w+\s*\(|\bdelete\b", "cwe-476"),
-    (r"sizeof\s*\(", "cwe-467"),
-    (r"int\s+\w+\s*=|unsigned\s+\w+\s*=", "cwe-190"),
+# 从修复 diff 反推真实 bug：锚点行（修复前的 - 行）+ scenario（由 + 行的修复动作推断）
+import re as _re
+
+
+def _parse_hunk_lines(patch):
+    """返回 [(linetype, text, old_line, new_line)]，linetype ∈ {-,+, }。"""
+    out = []
+    old_line = new_line = 0
+    in_hunk = False
+    for ln in (patch or "").splitlines():
+        m = _re.match(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@", ln)
+        if m:
+            old_line = int(m.group(1))
+            new_line = int(m.group(3))
+            in_hunk = True
+            continue
+        if not in_hunk:
+            continue
+        if ln.startswith("--- ") or ln.startswith("+++ "):
+            continue
+        if ln.startswith("-") and not ln.startswith("---"):
+            out.append(("-", ln[1:], old_line, None))
+            old_line += 1
+        elif ln.startswith("+") and not ln.startswith("+++"):
+            out.append(("+", ln[1:], None, new_line))
+            new_line += 1
+        else:
+            out.append((" ", ln[1:] if ln.startswith(" ") else ln, old_line, new_line))
+            old_line += 1
+            new_line += 1
+    return out
+
+
+# 修复动作 → scenario 推断（看 + 行做了什么防护）
+FIX_PATTERNS = [
+    (r"if\s*\([^)]*(==\s*NULL|!=\s*NULL|nullptr|!\s*\w+\s*\)|assert\s*\()",
+     "cwe-476", "修复前缺判空即解引用（加 null 检查）"),
+    (r"&&\s*\w+\s*->|&&\s*\w+\s*\[|&&\s*\(?\s*\w+\s*\)?\s*&&|\|\|\s*\w+\s*->",
+     "cwe-476", "修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）"),
+    (r"if\s*\([^)]*(<|<=|>|>=)\s*\w*(size|len|count|idx|index|nb|num)",
+     "cwe-787", "修复前越界访问（加边界/长度检查）"),
+    (r"if\s*\([^)]*(<|<=|>|>=)", "cwe-787", "修复前越界访问（加边界检查）"),
+    (r"free\s*\(\s*\w+\s*\)\s*(==\s*NULL|!=\s*NULL|nullptr)", "cwe-415",
+     "修复前释放后未置空（释放守卫/双重释放）"),
+    (r"free\s*\(", "cwe-415", "修复前释放/双重释放（加释放守卫）"),
+    (r"memcpy|strncpy|memmove|snprintf", "cwe-787", "修复前缓冲区溢出（加长度约束）"),
+    (r"->\w+\s*\(|\*\w+\s*\(", "cwe-476", "修复前解引用（疑似缺判空）"),
 ]
 
 
 def judge_bug(patch, title):
-    """占位 judge：返回 (is_bug, scenario, severity, rationale)。
+    """从修复 diff 反推候选：返回 (is_bug, scenario, severity, rationale, anchor, anchor_line)。
 
-    策略：fix-PR 且改了 C/C++ 即视为候选（is_bug=True），scenario 用关键词猜；
-    真实「是否真 bug」由 LLM/人审定（见 pack_case 的 notes 留痕）。
-    放宽原因：纯 label/关键词过滤会漏掉大量真实修复（如 curl 用 fix: 前缀而非 bug 标签）。
+    - anchor：修复前的 - 行里最可能是 bug 的那行（含解引用/越界/释放信号）
+    - scenario：由 + 行的修复动作推断（加判空→cwe-476，加边界→cwe-787，加释放守卫→cwe-415）
+    - anchor_line：该 - 行在切片中的真实行号（用于 SARIF 标注 + src 对齐）
+
+    真实「是否真 bug」仍由 LLM/人审定；此处给的是有依据的猜测，而非瞎猜。
     """
-    for pat, scen in SCENARIO_HINTS:
-        if re.search(pat, patch or ""):
-            return True, scen, "medium", f"启发式命中 {pat}"
-    if re.search(r"fix|leak|overflow|null|crash|memory|corrupt|oob|ubsan|asan", title or "", re.I):
-        return True, "cwe-787", "low", "标题含缺陷信号（fix/leak/overflow/...）"
-    return True, "cwe-787", "low", "merged fix-PR（默认候选，待 LLM/人审定真值）"
+    hunk = _parse_hunk_lines(patch)
+    minus = [h for h in hunk if h[0] == "-"]
+    plus = [h for h in hunk if h[0] == "+"]
+    plus_text = "\n".join(p[1] for p in plus)
+    # 1) 由 + 行修复动作推断 scenario
+    scenario = None
+    sev = "medium"
+    rationale = "merged fix-PR（默认候选，待 LLM/人审定真值）"
+    for pat, scen, why in FIX_PATTERNS:
+        if _re.search(pat, plus_text):
+            scenario = scen
+            rationale = f"PR 修复动作推断：{why}"
+            break
+    if not scenario:
+        # 退路：标题含缺陷信号
+        if _re.search(r"fix|leak|overflow|null|crash|memory|corrupt|oob|ubsan|asan", title or "", _re.I):
+            scenario, rationale = "cwe-476", "标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作"
+        else:
+            scenario, rationale = "cwe-787", "merged fix-PR（默认候选，待 LLM/人审定真值）"
+    # 2) 由 - 行找 bug 锚点：优先含解引用/越界/释放信号
+    anchor = None
+    anchor_line = None
+    for pat, _, _ in FIX_PATTERNS:
+        for ltype, text, old_line, _ in minus:
+            if _re.search(pat, text):
+                anchor = text.strip()
+                anchor_line = old_line
+                break
+        if anchor:
+            break
+    # 退路：第一条非空 - 代码行
+    if not anchor:
+        for ltype, text, old_line, _ in minus:
+            t = text.strip()
+            if t and not t.startswith(("{", "}", "#", "//", "/*", "*")):
+                anchor = t
+                anchor_line = old_line
+                break
+    return True, scenario, sev, rationale, anchor, anchor_line
 
 
 def main():
@@ -205,7 +279,7 @@ def main():
                 if dedup_key in seen:
                     continue
                 seen.add(dedup_key)
-                is_bug, scenario, severity, rationale = judge_bug(fobj["patch"], pr["title"])
+                is_bug, scenario, severity, rationale, anchor, anchor_line = judge_bug(fobj["patch"], pr["title"])
                 if not is_bug:
                     continue
                 h = hashlib.sha1(f"{repo}-{prn}-{fobj['filename']}".encode()).hexdigest()[:10]
@@ -216,7 +290,8 @@ def main():
                     "case_id": cid,
                     "file": fobj["filename"],
                     "function": None,
-                    "line": None,
+                    "line": anchor_line,
+                    "anchor": anchor,
                     "scenario": scenario,
                     "severity": severity,
                     "verified": False,
@@ -226,6 +301,7 @@ def main():
                         "pr": pr["number"],
                         "pr_url": pr["url"],
                         "before_slice": before[:2000],
+                        "anchor_line": anchor_line,
                     },
                     "raw": {"patch": fobj["patch"][:4000]},
                 }

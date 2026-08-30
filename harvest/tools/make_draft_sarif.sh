@@ -35,8 +35,14 @@ rows_jsonl="$OUT/_rows.jsonl"
 
 find "$INBOX/draft" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | while read -r casedir; do
   cid="$(basename "$casedir")"
-  # 读取 golden 猜测 scenario（harvest draft golden 形状：must_find[].scenario）
-  scen="$(python3 -c "import json;g=json.load(open('$casedir/golden.json'));print(g.get('must_find',[{}])[0].get('scenario','unknown'))" 2>/dev/null || echo unknown)"
+  # 读取 golden 猜测 scenario + 真实 bug 锚点（来自修复 diff 反推）
+  read scen anchorline rationale < <(python3 -c "
+import json
+g=json.load(open('$casedir/golden.json'))
+mf=g.get('must_find',[{}])[0]
+print(mf.get('scenario','unknown'), mf.get('line',1) or 1, (mf.get('rationale','') or '').replace(chr(10),' ')[:120])
+" 2>/dev/null)
+  [ -z "$scen" ] && scen=unknown
   srcf="$(find "$casedir/src" \( -name '*.c' -o -name '*.cpp' -o -name '*.cc' \) 2>/dev/null | head -1)"
   csa="" cpp=""
   if [ -n "$srcf" ]; then
@@ -48,13 +54,12 @@ find "$INBOX/draft" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | while read -r 
   elif echo "$cpp" | grep -qi "${scen#cwe-}"; then state="TP(CppCheck标出)"; sa="cppcheck";
   elif [ -n "$csa" ] || [ -n "$cpp" ]; then state="FN(标出其他)"; sa="other";
   else state="FN(静默)"; sa="none"; fi
-  # 候选在 PR 内的完整路径（SARIF 标注映射到 PR 新文件）
+  # 合成 findings.json（file 用 PR 内完整路径，line 用真实 bug 行）
   rel="${casedir#$REPO_ROOT/}"
   furi="$rel/src/$(basename "$srcf")"
-  # 合成 findings.json（file 用 PR 内完整路径，line 暂置 1，后续可由 anchor 提取改进）
-  python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$furi" "$casedir" "$OUT/findings" <<'PY'
+  python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$furi" "$anchorline" "$casedir" "$OUT/findings" <<'PY'
 import json, sys, os
-cid, scen, state, csa, cpp, furi, cdir, fout = sys.argv[1:9]
+cid, scen, state, csa, cpp, furi, anchorline, cdir, fout = sys.argv[1:9]
 rationale = ""
 nr = os.path.join(cdir, "notes.md")
 if os.path.isfile(nr):
@@ -62,19 +67,19 @@ if os.path.isfile(nr):
 doc = {"tool": "harvest-draft", "track": "defect", "case_id": cid,
        "findings": [{
            "scenario": scen, "severity": "warning",
-           "file": furi, "line": 1, "anchor": "",
+           "file": furi, "line": int(anchorline or 1), "anchor": "",
            "message": f"harvest 候选：猜测 {scen} | 轻量SA: {state}",
-           "reasoning": f"clang: {csa.strip() or '静默'} ; cppcheck: {cpp.strip() or '静默'}",
+           "reasoning": f"bug锚点行 {anchorline}；clang: {csa.strip() or '静默'} ; cppcheck: {cpp.strip() or '静默'}",
        }]}
 with open(os.path.join(fout, f"{cid}.json"), "w", encoding="utf-8") as f:
     json.dump(doc, f, ensure_ascii=False, indent=2)
 PY
-  echo "  $cid: scenario=$scen -> $state" >&2
-  python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$rows_jsonl" <<'PY'
+  echo "  $cid: scenario=$scen line=$anchorline -> $state" >&2
+  python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$anchorline" "$rows_jsonl" <<'PY'
 import json, sys
-cid, scen, state, csa, cpp, path = sys.argv[1:7]
+cid, scen, state, csa, cpp, anchorline, path = sys.argv[1:8]
 row = {"case_id": cid, "scenario": scen, "state": state,
-       "csa": csa.strip(), "cppcheck": cpp.strip()}
+       "csa": csa.strip(), "cppcheck": cpp.strip(), "anchorline": anchorline}
 with open(path, "a") as f:
     f.write(json.dumps(row, ensure_ascii=False) + "\n")
 PY
@@ -100,9 +105,9 @@ with open(os.path.join(out, "report.md"), "w", encoding="utf-8") as f:
     f.write("## 🔍 候选 SARIF 评测（轻量 SA）\n\n")
     f.write("> 下列内联标注已通过 SARIF 上传，可在 **PR 的 Files changed / code-scanning** 看到每条候选的真实 bug 位置。\n")
     f.write("> 注意：PR 上 9 个 CI check 的 `SUCCESS` 只代表「工具跑通」，**不等于用例被检出**；真正的检出看本表四态。\n\n")
-    f.write("| 候选 | 猜测 scenario | 轻量SA四态 | clang 信号 | CppCheck 信号 |\n|---|---|---|---|---|\n")
+    f.write("| 候选 | 猜测 scenario | bug锚点行 | 轻量SA四态 | clang 信号 | CppCheck 信号 |\n|---|---|---|---|---|---|\n")
     for r in rows:
-        f.write(f"| {r['case_id']} | {r['scenario']} | **{r['state']}** | {r['csa'] or '-'} | {r['cppcheck'] or '-'} |\n")
+        f.write(f"| {r['case_id']} | {r['scenario']} | {r.get('anchorline') or '-'} | **{r['state']}** | {r['csa'] or '-'} | {r['cppcheck'] or '-'} |\n")
     f.write(f"\n**汇总**：共 {len(rows)} 条，轻量 SA 标出 {tp} 条（TP），未标出 {fn} 条（FN）。\n")
     f.write("\n> TP=轻量SA标出该scenario；FN=未标出（静默或标出其他）。accept 进 cases/ 后由完整 9 工具评测。\n")
 print(f"四态表 → {os.path.join(out, 'report.md')}（TP={tp} FN={fn}）")
