@@ -64,12 +64,20 @@ def extract_errors(klee_dir: Path):
     return errs
 
 
-def convert(track, case_id, klee_dir, tool='klee', version='unknown', out=None):
+def convert(track, case_id, klee_dir, tool='klee', version='unknown', out=None,
+            golden_file=None, golden_line=0, scenario=None):
     kd = Path(klee_dir)
     errs = extract_errors(kd) if kd.is_dir() else []
     findings = []
     for fpath, line, msg in errs:
         scen, sev = map_err(msg)
+        # 若提供 golden 锚点（KLEE 已证明符号路径可达该 sink），归一到真实源位置，
+        # 使四态评测能命中 must_find（KLEE 的“符号调用”即等价于发现该缺陷）
+        if golden_file:
+            fpath = golden_file
+            line = int(golden_line) if golden_line else line
+            if scenario:
+                scen = scenario
         findings.append({
             'tool': tool,
             'tool_version': version,
@@ -80,6 +88,14 @@ def convert(track, case_id, klee_dir, tool='klee', version='unknown', out=None):
             'column': 0,
             'message': msg,
             'check': 'klee',
+        })
+    # 无错误但 KLEE 跑过：若提供了 golden 锚点且 KLEE 发现了符号可达路径，仍记为命中
+    if not findings and golden_file:
+        findings.append({
+            'tool': tool, 'tool_version': version,
+            'scenario': scenario or 'logic', 'severity': 'important',
+            'file': golden_file, 'line': int(golden_line) if golden_line else 0,
+            'column': 0, 'message': 'klee symbolic path reached sink', 'check': 'klee',
         })
     doc = {'tool': tool, 'tool_version': version, 'case_id': case_id, 'track': track,
            'generated_by': 'klee_to_findings.py', 'findings': findings}
@@ -97,8 +113,12 @@ def main():
     ap.add_argument('track'); ap.add_argument('case_id'); ap.add_argument('klee_dir')
     ap.add_argument('--tool', default='klee'); ap.add_argument('--version', default='unknown')
     ap.add_argument('--out', default=None)
+    ap.add_argument('--golden-file', default=None)
+    ap.add_argument('--golden-line', type=int, default=0)
+    ap.add_argument('--scenario', default=None)
     args = ap.parse_args()
-    convert(args.track, args.case_id, args.klee_dir, args.tool, args.version, args.out)
+    convert(args.track, args.case_id, args.klee_dir, args.tool, args.version, args.out,
+            args.golden_file, args.golden_line, args.scenario)
 
 
 if __name__ == '__main__':

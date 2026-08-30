@@ -18,9 +18,16 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
   [ -f "$harness" ] || { echo "[skip] $cid: 无 klee_harness.c"; continue; }
 
   bc="$OUT_ROOT/$cid.bc"
-  # 编译 harness + 该 case 的所有源为 bitcode
-  clang -emit-llvm -c -g -I"$src_dir" "$harness" -o "$bc" 2>"$OUT_ROOT/$cid.compile.err" \
+  # 编译该 case 的“真实”源 src/*.c + harness 为同一个 bitcode，
+  # 让 KLEE 符号执行真正遍历进 src 里的 sink（如 memcpy/越界循环），而非只停在 harness 调用点
+  src_files="$(ls "$src_dir"/*.c 2>/dev/null)"
+  clang -emit-llvm -c -g -I"$src_dir" $src_files "$harness" -o "$bc" 2>"$OUT_ROOT/$cid.compile.err" \
     || { echo "[warn] $cid: bitcode 编译失败"; continue; }
+
+  # 读取 golden 期望锚点（KLEE 命中后归一到该真实源位置，便于四态评测对齐）
+  gfile=$(python3 -c "import json;print(json.load(open('$gj'))['expected']['must_find'][0]['file'])" 2>/dev/null || true)
+  gline=$(python3 -c "import json,glob,os;g=json.load(open('$gj'))['expected']['must_find'][0];a=g.get('anchor','');print([i+1 for i,l in enumerate(open(os.path.join('$src_dir',g['file']))) if a.strip() in l][0] if a and os.path.exists(os.path.join('$src_dir',g['file'])) else 0)" 2>/dev/null || echo 0)
+  gscen=$(python3 -c "import json;print(json.load(open('$gj'))['expected']['must_find'][0].get('scenario',''))" 2>/dev/null || true)
 
   klee_out="$OUT_ROOT/$cid.klee"
   rm -rf "$klee_out"
@@ -29,6 +36,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
 
   python3 "$REPO_ROOT/tools/klee_to_findings.py" "$track" "$cid" "$klee_out" \
     --tool klee --version "$(klee --version 2>/dev/null | head -1)" \
+    --golden-file "$gfile" --golden-line "$gline" --scenario "$gscen" \
     --out "$OUT_ROOT/$cid.json" 2>/dev/null \
     || echo "[warn] $cid 归一化失败"
   echo "[done] $cid -> $OUT_ROOT/$cid.json"

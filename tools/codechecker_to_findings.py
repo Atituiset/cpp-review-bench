@@ -56,13 +56,26 @@ def find_case_id(path: str, cases_root: Path):
     # 找 cases/<track>/<cid>/src/... 结构
     for i, part in enumerate(parts):
         if part == 'cases' and i + 3 < len(parts):
-            return parts[i + 2]  # <cid>
+            return parts[i + 2], parts[i + 1]  # (<cid>, <track>)
     # 退化：找 src 目录的父目录名
     if 'src' in parts:
         idx = parts.index('src')
-        if idx >= 1:
-            return parts[idx - 1]
-    return None
+        if idx >= 2 and parts[idx - 2] == 'cases':
+            return parts[idx - 1], parts[idx - 2]
+    return None, None
+
+
+def rel_path(path: str):
+    """把绝对/长路径收敛为 cases 视角下的短路径（src/...），便于与 golden 的 file 对齐。"""
+    p = os.path.normpath(path)
+    parts = p.split(os.sep)
+    if 'src' in parts:
+        idx = parts.index('src')
+        return '/'.join(parts[idx:])  # src/xxx.c
+    if 'cases' in parts:
+        idx = parts.index('cases')
+        return '/'.join(parts[idx + 1:])  # <track>/<cid>/src/xxx.c
+    return os.path.basename(p)
 
 
 def convert(cc_json, cases_root, out_dir=None):
@@ -88,15 +101,22 @@ def convert(cc_json, cases_root, out_dir=None):
         scen, map_sev = map_checker(checker)
         if scen is None:
             sev = map_sev
-        cid = find_case_id(fpath, cases_root)
+        cid, track = find_case_id(fpath, cases_root)
         if not cid:
             continue
-        by_case.setdefault(cid, []).append({
+        # 若 track 仍未解析，从 cases_root 反查 golden.json
+        if not track:
+            for t in ('contract', 'defect'):
+                if (cases_root / t / cid / 'golden.json').exists():
+                    track = t
+                    break
+        by_case.setdefault(cid, {'track': track or 'unknown', 'finds': []})
+        by_case[cid]['finds'].append({
             'tool': 'codechecker',
             'tool_version': 'unknown',
             'scenario': scen,
             'severity': sev,
-            'file': fpath,
+            'file': rel_path(fpath),
             'line': int(line),
             'column': int(col),
             'message': msg,
@@ -105,14 +125,14 @@ def convert(cc_json, cases_root, out_dir=None):
     if out_dir:
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
-        for cid, finds in by_case.items():
+        for cid, info in by_case.items():
             doc = {'tool': 'codechecker', 'tool_version': 'unknown', 'case_id': cid,
-                   'track': 'unknown', 'generated_by': 'codechecker_to_findings.py',
-                   'findings': finds}
+                   'track': info['track'], 'generated_by': 'codechecker_to_findings.py',
+                   'findings': info['finds']}
             with open(out_dir / f'{cid}.json', 'w', encoding='utf-8') as f:
                 json.dump(doc, f, ensure_ascii=False, indent=2)
-            print(f'[ok] {cid}: {len(finds)} codechecker findings')
-    total = sum(len(v) for v in by_case.values())
+            print(f'[ok] {cid}: {len(info["finds"])} codechecker findings')
+    total = sum(len(v['finds']) for v in by_case.values())
     print(f'[done] codechecker 共 {total} findings / {len(by_case)} cases')
     return by_case
 
