@@ -18,8 +18,9 @@ jobs:
     if: startsWith(github.head_ref, 'harvest/inbox-')
     steps:
       - uses: actions/checkout@v4
+        # pull_request 事件下不指定 ref → checkout 默认取 refs/pull/N/merge，
+        # upload-sarif 才能正确绑定 PR（内联标注生效）
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
