@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/spnego_sspi.c",
+      "anchor": "if(!*outptr || !*outlen)",
+      "line": 3,
+      "function": null,
+      "rationale": "PR 970 Memory leak in case *outlen is zero :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
