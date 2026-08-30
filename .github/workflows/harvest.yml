@@ -149,14 +149,17 @@ jobs:
           echo "HARVEST_TOKEN 是否非空: $([ -n "${{ secrets.HARVEST_TOKEN }}" ] && echo YES || echo NO)"
           # PR/issue body：附完整候选清单表 + 细粒度审核指令
           BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /harvest accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /harvest contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /harvest reject <id1> ...        将对应候选转 harvest/inbox/rejected/\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$N" "$REPORT")
+          PRERR=$(mktemp)
           if gh pr create \
             --title "harvest: 每日候选 $N 条待审核（$(date +%Y-%m-%d)）" \
             --body "$BODY" \
             --assignee "${{ github.repository_owner }}" \
-            --label "harvest,inbox"; then
+            --label "harvest,inbox" 2>"$PRERR"; then
             echo "PR 已开"
           else
-            echo "PR 创建失败（可能 HARVEST_TOKEN 缺 pull_requests:write），改开 issue 通知"
+            echo "PR 创建失败，完整报错："
+            cat "$PRERR"
+            echo "（可能 HARVEST_TOKEN 缺 pull_requests:write），改开 issue 通知"
             gh issue create \
               --title "harvest: 每日候选 $N 条待审核（$(date +%Y-%m-%d)）" \
               --body "$BODY" \
