@@ -1,5 +1,5 @@
-// Joern CPG 扫描脚本（Joern 2.x API，无顶层 def，避免脚本编译问题）。
-// 给定 case 的 src 目录 + golden 锚点（经文件传入，避免空格引号问题）：
+// Joern CPG 扫描脚本（Joern 2.x，纯 Java NIO 读文件，避免 scala.io 解析问题）。
+// 给定 case 的 src 目录 + golden 锚点（经文件传入，避免空格/逗号引号问题）：
 //  1) 在 CPG 中按方法名定位 must_find 锚点行（图可达性证明）；
 //  2) 枚举危险调用（memcpy/strcpy/strncpy/memmove/strcat/free/realloc/memset）。
 // 输出 {"findings":[{file,line,column,message,scenario}]} 到 outFile。
@@ -11,10 +11,12 @@ val functionFile = params.getOrElse("functionFile","").asInstanceOf[String]
 val scenario = params.getOrElse("scenario","").asInstanceOf[String]
 val outFile  = params("outFile").asInstanceOf[String]
 
-val anchor = if (anchorFile != null && anchorFile != "" && new java.io.File(anchorFile).exists)
-  scala.io.Source.fromFile(anchorFile).mkString.trim else ""
-val function = if (functionFile != null && functionFile != "" && new java.io.File(functionFile).exists)
-  scala.io.Source.fromFile(functionFile).mkString.trim else ""
+def readFile(p: String): String =
+  if (p != null && p != "" && new java.io.File(p).exists)
+    new String(Files.readAllBytes(Paths.get(p)), "UTF-8").trim else ""
+
+val anchor   = readFile(anchorFile)
+val function = readFile(functionFile)
 
 val out = scala.collection.mutable.ListBuffer[Map[String, Any]]()
 try {
