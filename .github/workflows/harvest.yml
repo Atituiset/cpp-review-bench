@@ -116,7 +116,6 @@ jobs:
         with:
           name: inbox-draft
           path: harvest/inbox/draft
-          if-no-files-found: warn
       - name: 评测环（轻量 SA 看候选片段能否被标出）
         run: |
           pip install requests pyyaml
