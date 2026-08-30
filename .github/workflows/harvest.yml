@@ -45,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         source: [sa-scan, pr-mining]
-        repo: ${{ fromJson(github.event.inputs.repos != '' && format('["{0}"]', replace(github.event.inputs.repos, ' ', '","')) || (github.event.inputs.repo == 'all' && '["curl", "sqlite", "redis", "aetherstack"]' || format('["{0}"]', github.event.inputs.repo))) }}
+        repo: [curl, sqlite, redis, aetherstack]
     steps:
       - uses: actions/checkout@v4
 
@@ -59,7 +59,10 @@ jobs:
         run: pip install requests pyyaml
 
       - name: pr-mining —— 爬 GitHub PR diff + judge + 归一化
-        if: matrix.source == 'pr-mining' && (github.event.inputs.source == 'all' || github.event.inputs.source == 'pr-mining')
+        if: >-
+          matrix.source == 'pr-mining' &&
+          (github.event.inputs.source == 'all' || github.event.inputs.source == 'pr-mining') &&
+          (github.event.inputs.repos == '' || contains(github.event.inputs.repos, matrix.repo))
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
