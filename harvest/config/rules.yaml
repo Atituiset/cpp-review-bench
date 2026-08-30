@@ -1,0 +1,40 @@
+# harvest vote 规则 + 噪声抑制 + scenario 键映射
+# 规则 ID（CSA checker / CppCheck id）→ CWE 键（与 schema/golden.schema.json 的 scenario 对齐）
+
+vote:
+  min_tools: 2            # ≥2 工具独立命中（file+line±3+scenario 家族一致）→ 候选
+  line_tolerance: 3
+  single_tool_high_conf: true   # 单工具 verified 可编译复现的高置信也可单列（人审桶）
+
+# scenario 家族映射（CWE 键）
+scenario_map:
+  "core.NullDereference": cwe-476
+  "core.DivideZero": cwe-369
+  "core.OutOfBounds": cwe-787
+  "core.StackAddressEscape": cwe-562
+  "cplusplus.NewDelete": cwe-415
+  "doubleFree": cwe-415
+  "nullPointer": cwe-476
+  "bufferAccessOutOfBounds": cwe-787
+  "memleak": cwe-401
+  "useAfterFree": cwe-416
+  "va_list_usedBeforeStarted": cwe-786
+  "uninitvar": cwe-457
+  "integerOverflow": cwe-190
+  "signedOverflow": cwe-190
+  "unsignedOverflow": cwe-190
+
+# 噪声黑名单（路径/规则 ID）：命中的直接进 reject 桶，不进候选
+noise_blacklist:
+  paths:
+    - "tests/"
+    - "test/"
+    - "fuzz/"
+    - "docs/"
+  rule_ids:
+    - "clang-diagnostic-*"     # 纯编译器告警噪声
+    - "readability-*"          # 风格类
+    - "performance-*"          # 非缺陷类
+
+# 映射覆盖报表：unmapped 桶由人审归类（不硬猜）
+unmapped_bucket: true

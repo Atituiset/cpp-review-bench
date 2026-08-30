@@ -1,0 +1,85 @@
+name: harvest
+on:
+  schedule:
+    - cron: "23 3 * * 1,4"   # 周一/周四凌晨（错峰，避免 API 配额尖峰）
+  workflow_dispatch:
+    inputs:
+      source:
+        type: choice
+        options: [all, sa-scan, pr-mining]
+        default: all
+      repo:
+        type: choice
+        options: [all, curl, sqlite, redis, aetherstack]
+        default: all
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [sa-scan, pr-mining]
+        repo: [curl, sqlite, redis, aetherstack]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 准备 Python
+        if: matrix.source == 'pr-mining'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 装依赖（pr-mining）
+        if: matrix.source == 'pr-mining'
+        run: pip install requests pyyaml
+
+      - name: pr-mining —— 爬 GitHub PR diff + judge + 归一化
+        if: matrix.source == 'pr-mining' && (github.event.inputs.repo == 'all' || github.event.inputs.repo == matrix.repo) && (github.event.inputs.source == 'all' || github.event.inputs.source == 'pr-mining')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 harvest/tools/pr_mine.py \
+            --config harvest/config/repos.yaml \
+            --repo-name "${{ matrix.repo }}" \
+            --out /tmp/pr-findings-${{ matrix.repo }} 2>&1 | tail -5
+
+      - name: 上传 artifact（pr-mining）
+        if: matrix.source == 'pr-mining'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-findings-${{ matrix.repo }}
+          path: /tmp/pr-findings-${{ matrix.repo }}/*.json
+          if-no-files-found: ignore
+
+      # sa-scan（design-v0.1 原路线）占位：v0.2 接入 CSA+CppCheck 扫描
+      - name: sa-scan —— 占位（v0.2 接入）
+        if: matrix.source == 'sa-scan'
+        run: echo "[sa-scan] v0.2 接入：checkout 目标仓 + build_compdb + scan_csa/cppcheck + normalize"
+
+  vote:
+    needs: scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 下载全部 findings
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/all-findings
+          pattern: "pr-findings-*"
+          merge-multiple: true
+      - name: 归一化 + vote + pack → inbox
+        run: |
+          pip install requests pyyaml
+          mkdir -p /tmp/norm /tmp/cands harvest/inbox/draft
+          python3 harvest/tools/normalize.py --in-dir /tmp/all-findings --out /tmp/norm/all.json
+          python3 harvest/tools/vote.py --findings /tmp/norm/all.json --out /tmp/cands/candidates.json --min-tools 1
+          python3 harvest/tools/pack_case.py --candidates /tmp/cands/candidates.json --inbox harvest/inbox
+      - name: 上传 inbox 草稿
+        uses: actions/upload-artifact@v4
+        with:
+          name: inbox-draft-${{ github.run_id }}
+          path: harvest/inbox/draft
+          if-no-files-found: warn

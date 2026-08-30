@@ -56,6 +56,12 @@ sa/           静态分析工程化归一目录：
               scripts/    工具专属查询（joern/scan.sc）
               harnesses/  KLEE 符号执行入口（按 case 归置 klee_harness.c）
               docker/     工具镜像（cooddy/Dockerfile）
+harvest/      采集管线子目录（自动数据入口，单仓开发）：
+              docs/       设计+双管线规划（design-v0.1 / roadmap-pr-mining-pipeline）
+              config/     目标仓矩阵 + vote 规则
+              tools/      pr_mine.py（爬 PR）+ SA 扫描 + 归一化/共识/打包
+              .github/workflows/  harvest.yml（采集）/ package.yml（inbox 三态）
+              inbox/      候选三态（draft/confirmed/rejected）
 reports/      各工具基线报告（持续积累，格式见 reports/README.md）
 ```
 

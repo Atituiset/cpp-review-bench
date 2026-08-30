@@ -1,0 +1,46 @@
+# harvest 目标仓矩阵（pinned ref 钉死，可溯源）
+# build: cmake / make-compiledb / bear
+# scope: 路径白名单（仅扫这些前缀，降低噪声与构建成本）
+repos:
+  - name: curl
+    url: https://github.com/curl/curl
+    ref: curl-8_9_1      # 钉到 tag/commit
+    build: make-compiledb
+    scope:
+      include: ["lib/", "src/"]
+      exclude: ["tests/", "docs/"]
+    languages: [c]
+  - name: sqlite
+    url: https://github.com/sqlite/sqlite
+    ref: version-3.46.1
+    build: make-compiledb
+    scope:
+      include: ["src/"]
+      exclude: ["test/", "tool/"]
+    languages: [c]
+  - name: redis
+    url: https://github.com/redis/redis
+    ref: 7.4.0
+    build: make-compiledb
+    scope:
+      include: ["src/"]
+      exclude: ["tests/", "deps/"]
+    languages: [c]
+  - name: aetherstack
+    url: https://github.com/<org>/aetherstack   # smoke：占位，实际地址人审填
+    ref: main
+    build: cmake
+    scope:
+      include: ["src/"]
+      exclude: ["test/"]
+    languages: [c, cpp]
+
+# pr-mining 采集源专用：爬哪些仓的 PR（可用 GitHub search 语法）
+pr_mining:
+  targets:
+    - repo: curl/curl
+    - repo: sqlite/sqlite
+    - repo: redis/redis
+  query: "is:pr is:merged label:bug"   # 或评论含 bug 关键词，见 pr_mine.py
+  max_prs_per_run: 50
+  since: "2024-01-01"

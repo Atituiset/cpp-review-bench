@@ -1,0 +1,5 @@
+# inbox 三态目录占位
+# draft/      待审核候选（harvest.yml vote job 产出五文件草稿）
+# confirmed/  已确认（confirm-tp/confirm-fp 搬移后的归档，可选）
+# rejected/   rejected 原因存档（package.yml reject 动作写入）
+# 注：本目录仅占位；真实候选由 harvest.yml 在 CI 写入 draft/，人审三态流转见 package.yml
