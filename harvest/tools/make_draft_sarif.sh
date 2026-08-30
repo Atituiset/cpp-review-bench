@@ -82,7 +82,7 @@ PY
   echo "  $cid: scenario=$scen line=$anchorline -> $state" >&2
   python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$anchorline" "$casedir" "$rows_jsonl" <<'PY'
 import json, sys, re as _re, os
-cid, scen, state, csa, cpp, anchorline, cdir, path = sys.argv[1:9]
+cid, scen, state, csa, cpp, anchorline, cdir, path = sys.argv[1:8]
 ev = {}
 nr = os.path.join(cdir, "notes.md")
 if os.path.isfile(nr):
