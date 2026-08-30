@@ -210,6 +210,91 @@ L2 语义判等（可选，轻量 judge）:
 
 三级的 golden 共享同一 schema（§3），评分协议不变——**数据可追溯性要求**：R/C 级用例在 notes.md 中记录来源 commit、命中的工具、人审人。
 
+## 附录 A：C/C++ 典型缺陷 scenario 池（采集 + 评测覆盖基准）
+
+> 本附录是 Defect Track 的 **scenario 覆盖面权威基准**。harvest 采集词表、人审分类、per-CWE 分层报表均以本池为准。
+> `scenario` 字段取值 = `cwe-<ID>`（自由字符串，schema 不枚举，扩类不破坏冻结点）。本池不修改 §3 的判定语义与 golden schema。
+> 来源：CWE Top 25 (2024) + CWE 内存安全专项榜 + 并发/UB/资源类高频弱点（MITRE）。
+
+### A.1 第一层：CWE Top 25 中 C/C++ 直接相关（必须覆盖）
+
+| CWE | 场景 | 采集 PR 词（自然语言） |
+|---|---|---|
+| CWE-787 | 越界写 OOB write | overflow, oob, out-of-bounds, buffer |
+| CWE-125 | 越界读 OOB read | oob, over-read, out-of-bounds |
+| CWE-416 | 释放后使用 UAF | use-after-free, uaf, dangling |
+| CWE-119 | 内存缓冲区边界操作不当（总类） | buffer, bounds |
+| CWE-476 | 空指针解引用 | null, nullptr, deref |
+| CWE-190 | 整数溢出/回绕 | integer overflow, wraparound, overflow |
+| CWE-400 | 资源消耗失控（DoS） | leak, exhaustion, unbounded |
+| CWE-89 | SQL 注入 | sql injection |
+| CWE-78 | OS 命令注入 | command injection |
+| CWE-77 | 命令注入 | command injection |
+| CWE-22 | 路径遍历 | path traversal, traversal |
+| CWE-502 | 反序列化 | deserialize |
+| CWE-200 | 敏感信息泄露 | info leak, disclose |
+| CWE-94 | 代码注入 | code injection |
+| CWE-918 | SSRF | ssrf |
+| CWE-20 | 输入校验缺失（总类） | validate, input |
+| CWE-269/862/863/287/306/798 | 权限/认证类 | auth, privilege, hardcoded |
+
+### A.2 第二层：内存安全 + 并发 + UB + 资源（C/C++ 核心扩展，~35 类）
+
+| CWE | 场景 |
+|---|---|
+| CWE-415 | 双重释放 double free |
+| CWE-401 | 内存泄漏 memory leak |
+| CWE-457 | 使用未初始化变量 |
+| CWE-824 | 越界指针解引用 |
+| CWE-822 / CWE-823 | 越界堆/栈指针 |
+| CWE-123 | 任意地址写（数组索引越界写） |
+| CWE-134 | 格式化字符串 |
+| CWE-680 | 整数溢出导致缓冲区溢出 |
+| CWE-191 | 整数下溢 |
+| CWE-192 / CWE-704 | 类型错误转换 |
+| CWE-467 | 指针类型不匹配（64 位截断） |
+| CWE-758 | 有符号/无符号混用 UB |
+| CWE-843 | 类型混淆 type confusion |
+| CWE-129 | 数组下标未校验（tainted index） |
+| CWE-688 | 函数参数越界（memset 长度错） |
+| CWE-762 / CWE-590 | 错误释放（new/delete 混 malloc/free） |
+| CWE-121 / CWE-122 | 栈/堆缓冲溢出 |
+| CWE-126 | 越界读 slice |
+| CWE-369 | 除零 divide-by-zero |
+| CWE-362 | 竞态 race condition |
+| CWE-367 | TOCTOU |
+| CWE-667 | 加锁不当/死锁 deadlock |
+| CWE-413 | 双重检查锁失效 |
+| CWE-404 / CWE-772 | 文件/句柄/Socket 泄漏 FD leak |
+| CWE-403 | 句柄未关闭 |
+| CWE-674 | 无限递归（栈溢出） |
+| CWE-835 | 无限循环 |
+| CWE-834 | 循环次数失控 |
+| CWE-617 | 断言/reachability 误判 |
+| CWE-252 / CWE-253 | 返回值未检查/误判 |
+| CWE-754 | 未检查返回值（malloc/系统调用） |
+| CWE-327 / CWE-326 / CWE-330 | 弱加密/弱随机 |
+| CWE-295 / CWE-347 | 证书/签名校验缺失 |
+| CWE-36 / CWE-73 / CWE-98 | 路径/外部控制/RFI |
+| CWE-681 | 数值类型转换错误（精度丢失） |
+
+### A.3 采集词表分组（GitHub search 单查询 OR ≤5，拆组覆盖）
+
+> 用于 `pr_mining.query` 与 `repos.yaml` 的 pr_mining.targets。噪声由 `judge_bug` 启发式 + 人审兜底；scenario 真值留 LLM 评审阶段定。
+
+- 组1：`fix OR bug OR leak OR overflow OR crash`（通用）
+- 组2：`use-after-free OR double-free OR null OR oob`（内存安全）
+- 组3：`sanitizer OR ubsan OR asan OR cve OR vulnerability`（安全信号）
+- 组4：`race OR deadlock OR fd-leak OR uninitialized`（并发/资源）
+- 组5：`injection OR ssrf OR traversal OR format`（注入/路径）
+- 组6：`integer OR divide OR wraparound OR bounds`（数值/边界）
+
+### A.4 覆盖度说明
+
+- 第一层（~17 类）+ 第二层（~35 类）≈ **50-55 个 C/C++ 典型场景**，远多于 v1 的 30 例清单。
+- 真实 C/C++ 仓（curl/redis/vim/nginx 等用 GitHub PR 流程者）按 A.3 词表可大量命中；sqlite/postgres/linux 因仓特性（直接 commit / 邮件列表）GitHub PR 少，需换 commit/log 采集源（见 harvest v0.1 路线）。
+- `judge_bug` 现仅粗判 ~5 类；扩到全池需在 `rules.yaml` 建「PR 词 → CWE」映射，或候选标 `unknown` 待 LLM 定真值（不自动烧 token）。
+
 **公开数据集分工参照**（沿 research.md §3.6 结论，papers/ 已归档原文）：CVEfixes = L1 主源（结构化最好）；DiverseVul = CWE 分布参照（自报标签仅 60% 可信）；SecVulEval = 过滤管线模板 + 语句级锚点 + 新 CVE 源；PrimeVul = 质控方法论（不提供数据）；CASTLE = calibration/ 校准子集形态（`// {!LINE}` 标注格式可借鉴）；CQS/Meta = 标注与评估协议骨架（修正其三个偏差：ground truth 不由被测模型生成、标注者盲标、补全 recall 分母）；Devign/Big-Vul = 反面教材（粗粒度标签 24-25% 正确率）。
 
 ## 4.1 与 Martian Code Review Bench 的对齐
