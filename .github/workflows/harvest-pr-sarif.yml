@@ -4,7 +4,8 @@ name: harvest-pr-sarif
 # 必须跑在 pull_request 事件下，upload-sarif 才能绑定到 PR head ref（内联标注生效）。
 on:
   pull_request:
-    branches: ["harvest/inbox-*"]
+    # 不匹配 base 分支；用 job 级 if 按 head 分支名过滤（harvest/inbox-*）
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
