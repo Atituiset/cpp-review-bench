@@ -39,8 +39,12 @@ ENV CXX=g++
 ENV LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/lib
 
 RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/z3.conf && ldconfig \
-    && echo "=== z3 lib 布局（构建前确认 libz3.so 存在）===" \
-    && ls -l /usr/local/lib/libz3.so* /usr/lib/x86_64-linux-gnu/libz3.so* 2>&1 || true
+    # 把 libz3.so* 同时放进 /usr/lib（ld 默认搜索路径，确保 Solver 的 -lz3 命中）
+    && cp -a /usr/local/lib/libz3.so* /usr/lib/ 2>/dev/null || true \
+    && cp -a /usr/lib/x86_64-linux-gnu/libz3.so* /usr/lib/ 2>/dev/null || true \
+    && ldconfig \
+    && echo "=== z3 lib 布局（/usr/lib 下应含 libz3.so）===" \
+    && ls -l /usr/lib/libz3.so* /usr/lib/x86_64-linux-gnu/libz3.so* 2>&1 || true
 
 RUN git clone --depth 1 https://github.com/program-analysis-team/cooddy.git /opt/cooddy \
     # 关键修复：在 cmake_minimum_required 之后注入 link_directories，

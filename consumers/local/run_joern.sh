@@ -24,8 +24,9 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
   ff="/tmp/joern_params/$cid.func";   echo "$function" > "$ff"
   raw="$OUT_ROOT/$cid.raw.json"; out="$OUT_ROOT/$cid.json"
 
+  # 经环境变量传参（Joern 2.x 脚本不暴露 params map，改用 sys.env）
+  SRC_DIR="$src_dir" ANCHOR_FILE="$af" FUNCTION_FILE="$ff" SCENARIO="$scenario" OUT_FILE="$raw" \
   joern --script "$REPO_ROOT/joern-scripts/scan.sc" \
-        --params "srcDir=$src_dir,anchorFile=$af,functionFile=$ff,scenario=$scenario,outFile=$raw" \
         >"/tmp/joern_params/$cid.log" 2>&1 || echo "[warn] $cid joern 失败（见 /tmp/joern_params/$cid.log）"
   echo "--- $cid joern 日志 ---"; tail -15 "/tmp/joern_params/$cid.log" 2>/dev/null
   [ -f "$raw" ] || echo '{"findings":[]}' > "$raw"
