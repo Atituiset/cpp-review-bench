@@ -26,7 +26,8 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
 
   joern --script "$REPO_ROOT/joern-scripts/scan.sc" \
         --params "srcDir=$src_dir,anchorFile=$af,functionFile=$ff,scenario=$scenario,outFile=$raw" \
-        >/dev/null 2>&1 || echo "[warn] $cid joern 失败"
+        >"/tmp/joern_params/$cid.log" 2>&1 || echo "[warn] $cid joern 失败（见 /tmp/joern_params/$cid.log）"
+  echo "--- $cid joern 日志 ---"; tail -15 "/tmp/joern_params/$cid.log" 2>/dev/null
   [ -f "$raw" ] || echo '{"findings":[]}' > "$raw"
   python3 "$REPO_ROOT/tools/joern_to_findings.py" "$track" "$cid" "$raw" --out "$out" 2>/dev/null \
     || echo "[warn] $cid 归一化失败"
