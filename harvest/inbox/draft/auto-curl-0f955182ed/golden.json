@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/tool_operate.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15289 lib: fix function pointers to please UndefinedBehaviorSanitizer :: 启发式命中 \\*\\s*\\w+|->\\w+\\s*\\(|\\bdelete\\b",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
