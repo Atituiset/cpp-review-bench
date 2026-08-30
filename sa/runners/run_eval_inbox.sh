@@ -65,7 +65,7 @@ PY
 done
 
 python3 - "$OUT" <<'PY'
-import json, collections, os
+import json, collections, os, sys
 out = sys.argv[1]
 rows = []
 p = os.path.join(out, "_rows.jsonl")
