@@ -144,6 +144,9 @@ jobs:
           git add harvest/inbox/draft
           git commit -m "harvest: 每日候选 $N 条待审核"
           git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" "$BRANCH"
+          # 调试：确认实际解析到哪个 token（ghp_=classic PAT, github_pat_=fine-grained, ghu_/gho_=GITHUB_TOKEN 回退）
+          echo "解析到的 token 前缀: ${GH_TOKEN:0:10}***"
+          echo "HARVEST_TOKEN 是否非空: $([ -n "${{ secrets.HARVEST_TOKEN }}" ] && echo YES || echo NO)"
           # PR/issue body：附完整候选清单表 + 细粒度审核指令
           BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /harvest accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /harvest contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /harvest reject <id1> ...        将对应候选转 harvest/inbox/rejected/\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$N" "$REPORT")
           if gh pr create \
