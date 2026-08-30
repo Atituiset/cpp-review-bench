@@ -1,9 +1,9 @@
-# cpp-review-bench 全面分析报告（实验分支 exp/cooddy-klee）
+# cpp-review-bench 全面分析报告（已合入 main）
 
 > 生成日期：2026-08-30
-> 分支：`exp/cooddy-klee`（基于 main 的 5 工具基线）
-> 全部证据来自 GitHub Actions CI 实跑（`gh run`），非本地推测。
-> 主分支 `main` 仍是 5 工具（CSA / CppCheck / clang-tidy / Infer / CodeQL）CI 验证基线；本分支在此之上新增 CodeChecker、KLEE、Joern，并重试 cooddy 源码构建。
+> 状态：**已合入 main**（原实验分支 exp/cooddy-klee，fast-forward 合并，main HEAD 11e36f0）
+> 全部证据来自 GitHub Actions CI 实跑（gh run），非本地推测。
+> 工程化文件已归一进 `sa/` 目录（adapters / runners / scripts / harnesses / docker）。
 
 ---
 
@@ -22,11 +22,11 @@ benchmark 的核心命题是：**"对外不可证明"的缺陷（需外部约束
 | Infer | 抽象解释 | 0/30 | 2（c02，EXTRA） | 否 |
 | CodeQL | Datalog DSL | 0/30 | 2（r01,r03，EXTRA） | 否（锚点未对齐） |
 | **CodeChecker** | clang SA + clang-tidy | **contract 1/1、defect 2/3（0.67）** | 5 | **是（r07/c02/r01/r03）** |
-| **KLEE** | 符号执行 + 测试生成 | **2/2（1.0）** | 2 | **是（r02/r04）** |
+| **KLEE** | 符号执行 + 测试生成 | **11/11 (1.0)** | 11（r01/r02/r04/r05/r06/r07/r09/r10/r11/r12/r14 真实 TP） | **是** |
 | **Joern** | CPG 图查询 | 0/30 | ~28 | 否（锚点未对齐） |
-| **Cooddy** | 数据流 + 约束求解 | 构建/运行已通，0 findings（需用法调优） | 0（r04 实测） | 待调优 |
+| **Cooddy** | 数据流 + 约束 | **r04 检 1 problem（升级为第 3 个命中工具）** | 1（r04 OOB） | **是（r04）** |
 
-**核心结论：命题成立。** 9 个工具中，仅 **KLEE（符号执行）** 与 **CodeChecker（clang 自带分析器）** 真正以四态"命中"方式抓到 seeded defect；其余 7 个工具 recall 全为 0（或仅产出与 golden 锚点不对齐的噪声）。这恰好说明 benchmark 度量的价值——它能量化"哪些缺陷类型当前 SA 工具集体失明"。
+**核心结论：命题成立。** 9 个工具中，仅 **KLEE（符号执行）**、**CodeChecker（clang 自带分析器）**、**Cooddy（数据流+约束求解）** 真正以四态"命中"方式抓到 seeded defect（KLEE 11/11、CodeChecker 3 例、Cooddy r04）；其余 6 个工具 recall 全为 0（或仅产出与 golden 锚点不对齐的噪声）。这恰好说明 benchmark 度量的价值——它能量化"哪些缺陷类型当前 SA 工具集体失明"。
 
 ---
 
@@ -65,25 +65,25 @@ benchmark 的核心命题是：**"对外不可证明"的缺陷（需外部约束
 - 解读：CodeChecker 是首个以"命中"方式抓到 seeded defect 的主流工具（r07 的 size_t 回绕、r01 的序列号回绕、r03 的入口绕过、c02 的审计占位符），证明 clang 自带分析器对"可内部推断"的缺陷有效，但对"需外部语义"的（如 r02/r04 的符号化长度）仍失明——这正好与 KLEE 形成互补。
 - 证据：本分支 `codechecker-findings` 产物（CI run 33291645097 / 33292123381）。
 
-### 2.7 KLEE —— ✅ 2/2 PASS，recall=1.0（本分支新增，CI 验证通过）
-- 对每个含 `klee_harness.c` 的用例：编译真实 `src/*.c` + harness 为统一 bitcode（`llvm-link`），符号化输入后跑 KLEE。
-- r02-offby-one-guard、r04-oob-write-stack 均检出越界写，并归一化到 golden 锚点（src 内 sink）。
-- 四态：**2/2 PASS，recall 1.0，severity 准确率 1.0**。
-- 解读：符号执行是唯一能"证明"越界路径可达的工具，与命题一致——它补全了 SA 的盲区。
-- 证据：本分支 `klee-findings` 产物（CI run 33292123381）。
+### 2.7 KLEE —— ✅ 11/11 PASS，recall=1.0（本分支扩展，CI 验证通过）
+- 对每个含 `sa/harnesses/<case>/klee_harness.c` 的用例：编译真实 `src/*.c` + harness 为统一 bitcode（`llvm-link`），符号化输入后跑 KLEE。
+- 覆盖 11 个 defect 用例：r01（回绕越界读）、r02（off-by-one）、r04（OOB 写栈）、r05（错长度变量）、r06（<= 越界）、r07（乘法回绕）、r09（双重释放）、r10（奇数 BCD 越界）、r11（越界读）、r12（有符号/无符号混用）、r14（外部长度 memcpy）。
+- 四态：**11/11 PASS，recall 1.0，severity 准确率 1.0**。
+- 解读：符号执行唯一能"证明"越界/回绕/双重释放路径可达的工具，与命题一致——它补全了 SA 的盲区。r08（数据竞争，KLEE 无法建模并发）、r13（NULL 函数指针逻辑缺陷）不在覆盖内。
+- 证据：本分支 `klee-findings` 产物（CI run 33296273703）。
 
 ### 2.8 Joern —— 运行成功但 recall=0（本分支新增，CI 验证通过）
 - `ghcr.io/joernio/joern:master` 镜像，scan.sc 构建 CPG，按 golden 锚点做图可达性定位 + 危险调用枚举。
 - ~28/30 用例产出 findings（1–3 个/例），reaching-def 等 pass 正常。
 - 四态：**30/30 FN（recall 0）**。原因：锚点定位为"方法内子串匹配"，多数未命中 golden 精确锚点；危险调用枚举产出 `cwe-787` 但与 seeded defect 不对齐。
 - 解读：Joern 证明 CPG 图查询能"导航"到代码，但**无 taint/数据流规约时无法识别缺陷本身**——与 AST/数据流工具同属"失明"一类，但其图导航能力对 Agent Viewer 的"语义定位"有价值。
-- 证据：本分支 `joern-findings` 产物（CI run 33291080624）。
+- 证据：本分支 `joern-findings` 产物（CI run 33296273703）。
 
-### 2.9 Cooddy —— 构建/运行已通，0 findings（本分支重试，待用法调优）
-- **根因突破**：cooddy 的 `Solver` 目标用 `-Wl,-Bstatic -lz3` **强制静态链接 libz3.a**，此前一直构建 `libz3.so`（共享）导致 `ld: cannot find -lz3`。将 z3 改为 `Z3_BUILD_LIBZ3_SHARED=FALSE` 构建 `libz3.a` 后，镜像成功构建。
-- 端到端：二进制 `/opt/cooddy/build/release/cooddy` 成功运行，加载全部 CWE checker（OutOfBounds / BufferMaxSize / NullPtrDereference / TypeSizeMismatch / UntrustedSource 等），分析 r04 时 `problems: 0`。
-- 未命中的直接原因：cooddy 把 `klee_harness.c` 也纳入分析单元，而该文件 `#include <klee/klee.h>` / `recv.h` 在 cooddy 环境下找不到，导致单元解析失败、污染分析上下文；且 cooddy 需正确的 `--scope`/include 路径/非可信源标注才能标定 `memcpy` 越界。
-- 状态：**基础设施阻塞已解决（构建+运行 OK），检测质量需 cooddy 专属用法调优**（排除 harness、补 include、标 scope）。这是与"构建失败"性质不同的、更小的工作。
+### 2.9 Cooddy —— ✅ 构建/运行已通，r04 检 1 problem（本分支重试突破）
+- **根因突破**：cooddy 的 `Solver` 目标用 `-Wl,-Bstatic -lz3` **强制静态链接 libz3.a**，此前一直构建共享 libz3.so 导致 `ld: cannot find -lz3`。将 z3 改为 `Z3_BUILD_LIBZ3_SHARED=FALSE` 构建 `libz3.a` 后，镜像成功构建。
+- 端到端：二进制 `/opt/cooddy/build/release/cooddy` 成功运行，加载全部 CWE checker（OutOfBounds / BufferMaxSize / NullPtrDereference / TypeSizeMismatch / UntrustedSource 等）。
+- **本次（harness 移出 src/ 后）r04 检出 1 个 problem**：早前因 `klee_harness.c` 留在 case 根污染分析单元而报 0；归一后 cooddy 干净分析 `recv.c`，成功标定 `memcpy` 越界（cwe-787）。**升级为第 3 个真正命中 seeded defect 的工具**。
+- 状态：基础设施阻塞已彻底解决，且已在 r04 验证检测能力；其余用例的 scope/include 调优可进一步扩大覆盖。
 - 详情见 `reports/evidence/cooddy/README.md`（含 23 次构建迭代的失败/修复记录）。
 
 ---
@@ -126,8 +126,10 @@ benchmark 的核心命题是：**"对外不可证明"的缺陷（需外部约束
 
 ## 6. 待办 / 后续
 
-- [ ] **Cooddy 用法调优**：scope 排除 `klee_harness.c`、补 include、标非可信源，验证其能否在 r02/r04 命中（基础设施已通，工作量小）。
+- [x] ~~Cooddy 用法调优~~：harness 移出 src/ 后 cooddy 已在 r04 命中 1 problem，无需额外调优即验证检测能力。
+- [ ] **Cooddy 扩大覆盖**：为更多 defect 用例标 scope/include，验证 cooddy 在 r02/r07/r09 等也能命中（目前仅 r04 实测）。
 - [ ] **CodeQL 映射补全**：为 `cpp/constant-comparison`、`cpp/unused-static-variable` 补 CWE 映射，使 r01/r03 计为 TP。
 - [ ] **Joern taint 规约**：若加 taint spec，可让 Joern 从"图导航"升级为"缺陷识别"。
-- [ ] 分支验证通过后，将 CodeChecker/KLEE/Joern 三个 job 合入 `main`（cooddy 待调优后再合或保持 downgrade 文档）。
+- [ ] **KLEE 覆盖补全**：r08（数据竞争）、r13（NULL 函数指针逻辑缺陷）KLEE 难建模，可探索其他驱动方式或标注为 KLEE 不适用。
+- [x] 目录归一完成（`sa/` 结构），分支已 fast-forward 合入 main。
 - [ ] 把本报告与 `baseline-v2.md` 合并为最终 `reports/baseline-v3.md`。
