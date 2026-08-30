@@ -176,8 +176,8 @@ jobs:
           # 调试：确认实际解析到哪个 token（ghp_=classic PAT, github_pat_=fine-grained, ghu_/gho_=GITHUB_TOKEN 回退）
           echo "解析到的 token 前缀: ${GH_TOKEN:0:10}***"
           echo "HARVEST_TOKEN 是否非空: $([ -n "${{ secrets.HARVEST_TOKEN }}" ] && echo YES || echo NO)"
-          # PR/issue body：附完整候选清单表 + 四态表 + 细粒度审核指令
-          BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n注意：accept 只是预审进 cases/，merge 才落地 main；merge 前随时可 /case reject 反悔。\n\n## 🔍 候选溯源总览（草稿，待审）\n%s\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$FOUR" "$N" "$REPORT")
+          # PR/issue body：附 pr-mining 说明 + 候选溯源总览 + 细粒度审核指令
+          BODY=$(printf '分支 %s 含 %s 条候选草稿（来自真实已合并 fix-PR 爬取）。\n\n## 这是什么\n- **pr-mining**：采集工具，爬 GitHub 已合并的 fix-PR，按标题/diff 含缺陷特征（fix/leak/overflow/null/...）挑出候选 bug 片段。\n- 每条候选 = 「某开源仓某 PR 修复过的一段代码」，可能是真 bug 也可能是误报，待你审核。\n- 草稿文件见 PR 的 Files changed（harvest/inbox/draft/<id>/），含 src/ + golden.json + notes.md（含真实修复 diff + 接受后流程）。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n注意：accept 只是预审进 cases/，merge 才落地 main；merge 前随时可 /case reject 反悔。\n\n> scenario 为候选初判（非真值），待你正式仓手动触发 LLM 评审定真值；9 工具四态在 /case accept 进 cases/ 后由 ci.yml+eval.py 产生。\n\n%s' "$BRANCH" "$N" "$FOUR")
           PRERR=$(mktemp)
           if gh pr create \
             --head "$BRANCH" \
