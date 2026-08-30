@@ -40,4 +40,5 @@ jobs:
         with:
           sarif_file: /tmp/draft-sarif/sarif/draft.sarif
           category: harvest-draft
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          sha: ${{ github.event.pull_request.head.sha }}
