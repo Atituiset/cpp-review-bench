@@ -47,14 +47,18 @@
 - ✅ `sa/adapters/findings_to_sarif.py`：归一化 findings → SARIF 2.1.0
 - ✅ `harvest/tools/make_draft_sarif.sh`：轻量 SA（clang --analyze + cppcheck）逐候选生成 findings + 溯源表
 - ✅ `harvest.yml` propose 步骤：生成 + `upload-sarif@v4` 上传（main 检出=修复脚本，确定性）
-- ✅ **全量扫描 6 仓（curl/sqlite/redis/nginx/vim/postgres）+ since=2010 深历史**：run 33322364514 产出 76 候选，SARIF `（76 results, 3 rules）` 上传成功
-- ✅ Security → Code scanning 可视化（最新上传 76 results → 去重后约 30 条唯一告警，rule cwe-476/787）
+- ✅ **深历史扫描真正跑通**（run 33325819768）：curl/redis/vim/nginx 4 仓命中 redis 300 / nginx 144 / vim 139 / curl 97 PR，产出 **343 候选**，SARIF `（343 results, 3 rules）` 上传成功
+- ✅ Security → Code scanning 可视化（343 results 上传，去重后唯一告警在 Security tab）
 - ⚠️ **同仓 PR 内联标注限制**：upload-sarif 对同仓 PR 绑 default branch（refs/heads/main），不在 PR Files changed 画标注（平台限制，非 bug）
-- ⚠️ **SARIF 参数 bug 已修**：原 `make_draft_sarif.sh` 用 `sys.argv` 位置传参，个数不匹配导致每候选 `ValueError`、0 results；改为**环境变量传参**后 76 results 正常
-- ⚠️ **harvest-pr-sarif.yml 弃用**：同仓 PR 的 merge-ref 缓存导致它总跑旧脚本，已 `if: false` 禁用，SARIF 改由 harvest.yml propose 生成上传
+- ⚠️ **SARIF 参数 bug 已修**：原 `make_draft_sarif.sh` 用 `sys.argv` 位置传参，个数不匹配导致每候选 `ValueError`、0 results；改为**环境变量传参**后正常
+
+## 阶段 1 踩坑（已修，留档）
+1. **`in:title` 太窄**：原 query `fix in:title` 命中极少（curl 3、sqlite/postgres/linux 0）；改**全字段搜索** `fix OR bug OR leak OR overflow OR crash` 后量级对了（curl 97、redis 3056）。噪声由 judge_bug 启发式 + 人审兜底。
+2. **config 覆盖 max_prs（关键）**：`pr_mine.py` 原 `args.max_prs = pm.get("max_prs_per_run", args.max_prs)` 用 config 的 50 **永远覆盖** workflow 传的 `--max-prs`，导致深历史一直只爬 50 PR/仓。改为 `args.max_prs = args.max_prs or pm.get("max_prs_per_run")`（input 优先）→ max_prs=300 真正生效，redis 爬满 300。
+3. **sqlite/postgres/linux 搜索返回 0**：单关键词 fix/bug/leak 实测也是 0，非 query 问题。根因=仓特性：sqlite 大量改动直接 commit 不走 PR、linux 走邮件列表+直接 commit（GitHub PR 极少）、postgres 索引覆盖差。这三仓**天然 PR 少**，非 blocking；curl/redis/vim/nginx 才是真正用 GitHub PR 流程的仓，已扫到深历史。
 
 ## 阶段 1 结论
-- 可视化友好目标**已达成**（Security tab 原生 SARIF 渲染；全部 76 候选数据在 `harvest/inbox/draft/` + PR 溯源表）
+- 可视化友好目标**已达成**（Security tab 原生 SARIF 渲染；343 候选数据在 `harvest/inbox/draft/` + PR 溯源表）
 - 路径可追溯：PR 溯源表每行带源 PR 链接，notes.md 内嵌真实修复 diff + accept 流程
 - 候选 scenario 标「待定（非真值）」，不猜真值误导；正式仓手动 LLM 评审定真值
 
@@ -65,4 +69,4 @@
 ## 注意
 - draft 候选是外部仓片段，完整 9 工具编不过 → 阶段 1 用轻量 SA；完整 9 工具在 accept 进 cases/ 补编译后跑（阶段 2）
 - SARIF 仅展示层，canonical findings.json 不变
-- 当前候选 PR：#27（全量 76 条，SARIF 正常）、#24（两仓 32 条对照，留作对比）
+- 当前候选 PR：#32（深历史 343 条，主力）、#27（76 条，对照）、#24（32 条两仓，对照）
