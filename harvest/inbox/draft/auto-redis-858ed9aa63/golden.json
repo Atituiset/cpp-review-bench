@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/defrag.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15628 Fix potential defrag issues in the hash template registry :: 启发式命中 malloc|free|alloc|realloc|calloc",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
