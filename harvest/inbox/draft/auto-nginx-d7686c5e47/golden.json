@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_mail_auth_http_module.c",
+      "anchor": "s->passwd.data = NULL;",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #1212 Mail: fixed clearing s->passwd in auth http requests. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

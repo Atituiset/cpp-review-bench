@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/debug.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #15441 Backup & Restore :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

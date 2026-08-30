@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/aof.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #15436 Fix AOF rewrite crash on module types with a NULL aof_rewrite callback :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
