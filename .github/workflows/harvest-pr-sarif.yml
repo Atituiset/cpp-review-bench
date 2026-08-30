@@ -1,0 +1,40 @@
+name: harvest-pr-sarif
+# 在候选 PR（harvest/inbox-* 分支）上生成 SARIF 并上传，使每条候选的真实 bug 位置
+# 在 PR 的 Files changed / code-scanning 内联标注（参照 agent-reviewer@mvp 的玩法）。
+# 必须跑在 pull_request 事件下，upload-sarif 才能绑定到 PR head ref（内联标注生效）。
+on:
+  pull_request:
+    branches: ["harvest/inbox-*"]
+
+permissions:
+  contents: read
+  security-events: write   # upload-sarif 需要
+  pull-requests: read
+
+jobs:
+  sarif:
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'harvest/inbox-')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 安装 clang / cppcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang cppcheck
+      - name: 生成 draft SARIF（轻量 SA + 四态）
+        run: |
+          pip install pyyaml
+          chmod +x sa/adapters/*.py harvest/tools/*.sh
+          bash harvest/tools/make_draft_sarif.sh "$PWD" harvest/inbox /tmp/draft-sarif
+          echo "--- 四态表预览 ---"; cat /tmp/draft-sarif/report.md
+      - name: 上传 SARIF（绑定 PR head，内联标注到 Files changed）
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: /tmp/draft-sarif/sarif/draft.sarif
+          category: harvest-draft

@@ -196,9 +196,3 @@ jobs:
               --assignee "${{ github.repository_owner }}" \
               --label "harvest,inbox" || echo "issue 也失败"
           fi
-      - name: 上传 SARIF（草稿已 commit 到 PR 分支，内联标注到 Files changed）
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: /tmp/draft-sarif/sarif/draft.sarif
-          category: harvest-draft
