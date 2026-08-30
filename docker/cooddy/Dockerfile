@@ -62,4 +62,5 @@ RUN git clone --depth 1 https://github.com/program-analysis-team/cooddy.git /opt
     && echo "cooddy built:" && find /opt/cooddy/build -name cooddy -type f
 
 WORKDIR /workspace
-ENTRYPOINT ["/opt/cooddy/build/cooddy"]
+# ENTRYPOINT 用 bash 定位真正的 cooddy 二进制（build 目录下 cooddy 是目录，二进制在其内）
+ENTRYPOINT ["/bin/bash", "-c", "COODDY=$(find /opt/cooddy/build -name cooddy -type f | head -1); exec \"$COODDY\" \"$@\"", "--"]

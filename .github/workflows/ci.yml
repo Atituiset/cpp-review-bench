@@ -249,7 +249,12 @@ jobs:
       - name: 生成 compdb 并跑 cooddy 验证端到端
         run: |
           cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
-          docker run --rm -v "$PWD":/workspace cooddy-test:ci --scope /workspace/cases/defect/r04-oob-write-stack --reporter json > /tmp/cooddy_r04.json 2>/tmp/cooddy_r04.err || echo "[warn] cooddy 运行非零（镜像可能未构建成功）"
+          # ENTRYPOINT 指向的是目录，用 bash 定位真正的 cooddy 二进制再跑
+          docker run --rm --entrypoint bash -v "$PWD":/workspace cooddy-test:ci -c "\
+            COODDY=\$(find /opt/cooddy/build -name cooddy -type f | head -1); \
+            echo \"coooddy bin: \$COODDY\"; \
+            \$COODDY --scope /workspace/cases/defect/r04-oob-write-stack --reporter json" \
+            > /tmp/cooddy_r04.json 2>/tmp/cooddy_r04.err || echo "[warn] cooddy 运行非零（镜像可能未构建成功）"
           echo "=== cooddy 对 r04 输出（前 40 行）==="
           head -40 /tmp/cooddy_r04.json 2>/dev/null
           echo "=== stderr 关键 ==="
