@@ -1,0 +1,90 @@
+name: harvest-review
+# 方案 A 细粒度评审：在 harvest 候选 PR 里用评论指令控制每个 case 的流向。
+# 评论示例（一行一条，空格分隔多个 id）：
+#   /harvest accept   auto-curl-03fd447a33 auto-curl-09f32064f8   → 转 cases/defect/（真 bug，merge 后 ci.yml 跑全流程）
+#   /harvest contract auto-curl-1f01fc71c4                        → 转 cases/contract/（确认是 FP 契约，contract.yaml 必填）
+#   /harvest reject   auto-curl-4240076f6e --reason "误报：非内存安全" → 转 harvest/inbox/rejected/ 并记录原因
+# 触发：在候选 PR 下评论即可（pull_request_comment）。
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: write
+
+jobs:
+  parse:
+    # 只在 harvest 候选 PR（标题含 "每日候选"）上的 /harvest 指令才响应
+    if: >-
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '/harvest ')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.issue.pull_request.head.ref }}
+          token: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
+      - name: 解析指令并流转
+        id: go
+        run: |
+          set -u
+          BODY="${{ github.event.comment.body }}"
+          # 取动作
+          ACTION=$(echo "$BODY" | awk '{print $2}')
+          # 取 id 列表（第三字段起，遇到 --reason 止）
+          IDS=$(echo "$BODY" | sed -E 's#^/harvest [a-z]+##; s/--reason.*$//' | tr -s ' ')
+          REASON=$(echo "$BODY" | grep -oP '(?<=--reason ).*' || true)
+          [ -z "$REASON" ] && REASON="review reject"
+          echo "ACTION=$ACTION IDS=$IDS"
+          git config user.name "harvest-bot"
+          git config user.email "harvest@users.noreply.github.com"
+          SUMMARY=""
+          for cid in $IDS; do
+            SRC="harvest/inbox/draft/$cid"
+            if [ ! -d "$SRC" ]; then
+              SUMMARY="$SUMMARY\n- SKIP $cid（不在 draft）"
+              continue
+            fi
+            if [ "$ACTION" = "accept" ]; then
+              mkdir -p "cases/defect/$cid"
+              git mv "$SRC"/* "cases/defect/$cid/"
+              SUMMARY="$SUMMARY\n- ✅ accept $cid → cases/defect/$cid"
+            elif [ "$ACTION" = "contract" ]; then
+              if [ ! -s "$SRC/contract.yaml" ]; then
+                SUMMARY="$SUMMARY\n- ⚠️ $cid contract.yaml 必填，跳过"
+                continue
+              fi
+              mkdir -p "cases/contract/$cid"
+              git mv "$SRC"/* "cases/contract/$cid/"
+              SUMMARY="$SUMMARY\n- ✅ contract $cid → cases/contract/$cid"
+            elif [ "$ACTION" = "reject" ]; then
+              mkdir -p "harvest/inbox/rejected/$cid"
+              git mv "$SRC"/* "harvest/inbox/rejected/$cid/"
+              printf '%s\n' "$REASON" > "harvest/inbox/rejected/$cid/REJECT_REASON.md"
+              SUMMARY="$SUMMARY\n- ❌ reject $cid → harvest/inbox/rejected/$cid（原因：$REASON）"
+            else
+              SUMMARY="$SUMMARY\n- ⚠️ 未知动作 $ACTION"
+            fi
+          done
+          git add -A
+          if git diff --cached --quiet; then
+            echo "无改动"
+          else
+            git commit -m "harvest: $ACTION $IDS"
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" HEAD
+          fi
+          # 把处理结果回帖到 PR 评论
+          {
+            echo "## harvest 指令处理结果"
+            echo "- 动作：$ACTION"
+            echo "- 候选：$IDS"
+            echo
+            echo "\`\`\`"
+            echo -e "$SUMMARY"
+            echo "\`\`\`"
+          } > /tmp/harvest_result.md
+          gh pr comment "${{ github.event.issue.number }}" --body-file /tmp/harvest_result.md
