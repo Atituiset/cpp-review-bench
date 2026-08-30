@@ -33,11 +33,21 @@ API = "https://api.github.com"
 HEADERS = {"Accept": "application/vnd.github+json"}
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
 
+# GitHub search API 限额仅 30 req/min（远严于 core 5000/min），分片翻页极易触发；
+# 对 /search/* 端点做最小间隔限速，避免 403 限流拖垮整轮（符合"分几天/不触发限流"准则）。
+_search_call_ts = [0.0]
+
 
 def api_get(path, params=None):
     h = dict(HEADERS)
     if TOKEN:
         h["Authorization"] = f"Bearer {TOKEN}"
+    if path.startswith("/search"):
+        # 保证两次 search 调用间隔 ≥ 2.1s（≈28/min，留余量）
+        gap = 2.1 - (time.time() - _search_call_ts[0])
+        if gap > 0:
+            time.sleep(gap)
+        _search_call_ts[0] = time.time()
     for attempt in range(3):
         r = requests.get(API + path, headers=h, params=params, timeout=30)
         if r.status_code == 403 and "rate limit" in r.text.lower():
