@@ -29,7 +29,7 @@ for gj in "$ROOT"/cases/*/*/golden.json; do
   track="$(basename "$(dirname "$case_dir")")"
   src_dir="$case_dir/src"
   [ -d "$src_dir" ] || continue
-  python3 "$ROOT/tools/cppcheck_to_findings.py" "$track" "$cid" "$src_dir" \
+  python3 "$ROOT/sa/adapters/cppcheck_to_findings.py" "$track" "$cid" "$src_dir" \
     --cppcheck "$CPPCHECK_BIN" --tool cppcheck --version "$TOOL_VER" \
     "${INC_ARGS[@]}" > "$OUT/${cid}.json"
   echo "[ok] $cid -> $OUT/${cid}.json"

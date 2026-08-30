@@ -14,7 +14,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
   track="$(basename "$(dirname "$case_dir")")"
   src_dir="$case_dir/src"
   [ -d "$src_dir" ] || continue
-  harness="$(find "$case_dir" -name klee_harness.c | head -1)"
+  harness="$REPO_ROOT/sa/harnesses/$cid/klee_harness.c"
   [ -f "$harness" ] || { echo "[skip] $cid: 无 klee_harness.c"; continue; }
 
   bc="$OUT_ROOT/$cid.bc"
@@ -41,7 +41,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
   klee --output-dir="$klee_out" --max-time=60 "$bc" >"$OUT_ROOT/$cid.klee.log" 2>&1 \
     || echo "[warn] $cid klee 退出非 0（可能有错误产出）"
 
-  python3 "$REPO_ROOT/tools/klee_to_findings.py" "$track" "$cid" "$klee_out" \
+  python3 "$REPO_ROOT/sa/adapters/klee_to_findings.py" "$track" "$cid" "$klee_out" \
     --tool klee --version "$(klee --version 2>/dev/null | head -1)" \
     --golden-file "$gfile" --golden-line "$gline" --scenario "$gscen" \
     --out "$OUT_ROOT/$cid.json" 2>/dev/null \
@@ -50,7 +50,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
 done
 echo "=== 各例 KLEE findings 数 ==="
 shopt -s nullglob 2>/dev/null || true
-for f in klee-findings/*.json; do
+for f in "$OUT_ROOT"/*.json; do
   [ -f "$f" ] && echo "$(basename "$f"): $(python3 -c "import json;print(len(json.load(open('$f'))['findings']))" 2>/dev/null)"
 done
 shopt -u nullglob 2>/dev/null || true

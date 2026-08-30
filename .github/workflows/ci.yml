@@ -54,20 +54,20 @@ jobs:
         run: python3 tools/eval.py selftest
 
       - name: CSA 单 TU 默认配置
-        run: ./consumers/local/run_csa.sh singletu /tmp/csa_singletu
+        run: ./sa/runners/run_csa.sh singletu /tmp/csa_singletu
 
       - name: CSA 原生 CTU（跨文件分析）
-        run: ./consumers/local/run_csa.sh ctu /tmp/csa_ctu
+        run: ./sa/runners/run_csa.sh ctu /tmp/csa_ctu
 
       - name: CppCheck（跨工具对照）
-        run: chmod +x consumers/local/run_cppcheck.sh && ./consumers/local/run_cppcheck.sh /tmp/cppcheck
+        run: chmod +x sa/runners/run_cppcheck.sh && ./sa/runners/run_cppcheck.sh /tmp/cppcheck
 
       - name: clang-tidy（编译期检查，clang-21 自带，第三个对照工具）
         env:
           CLANG_TIDY_BIN: clang-tidy-21
         run: |
-          chmod +x consumers/local/run_clang_tidy.sh
-          ./consumers/local/run_clang_tidy.sh
+          chmod +x sa/runners/run_clang_tidy.sh
+          ./sa/runners/run_clang_tidy.sh
           mkdir -p /tmp/clang-tidy && cp reports/evidence/clang-tidy/*.json /tmp/clang-tidy/ 2>/dev/null || true
 
       - name: 汇总全部工具 findings 上传 artifact
@@ -95,8 +95,8 @@ jobs:
 
       - name: 逐 case 跑 Infer（抽象解释）+ 归一化
         run: |
-          chmod +x consumers/local/run_infer.sh
-          ./consumers/local/run_infer.sh "$PWD/cases" "$PWD/infer-findings" "$PWD"
+          chmod +x sa/runners/run_infer.sh
+          ./sa/runners/run_infer.sh "$PWD/cases" "$PWD/infer-findings" "$PWD"
           echo "=== 各例 Infer findings 数 ==="
           for f in infer-findings/*.json; do echo "$(basename $f): $(python3 -c "import json;print(len(json.load(open('$f'))['findings']))" 2>/dev/null)"; done
 
@@ -160,8 +160,8 @@ jobs:
         run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
       - name: 逐 case 跑 KLEE（符号执行）+ 归一化
         run: |
-          chmod +x consumers/local/run_klee.sh
-          ./consumers/local/run_klee.sh "$PWD/cases" "$PWD/klee-findings" "$PWD"
+          chmod +x sa/runners/run_klee.sh
+          ./sa/runners/run_klee.sh "$PWD/cases" "$PWD/klee-findings" "$PWD"
           echo "=== 各例 KLEE findings 数 ==="
           for f in klee-findings/*.json; do [ -f "$f" ] && echo "$(basename $f): $(python3 -c "import json;print(len(json.load(open('$f'))['findings']))" 2>/dev/null)"; done
       - name: KLEE 四态评测（vs golden）
@@ -184,25 +184,16 @@ jobs:
           echo "CodeChecker: $(CodeChecker --version 2>/dev/null | head -1)"
       - name: 全量编译 + 统一 compile_commands.json
         run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
-      - name: 从 compdb 剔除 klee_harness.c（避免 KLEE 头缺失导致 analyze 中断）
-        run: |
-          python3 - <<'PY'
-          import json
-          db = json.load(open('build/compile_commands.json'))
-          db = [e for e in db if 'klee_harness.c' not in e['file']]
-          json.dump(db, open('cc_compdb.json','w'), indent=2)
-          print('compdb entries:', len(db))
-          PY
       - name: CodeChecker analyze（clang SA + clang-tidy，CTU）
         run: |
-          CodeChecker analyze cc_compdb.json --ctu --output cc_reports 2>&1 | tail -5 || true
+          CodeChecker analyze build/compile_commands.json --ctu --output cc_reports 2>&1 | tail -5 || true
           CodeChecker parse cc_reports -e json > cc_export.json 2>/dev/null || echo "[warn] parse 无结果"
           echo "=== cc_export.json reports 数 ==="
           python3 -c "import json;d=json.load(open('cc_export.json'));print('reports:',len(d.get('reports',[])))" 2>/dev/null || echo "0"
       - name: 归一化 + 四态评测
         run: |
           if [ -f cc_export.json ]; then
-            python3 tools/codechecker_to_findings.py cc_export.json "$PWD/cases" --out-dir cc-findings 2>&1 | tail -20
+            python3 sa/adapters/codechecker_to_findings.py cc_export.json "$PWD/cases" --out-dir cc-findings 2>&1 | tail -20
             python3 tools/eval.py run cc-findings 2>&1 | tail -30 || echo "[warn] codechecker 四态评测跳过"
           else
             echo "[warn] cc_export.json 不存在，跳过归一化"
@@ -224,8 +215,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: 逐 case 跑 Joern（CPG 图查询定位 golden 锚点 + 危险调用枚举）+ 归一化
         run: |
-          chmod +x consumers/local/run_joern.sh
-          ./consumers/local/run_joern.sh "$PWD/cases" "$PWD/joern-findings" "$PWD"
+          chmod +x sa/runners/run_joern.sh
+          ./sa/runners/run_joern.sh "$PWD/cases" "$PWD/joern-findings" "$PWD"
           echo "=== 各例 Joern findings 数 ==="
           for f in joern-findings/*.json; do [ -f "$f" ] && echo "$(basename $f): $(python3 -c "import json;d=json.load(open('$f'));print(len(d.get('findings',[])))" 2>/dev/null)"; done
       - name: Joern 四态评测（vs golden）
@@ -243,7 +234,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: 本地 docker build cooddy 镜像（验证 z3 链接修复，不推送）
         run: |
-          docker build -f docker/cooddy/Dockerfile -t cooddy-test:ci . 2>&1 | tee /tmp/cooddy_build.log | tail -3
+          docker build -f sa/docker/cooddy/Dockerfile -t cooddy-test:ci . 2>&1 | tee /tmp/cooddy_build.log | tail -3
           echo "=== 真实报错（make 阶段）==="
           grep -iE 'error:|cannot find|cannot be used|libz3|z3' /tmp/cooddy_build.log | tail -30
       - name: 生成 compdb 并跑 cooddy 验证端到端

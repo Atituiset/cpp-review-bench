@@ -15,7 +15,7 @@ for gj in "$ROOT"/cases/*/*/golden.json; do
   track="$(basename "$(dirname "$case_dir")")"
   src_dir="$case_dir/src"
   [ -d "$src_dir" ] || continue
-  python3 "$ROOT/tools/clang_tidy_to_findings.py" "$track" "$cid" "$src_dir" \
+  python3 "$ROOT/sa/adapters/clang_tidy_to_findings.py" "$track" "$cid" "$src_dir" \
     --clang-tidy "$CLANG_TIDY_BIN" --build-dir "$BUILD" \
     --out "$OUT/$cid.json" --tool clang-tidy --version "$TOOL_VER" \
     > "$OUT/$cid.err" 2>&1 || { echo "[warn] $cid clang-tidy 失败:"; tail -5 "$OUT/$cid.err"; }

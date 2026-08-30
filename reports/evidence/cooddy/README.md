@@ -24,6 +24,6 @@ Cooddy（program-analysis-team/cooddy）是华为开源的 clang 系静态分析
 
 ## 复现路径
 - workflow: `.github/workflows/ci.yml` 的 `cooddy-verify` job（workflow_dispatch 可手动触发）
-- Dockerfile: `docker/cooddy/Dockerfile`
+- Dockerfile: `sa/docker/cooddy/Dockerfile`
 - 成功构建 run: 33293068658（cooddy-verify conclusion=success）
 - 最近一次失败 run（旧）: 33264109295（conclusion=failure，Solver 链接 -lz3）

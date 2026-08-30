@@ -38,8 +38,8 @@ python3 tools/eval.py selftest
 
 # 4) 接一个工具：把它的结果转归一化 findings 后评分
 #    （以 Clang SA 为例，本地直跑）
-./consumers/local/run_csa.sh singletu /tmp/csa_singletu   # 单 TU 默认
-./consumers/local/run_csa.sh ctu      /tmp/csa_ctu        # 原生 CTU（需 clang-extdef-mapping）
+./sa/runners/run_csa.sh singletu /tmp/csa_singletu   # 单 TU 默认
+./sa/runners/run_csa.sh ctu      /tmp/csa_ctu        # 原生 CTU（需 clang-extdef-mapping）
 python3 tools/eval.py run /tmp/csa_singletu
 ```
 
@@ -49,8 +49,13 @@ python3 tools/eval.py run /tmp/csa_singletu
 cases/        contract/(16 例) + defect/(14 例) + calibration/
 schema/       golden.schema.json(v2) + findings.schema.json
 cmake/        AllCases.cmake 一键全量构建 + 统一 compdb
-tools/        eval.py(评分器) + check_cases.py(自检) + csa_to_findings.py(CSA 适配)
-consumers/    github-action/ + local/(直跑入口)
+tools/        eval.py(评分器) + check_cases.py(自检) + 其余 *_to_findings.py 已归入 sa/adapters
+sa/           静态分析工程化归一目录：
+              adapters/   各工具 findings 归一化（*_to_findings.py）
+              runners/    各工具触发脚本（run_*.sh）
+              scripts/    工具专属查询（joern/scan.sc）
+              harnesses/  KLEE 符号执行入口（按 case 归置 klee_harness.c）
+              docker/     工具镜像（cooddy/Dockerfile）
 reports/      各工具基线报告（持续积累，格式见 reports/README.md）
 ```
 

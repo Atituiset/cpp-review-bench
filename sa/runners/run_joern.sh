@@ -26,11 +26,11 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
 
   # 经环境变量传参（Joern 2.x 脚本不暴露 params map，改用 sys.env）
   SRC_DIR="$src_dir" ANCHOR_FILE="$af" FUNCTION_FILE="$ff" SCENARIO="$scenario" OUT_FILE="$raw" \
-  joern --script "$REPO_ROOT/joern-scripts/scan.sc" \
+  joern --script "$REPO_ROOT/sa/scripts/joern/scan.sc" \
         >"/tmp/joern_params/$cid.log" 2>&1 || echo "[warn] $cid joern 失败（见 /tmp/joern_params/$cid.log）"
   echo "--- $cid joern 日志 ---"; tail -15 "/tmp/joern_params/$cid.log" 2>/dev/null
   [ -f "$raw" ] || echo '{"findings":[]}' > "$raw"
-  python3 "$REPO_ROOT/tools/joern_to_findings.py" "$track" "$cid" "$raw" --out "$out" 2>/dev/null \
+  python3 "$REPO_ROOT/sa/adapters/joern_to_findings.py" "$track" "$cid" "$raw" --out "$out" 2>/dev/null \
     || echo "[warn] $cid 归一化失败"
   echo "[done] $cid"
 done

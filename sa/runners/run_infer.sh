@@ -23,7 +23,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
       || echo "[warn] $cid $(basename "$src") infer 失败"
   done
   # 合并该 case 所有 report.json -> 归一化 findings
-  python3 "$REPO_ROOT/tools/infer_to_findings.py" "$track" "$cid" "$raw_dir" \
+  python3 "$REPO_ROOT/sa/adapters/infer_to_findings.py" "$track" "$cid" "$raw_dir" \
     --tool infer --version "$(infer --version 2>/dev/null | head -1)" \
     --out "$OUT_ROOT/$cid.json" 2>/dev/null \
     || echo "[warn] $cid 归一化失败"

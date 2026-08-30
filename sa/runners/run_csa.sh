@@ -89,7 +89,7 @@ for gj in "$ROOT"/cases/*/*/golden.json; do
   done
   TOOL_NAME="csa-$MODE"
   [ "$MODE" = "ctu" ] && TOOL_NAME="csa-ctu"
-  python3 "$ROOT/tools/csa_to_findings.py" "$track" "$cid" "$src_dir" "$plist_dir" \
+  python3 "$ROOT/sa/adapters/csa_to_findings.py" "$track" "$cid" "$src_dir" "$plist_dir" \
     --tool "$TOOL_NAME" --version "$TOOL_VER" > "$OUT/${cid}.json"
   rm -rf "$plist_dir"
   echo "[ok] $cid -> $OUT/${cid}.json"
