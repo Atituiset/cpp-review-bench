@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/redis-cli.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #14863 Fix memory leak in `clusterManagerFixSlotsCoverage()` in `src/redis-cli.c` :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

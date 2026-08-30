@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/redis-cli.c",
+      "anchor": "entry->element[3]->type != REDIS_REPLY_INTEGER) return;",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #15150 Fix memory leak on malformed legacy help entry in redis-cli :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
