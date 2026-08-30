@@ -24,6 +24,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   scan:
@@ -123,7 +124,9 @@ jobs:
           ./sa/runners/run_eval_inbox.sh "$PWD" harvest/inbox /tmp/eval-inbox
       - name: 若有新候选，开 PR 通知审核
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 默认 GITHUB_TOKEN 无权在同仓建 PR（GitHub 防递归）；用 PAT 秘密 HARVEST_TOKEN 建 PR。
+          # 未配 HARVEST_TOKEN 时回退为开 issue 通知（默认 token 允许 issues）。
+          GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           N=$(ls -1 harvest/inbox/draft 2>/dev/null | wc -l)
           echo "待审核候选数: $N"
@@ -131,20 +134,27 @@ jobs:
             echo "无新候选，不开 PR"
             exit 0
           fi
-          # 预建标签（不存在则建，避免 gh pr create 因 label 缺失失败）
           gh label create harvest --description "harvest 采集管线" --color "0e8a16" 2>/dev/null || true
           gh label create inbox --description "待审核候选" --color "fbca04" 2>/dev/null || true
           BODY="$(cat /tmp/eval-inbox/eval_inbox_report.md)"
-          # 每轮唯一分支（含 run_id），避免同日多次运行分支名冲突导致 push 被拒
           BRANCH="harvest/inbox-$(date +%Y%m%d)-${{ github.run_id }}"
           git config user.name "harvest-bot"
           git config user.email "harvest@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add harvest/inbox/draft
           git commit -m "harvest: 每日候选 $N 条待审核"
-          git push origin "$BRANCH"
-          gh pr create \
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" "$BRANCH"
+          if gh pr create \
             --title "harvest: 每日候选 $N 条待审核（$(date +%Y-%m-%d)）" \
             --body "$BODY" \
             --assignee "${{ github.repository_owner }}" \
-            --label "harvest,inbox" || echo "PR 已存在或创建失败"
+            --label "harvest,inbox"; then
+            echo "PR 已开"
+          else
+            echo "PR 创建失败（可能缺 HARVEST_TOKEN），改开 issue 通知"
+            gh issue create \
+              --title "harvest: 每日候选 $N 条待审核（$(date +%Y-%m-%d)）" \
+              --body "分支 $BRANCH 含 $N 条候选草稿，review 后告诉我 confirm-tp / confirm-fp / reject" \
+              --assignee "${{ github.repository_owner }}" \
+              --label "harvest,inbox" || echo "issue 也失败"
+          fi
