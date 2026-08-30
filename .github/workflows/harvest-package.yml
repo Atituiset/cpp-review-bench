@@ -1,21 +1,28 @@
 name: harvest-package
 # 候选打包 + inbox 三态流转辅助
 # 与 harvest.yml 的 vote job 衔接；本 workflow 聚焦「inbox 草稿 → 三态确认」的人工辅助：
-#   - 列出当前 draft 候选，生成审核清单（供双人复核）
-#   - 提供 confirm-tp / confirm-fp / reject 的搬移脚本（由审核人在本地或本 workflow 执行）
+#   - list：列出当前 draft 候选
+#   - confirm-tp <ids>：转 cases/defect/（真 bug）
+#   - contract <ids>：   转 cases/contract/（确认是 FP 契约，contract.yaml 必填）
+#   - reject <ids>：      转 harvest/inbox/rejected/（带原因）
+# case_ids 支持空格分隔的多个 id（方案 A 细粒度：30 接受 10 拒绝 一次传多个 id）。
 on:
   workflow_dispatch:
     inputs:
       action:
         type: choice
-        options: [list, confirm-tp, confirm-fp, reject]
+        options: [list, confirm-tp, contract, reject]
         default: list
-      case_id:
+      case_ids:
         type: string
+        description: "空格分隔的候选 id 列表，如 auto-curl-03fd447a33 auto-curl-09f32064f8"
         required: false
       reason:
         type: string
         required: false
+
+permissions:
+  contents: write
 
 jobs:
   triage:
@@ -29,33 +36,45 @@ jobs:
           ls -1 harvest/inbox/draft 2>/dev/null || echo "（空）"
       - name: confirm-tp → cases/defect/
         if: inputs.action == 'confirm-tp'
+        env:
+          GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          SRC="harvest/inbox/draft/${{ inputs.case_id }}"
-          [ -d "$SRC" ] || { echo "ERROR: 无 $SRC"; exit 1; }
-          mkdir -p "cases/defect/${{ inputs.case_id }}"
-          git mv "$SRC"/* "cases/defect/${{ inputs.case_id }}/"
+          for cid in ${{ inputs.case_ids }}; do
+            SRC="harvest/inbox/draft/$cid"
+            [ -d "$SRC" ] || { echo "SKIP 无 $SRC"; continue; }
+            mkdir -p "cases/defect/$cid"
+            git mv "$SRC"/* "cases/defect/$cid/"
+            echo "已转 cases/defect/$cid"
+          done
           git -c user.name='harvest-bot' -c user.email='harvest@users.noreply.github.com' \
-            commit -m "feat(defect): confirm-tp ${{ inputs.case_id }}（harvest 自动入库）"
-          echo "已转 cases/defect/${{ inputs.case_id }}"
-      - name: confirm-fp → cases/contract/
-        if: inputs.action == 'confirm-fp'
+            commit -m "feat(defect): confirm-tp ${{ inputs.case_ids }}（harvest 自动入库）" || echo "无改动"
+      - name: contract → cases/contract/
+        if: inputs.action == 'contract'
+        env:
+          GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          SRC="harvest/inbox/draft/${{ inputs.case_id }}"
-          [ -d "$SRC" ] || { echo "ERROR: 无 $SRC"; exit 1; }
-          [ -s "$SRC/contract.yaml" ] || { echo "ERROR: contract.yaml 必填（FP 因何契约成立）"; exit 1; }
-          mkdir -p "cases/contract/${{ inputs.case_id }}"
-          git mv "$SRC"/* "cases/contract/${{ inputs.case_id }}/"
+          for cid in ${{ inputs.case_ids }}; do
+            SRC="harvest/inbox/draft/$cid"
+            [ -d "$SRC" ] || { echo "SKIP 无 $SRC"; continue; }
+            [ -s "$SRC/contract.yaml" ] || { echo "ERROR: $cid contract.yaml 必填（FP 因何契约成立）"; exit 1; }
+            mkdir -p "cases/contract/$cid"
+            git mv "$SRC"/* "cases/contract/$cid/"
+            echo "已转 cases/contract/$cid"
+          done
           git -c user.name='harvest-bot' -c user.email='harvest@users.noreply.github.com' \
-            commit -m "feat(contract): confirm-fp ${{ inputs.case_id }}（真实 FP 契约入库）"
-          echo "已转 cases/contract/${{ inputs.case_id }}"
+            commit -m "feat(contract): contract ${{ inputs.case_ids }}（真实 FP 契约入库）" || echo "无改动"
       - name: reject → inbox/rejected/
         if: inputs.action == 'reject'
+        env:
+          GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          SRC="harvest/inbox/draft/${{ inputs.case_id }}"
-          [ -d "$SRC" ] || { echo "ERROR: 无 $SRC"; exit 1; }
-          mkdir -p "harvest/inbox/rejected/${{ inputs.case_id }}"
-          git mv "$SRC"/* "harvest/inbox/rejected/${{ inputs.case_id }}/"
-          echo "${{ inputs.reason }}" > "harvest/inbox/rejected/${{ inputs.case_id }}/REJECT_REASON.md"
+          for cid in ${{ inputs.case_ids }}; do
+            SRC="harvest/inbox/draft/$cid"
+            [ -d "$SRC" ] || { echo "SKIP 无 $SRC"; continue; }
+            mkdir -p "harvest/inbox/rejected/$cid"
+            git mv "$SRC"/* "harvest/inbox/rejected/$cid/"
+            echo "${{ inputs.reason }}" > "harvest/inbox/rejected/$cid/REJECT_REASON.md"
+            echo "已驳回 → harvest/inbox/rejected/$cid"
+          done
           git -c user.name='harvest-bot' -c user.email='harvest@users.noreply.github.com' \
-            commit -m "chore(reject): ${{ inputs.case_id }} —— ${{ inputs.reason }}"
-          echo "已驳回 → harvest/inbox/rejected/${{ inputs.case_id }}"
+            commit -m "chore(reject): ${{ inputs.case_ids }} —— ${{ inputs.reason }}" || echo "无改动"
