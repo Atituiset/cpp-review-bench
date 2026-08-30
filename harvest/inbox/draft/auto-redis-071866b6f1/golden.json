@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/dict.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15462 Fix dictMemUsage() over-counting no_value entries :: 启发式命中 malloc|free|alloc|realloc|calloc",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

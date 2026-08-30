@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/t_stream.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15489 Fix unloadable RDB when XSETID lowers entries_added :: 启发式命中 \\*\\s*\\w+|->\\w+\\s*\\(|\\bdelete\\b",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
