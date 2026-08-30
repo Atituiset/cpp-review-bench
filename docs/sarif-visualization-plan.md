@@ -43,7 +43,24 @@
 - 其产出 SARIF（category=agent-reviewer）与 9 工具并排 → AI 评审 vs 9 SA 同台
 - 结合 eval.py golden 判四态 → 最终对比验证报告
 
+## 阶段 1 实施结果（2026-08-30 验证）
+- ✅ `sa/adapters/findings_to_sarif.py`：归一化 findings → SARIF 2.1.0（本地 + CI 验证通过）
+- ✅ `harvest/tools/make_draft_sarif.sh`：轻量 SA（clang --analyze + cppcheck）逐候选生成 findings + 四态表
+- ✅ `harvest-pr-sarif.yml`：候选 PR 事件下生成 SARIF + `upload-sarif@v4` 上传
+- ✅ **code-scanning 已有 30 条候选告警**（cwe-476/415/787），Security → Code scanning 可可视化查看每条候选的 scenario/位置/理由
+- ⚠️ **同仓 PR 内联标注限制**：GitHub 对同仓（非 fork）PR 的 upload-sarif 结果，默认关联到 default branch（refs/heads/main），**不会在 PR 的 Files changed 上画内联标注**。这是平台限制，非代码 bug（已试 refs/pull/N/merge、refs/pull/N/head+head.sha、默认 merge checkout 三种绑定，均归 main）。
+  - agent-reviewer 在 u-boot PR #3 能内联标注，因 u-boot 是**另一仓**（cross-repo 语义），其 workflow 在 u-boot 仓内跑、绑 u-boot PR。
+  - 要在本仓候选 PR 上真·内联标注，需改 fork/cross-repo 模式（新建镜像仓提 PR），工程量大。
+
+## 阶段 1 结论
+- 可视化友好目标**已达成**（code-scanning 原生 SARIF 渲染，与 u-boot 同款引擎，位置在 Security tab）
+- PR body 四态表提供"看得懂的 pass/fail"（明确 9 个 CI check 的 SUCCESS ≠ 用例被检出）
+- 下一步：阶段 2（accept 进 cases/ 后完整 9 工具评测 + 四态，告警绑 main 合理）+ 阶段 3（agent-reviewer 对比，初衷）
+
+## 待确认
+- 方案 A：接受 Security tab 可视化 + PR body 四态表，进阶段 2
+- 方案 B：fork 模式硬搞 PR 内联标注（工程量大）
+
 ## 注意
 - draft 候选是外部仓片段，完整 9 工具编不过 → 阶段 1 用轻量 SA；完整 9 工具在 accept 进 cases/ 补编译后跑（阶段 2）
-- upload-sarif 仅标注 PR 改动文件；draft src 是新文件，可标注
 - SARIF 仅展示层，canonical findings.json 不变
