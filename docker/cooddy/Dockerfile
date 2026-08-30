@@ -10,21 +10,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # cooddy 要求 cmake >= 3.25，Ubuntu 22.04 自带 3.22 不足，用 pip 升到 3.25+
     && pip3 install --no-cache-dir --upgrade 'cmake>=3.25'
 
-# z3：cooddy 官方要求 4.8.9 且需源码 build（Z3_BUILD_LIBZ3_SHARED），
-# 产生 /usr/local/lib/cmake/z3/Z3Config.cmake，让 coooddy 的 find_package(Z3) 正确链接 -lz3
-# （预编译二进制缺 cmake config，导致裸 -lz3 链接失败）
+# z3：cooddy 官方要求 4.8.9 且需源码 build。
+# 关键：cooddy 的 Solver 目标用 `-Wl,-Bstatic -lz3` 强制链接【静态】libz3.a，
+# 因此必须构建静态库（Z3_BUILD_LIBZ3_SHARED=FALSE），并产生 libz3.a 供 -Bstatic -lz3 解析。
+# 同时保留头文件/Config 供 find_package(Z3)。
 RUN cd /opt \
     && wget -q https://github.com/Z3Prover/z3/archive/refs/tags/z3-4.8.9.zip -O z3.zip \
     && unzip -o z3.zip >/dev/null \
     && cd z3-z3-4.8.9 \
     && mkdir -p build && cd build \
-    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DZ3_BUILD_LIBZ3_SHARED=TRUE -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release .. \
+    && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DZ3_BUILD_LIBZ3_SHARED=FALSE -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release .. \
     && make -j "$(nproc)" \
     && make install \
     && ldconfig \
-    && cp -a /usr/local/lib/libz3.so* /usr/lib/x86_64-linux-gnu/ \
-    && ln -sf /usr/lib/x86_64-linux-gnu/libz3.so.4.8.9.0 /usr/lib/x86_64-linux-gnu/libz3.so \
-    && echo "z3 config:" && ls /usr/local/lib/cmake/z3/ 2>/dev/null && ls -l /usr/lib/x86_64-linux-gnu/libz3.so*
+    && echo "z3 静态库布局：" && ls -l /usr/local/lib/libz3.a /usr/lib/x86_64-linux-gnu/libz3.a 2>/dev/null || echo "(libz3.a 未就位，需检查)"
 
 ENV Z3_HOME=/usr/local
 ENV LLVM_CMAKE=/usr/lib/llvm-14/lib/cmake
