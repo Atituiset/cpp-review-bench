@@ -44,23 +44,25 @@
 - 结合 eval.py golden 判四态 → 最终对比验证报告
 
 ## 阶段 1 实施结果（2026-08-30 验证）
-- ✅ `sa/adapters/findings_to_sarif.py`：归一化 findings → SARIF 2.1.0（本地 + CI 验证通过）
-- ✅ `harvest/tools/make_draft_sarif.sh`：轻量 SA（clang --analyze + cppcheck）逐候选生成 findings + 四态表
-- ✅ `harvest-pr-sarif.yml`：候选 PR 事件下生成 SARIF + `upload-sarif@v4` 上传
-- ✅ **code-scanning 已有 30 条候选告警**（cwe-476/415/787），Security → Code scanning 可可视化查看每条候选的 scenario/位置/理由
-- ⚠️ **同仓 PR 内联标注限制**：GitHub 对同仓（非 fork）PR 的 upload-sarif 结果，默认关联到 default branch（refs/heads/main），**不会在 PR 的 Files changed 上画内联标注**。这是平台限制，非代码 bug（已试 refs/pull/N/merge、refs/pull/N/head+head.sha、默认 merge checkout 三种绑定，均归 main）。
-  - agent-reviewer 在 u-boot PR #3 能内联标注，因 u-boot 是**另一仓**（cross-repo 语义），其 workflow 在 u-boot 仓内跑、绑 u-boot PR。
-  - 要在本仓候选 PR 上真·内联标注，需改 fork/cross-repo 模式（新建镜像仓提 PR），工程量大。
+- ✅ `sa/adapters/findings_to_sarif.py`：归一化 findings → SARIF 2.1.0
+- ✅ `harvest/tools/make_draft_sarif.sh`：轻量 SA（clang --analyze + cppcheck）逐候选生成 findings + 溯源表
+- ✅ `harvest.yml` propose 步骤：生成 + `upload-sarif@v4` 上传（main 检出=修复脚本，确定性）
+- ✅ **全量扫描 6 仓（curl/sqlite/redis/nginx/vim/postgres）+ since=2010 深历史**：run 33322364514 产出 76 候选，SARIF `（76 results, 3 rules）` 上传成功
+- ✅ Security → Code scanning 可视化（最新上传 76 results → 去重后约 30 条唯一告警，rule cwe-476/787）
+- ⚠️ **同仓 PR 内联标注限制**：upload-sarif 对同仓 PR 绑 default branch（refs/heads/main），不在 PR Files changed 画标注（平台限制，非 bug）
+- ⚠️ **SARIF 参数 bug 已修**：原 `make_draft_sarif.sh` 用 `sys.argv` 位置传参，个数不匹配导致每候选 `ValueError`、0 results；改为**环境变量传参**后 76 results 正常
+- ⚠️ **harvest-pr-sarif.yml 弃用**：同仓 PR 的 merge-ref 缓存导致它总跑旧脚本，已 `if: false` 禁用，SARIF 改由 harvest.yml propose 生成上传
 
 ## 阶段 1 结论
-- 可视化友好目标**已达成**（code-scanning 原生 SARIF 渲染，与 u-boot 同款引擎，位置在 Security tab）
-- PR body 四态表提供"看得懂的 pass/fail"（明确 9 个 CI check 的 SUCCESS ≠ 用例被检出）
-- 下一步：阶段 2（accept 进 cases/ 后完整 9 工具评测 + 四态，告警绑 main 合理）+ 阶段 3（agent-reviewer 对比，初衷）
+- 可视化友好目标**已达成**（Security tab 原生 SARIF 渲染；全部 76 候选数据在 `harvest/inbox/draft/` + PR 溯源表）
+- 路径可追溯：PR 溯源表每行带源 PR 链接，notes.md 内嵌真实修复 diff + accept 流程
+- 候选 scenario 标「待定（非真值）」，不猜真值误导；正式仓手动 LLM 评审定真值
 
 ## 待确认
-- 方案 A：接受 Security tab 可视化 + PR body 四态表，进阶段 2
-- 方案 B：fork 模式硬搞 PR 内联标注（工程量大）
+- 阶段 2：accept 进 cases/ 后完整 9 工具评测 + eval.py 四态回流
+- 阶段 3：agent-reviewer@mvp 对比（初衷，手动触发，不烧 token）
 
 ## 注意
 - draft 候选是外部仓片段，完整 9 工具编不过 → 阶段 1 用轻量 SA；完整 9 工具在 accept 进 cases/ 补编译后跑（阶段 2）
 - SARIF 仅展示层，canonical findings.json 不变
+- 当前候选 PR：#27（全量 76 条，SARIF 正常）、#24（两仓 32 条对照，留作对比）
