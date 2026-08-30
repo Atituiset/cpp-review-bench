@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/server.h",
+      "anchor": "hashTemplate *hashTemplateDefrag(hashTemplate *tmpl);",
+      "line": 5,
+      "function": null,
+      "rationale": "PR #15628 Fix potential defrag issues in the hash template registry :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
