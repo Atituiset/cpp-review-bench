@@ -239,8 +239,9 @@ def main():
         # 优先用 targets 里该仓的 per-repo query，否则全局 query
         tgt = next((t for t in pm.get("targets", []) if t.get("repo") == entry["url"].split("github.com/")[-1]), {})
         args.query = tgt.get("query", pm.get("query", args.query))
-        args.max_prs = pm.get("max_prs_per_run", args.max_prs)
-        args.since = pm.get("since", args.since)
+        # workflow --max-prs / --since 优先于 config 默认值（config 仅作兜底）
+        args.max_prs = args.max_prs or pm.get("max_prs_per_run")
+        args.since = args.since or pm.get("since")
     elif args.config:
         cfg = yaml_safe_load(args.config)
         pm = cfg.get("pr_mining", {})
@@ -248,8 +249,8 @@ def main():
         for t in pm.get("targets", []):
             repos.append({"repo": t["repo"], "query": t.get("query")})
         args.query = pm.get("query", args.query)
-        args.max_prs = pm.get("max_prs_per_run", args.max_prs)
-        args.since = pm.get("since", args.since)
+        args.max_prs = args.max_prs or pm.get("max_prs_per_run")
+        args.since = args.since or pm.get("since")
     else:
 
         sys.stderr.write("ERROR: 需 --repo / --repo-name / --config\n")
