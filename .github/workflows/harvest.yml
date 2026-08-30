@@ -177,7 +177,7 @@ jobs:
           echo "解析到的 token 前缀: ${GH_TOKEN:0:10}***"
           echo "HARVEST_TOKEN 是否非空: $([ -n "${{ secrets.HARVEST_TOKEN }}" ] && echo YES || echo NO)"
           # PR/issue body：附完整候选清单表 + 四态表 + 细粒度审核指令
-          BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n注意：accept 只是预审进 cases/，merge 才落地 main；merge 前随时可 /case reject 反悔。\n\n## 🔍 候选 SARIF 评测（轻量 SA 四态）\n%s\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$FOUR" "$N" "$REPORT")
+          BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n注意：accept 只是预审进 cases/，merge 才落地 main；merge 前随时可 /case reject 反悔。\n\n## 🔍 候选溯源总览（草稿，待审）\n%s\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$FOUR" "$N" "$REPORT")
           PRERR=$(mktemp)
           if gh pr create \
             --head "$BRANCH" \

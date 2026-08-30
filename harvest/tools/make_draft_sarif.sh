@@ -60,26 +60,39 @@ print(mf.get('scenario','unknown'), mf.get('line',1) or 1, (mf.get('rationale','
   python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$furi" "$anchorline" "$casedir" "$OUT/findings" <<'PY'
 import json, sys, os
 cid, scen, state, csa, cpp, furi, anchorline, cdir, fout = sys.argv[1:9]
-rationale = ""
+ev = {}
 nr = os.path.join(cdir, "notes.md")
+# 从 notes 反向取源 PR（pack_case 已写），避免重复解析
+import re as _re
 if os.path.isfile(nr):
-    rationale = open(nr, encoding="utf-8", errors="replace").read().strip()[:200]
+    txt = open(nr, encoding="utf-8", errors="replace").read()
+    m = _re.search(r"源 PR: #(\d+) \((https?://[^)]+)\)", txt)
+    if m:
+        ev = {"pr": int(m.group(1)), "pr_url": m.group(2)}
 doc = {"tool": "harvest-draft", "track": "defect", "case_id": cid,
        "findings": [{
            "scenario": scen, "severity": "warning",
            "file": furi, "line": int(anchorline or 1), "anchor": "",
-           "message": f"harvest 候选：猜测 {scen} | 轻量SA: {state}",
-           "reasoning": f"bug锚点行 {anchorline}；clang: {csa.strip() or '静默'} ; cppcheck: {cpp.strip() or '静默'}",
+           "message": f"候选初判 {scen}（待 LLM/人审定，非真值）@ {furi}:{anchorline}；源PR#{ev.get('pr')}",
+           "reasoning": f"采集: pr-mining; bug锚点行 {anchorline}; 轻量SA: {state}",
        }]}
 with open(os.path.join(fout, f"{cid}.json"), "w", encoding="utf-8") as f:
     json.dump(doc, f, ensure_ascii=False, indent=2)
 PY
   echo "  $cid: scenario=$scen line=$anchorline -> $state" >&2
-  python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$anchorline" "$rows_jsonl" <<'PY'
-import json, sys
-cid, scen, state, csa, cpp, anchorline, path = sys.argv[1:8]
+  python3 - "$cid" "$scen" "$state" "$csa" "$cpp" "$anchorline" "$casedir" "$rows_jsonl" <<'PY'
+import json, sys, re as _re, os
+cid, scen, state, csa, cpp, anchorline, cdir, path = sys.argv[1:9]
+ev = {}
+nr = os.path.join(cdir, "notes.md")
+if os.path.isfile(nr):
+    txt = open(nr, encoding="utf-8", errors="replace").read()
+    m = _re.search(r"源 PR: #(\d+) \((https?://[^)]+)\)", txt)
+    if m:
+        ev = {"pr": int(m.group(1)), "pr_url": m.group(2)}
 row = {"case_id": cid, "scenario": scen, "state": state,
-       "csa": csa.strip(), "cppcheck": cpp.strip(), "anchorline": anchorline}
+       "csa": csa.strip(), "cppcheck": cpp.strip(), "anchorline": anchorline,
+       "pr": ev.get("pr"), "pr_url": ev.get("pr_url")}
 with open(path, "a") as f:
     f.write(json.dumps(row, ensure_ascii=False) + "\n")
 PY
@@ -102,14 +115,16 @@ if os.path.exists(p):
 tp = sum(1 for r in rows if r["state"].startswith("TP"))
 fn = len(rows) - tp
 with open(os.path.join(out, "report.md"), "w", encoding="utf-8") as f:
-    f.write("## 🔍 候选 SARIF 评测（轻量 SA）\n\n")
-    f.write("> 下列内联标注已通过 SARIF 上传，可在 **PR 的 Files changed / code-scanning** 看到每条候选的真实 bug 位置。\n")
-    f.write("> 注意：PR 上 9 个 CI check 的 `SUCCESS` 只代表「工具跑通」，**不等于用例被检出**；真正的检出看本表四态。\n\n")
-    f.write("| 候选 | 猜测 scenario | bug锚点行 | 轻量SA四态 | clang 信号 | CppCheck 信号 |\n|---|---|---|---|---|---|\n")
+    f.write("## 🔍 候选溯源总览（草稿，待审）\n\n")
+    f.write("> 每条候选来自真实已合并 fix-PR，采集信号 = 标题/修复 diff 含缺陷特征。\n")
+    f.write("> **scenario 为候选初判（非真值）**，待你正式仓手动触发 LLM 评审（agent-reviewer）后写入 golden。\n")
+    f.write("> 四态评测（9 工具 PASS/FN/FP/EXTRA）在 `/case accept` 进 cases/ 后由 `ci.yml`+`eval.py` 产生。\n\n")
+    f.write("| 候选 | 初判scenario | 锚点行 | 采集工具 | 源PR | accept命令 |\n|---|---|---|---|---|---|\n")
     for r in rows:
-        f.write(f"| {r['case_id']} | {r['scenario']} | {r.get('anchorline') or '-'} | **{r['state']}** | {r['csa'] or '-'} | {r['cppcheck'] or '-'} |\n")
-    f.write(f"\n**汇总**：共 {len(rows)} 条，轻量 SA 标出 {tp} 条（TP），未标出 {fn} 条（FN）。\n")
-    f.write("\n> TP=轻量SA标出该scenario；FN=未标出（静默或标出其他）。accept 进 cases/ 后由完整 9 工具评测。\n")
+        f.write(f"| {r['case_id']} | {r['scenario']}（待定） | {r.get('anchorline') or '-'} | pr-mining | "
+                f"[PR#{r.get('pr')}]({r.get('pr_url')}) | `/case accept {r['case_id']}` |\n")
+    f.write(f"\n**共 {len(rows)} 条候选**（curl/redis 等真实仓 fix-PR 爬取）。\n")
+    f.write("\n> 上表 scenario 列是采集阶段的启发式初判，可能不准（见 notes.md 真实修复 diff）。accept 后用 9 工具实测 + 你手动 LLM 评审定真值。\n")
 print(f"四态表 → {os.path.join(out, 'report.md')}（TP={tp} FN={fn}）")
 PY
 rm -f "$rows_jsonl"

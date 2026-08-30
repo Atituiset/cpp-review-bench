@@ -187,8 +187,8 @@ def main():
                 "file": g.get("file", ""),
                 "line": g.get("line", 1),
                 "anchor": g.get("anchor", ""),
-                "message": g.get("rationale", "候选猜测 bug点"),
-                "reasoning": "harvest 候选：scenario 为启发式猜测，待人审确认",
+                "message": g.get("rationale", "候选初判 bug 点（非真值，待 LLM/人审定）"),
+                "reasoning": "harvest 候选：scenario 为启发式初判，待正式仓手动 LLM 评审定真值",
             })
         docs.append({"tool": "harvest-draft", "track": track, "case_id": cid,
                      "findings": findings})
