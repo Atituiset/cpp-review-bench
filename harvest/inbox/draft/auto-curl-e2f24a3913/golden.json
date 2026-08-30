@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/http_aws_sigv4.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15289 lib: fix function pointers to please UndefinedBehaviorSanitizer :: 标题含缺陷信号（fix/leak/overflow/...）",
+      "severity": "low"
+    }
+  ],
+  "must_not_find": []
+}
