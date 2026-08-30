@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/http.c",
+      "anchor": "PROTOPT_SSL | PROTOPT_CREDSPERREQUEST /* flags */",
+      "line": 4,
+      "function": null,
+      "rationale": "PR 789 ALPN in ClientHello for protocols other than HTTPS :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
