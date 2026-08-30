@@ -22,8 +22,8 @@ on:
         default: ""
       max_prs:
         type: string
-        description: "每仓每轮 PR 上限；历史批扫可调大（如 300）"
-        default: "50"
+        description: "每仓每轮 PR 上限；历史批扫可调大（如 1000）"
+        default: "1000"
       max_per_pr:
         type: string
         description: "每 PR 最多保留候选数（避免单个大 PR 刷屏），默认 3"
