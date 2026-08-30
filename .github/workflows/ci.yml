@@ -218,7 +218,7 @@ jobs:
   joern:
     runs-on: ubuntu-latest
     container:
-      image: joern/joern:latest
+      image: ghcr.io/joernio/joern:master
       options: --user root
     steps:
       - uses: actions/checkout@v4
