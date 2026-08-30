@@ -141,6 +141,10 @@ def main():
     ap.add_argument("--repo-name", help="从 --config 的 repos[] 按 name 解析")
     ap.add_argument("--query", default="fix in:title")
     ap.add_argument("--max-prs", type=int, default=50)
+    ap.add_argument("--max-per-pr", type=int, default=3,
+                    help="每 PR 最多保留的候选数（避免单个大 PR 刷屏，默认 3）")
+    ap.add_argument("--max-candidates", type=int, default=0,
+                    help="每仓候选总数上限（0=不限），用于历史批扫限流")
     ap.add_argument("--since", default="2024-01-01")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
@@ -178,18 +182,33 @@ def main():
         sys.stderr.write(f"[pr_mine] 爬 {repo} (query='{args.query}') ...\n")
         prs = fetch_merged_prs(repo, args.query, args.max_prs, args.since)
         sys.stderr.write(f"[pr_mine] {repo}: 命中 PR {len(prs)} 条\n")
+        per_pr_count = {}
+        seen = set()  # (pr_number, filename) 去重，避免同一文件多切片重复
         for pr in prs:
-            files = fetch_pr_diff(repo, pr["number"])
+            if args.max_candidates and total >= args.max_candidates:
+                break
+            prn = pr["number"]
+            if per_pr_count.get(prn, 0) >= args.max_per_pr:
+                continue
+            files = fetch_pr_diff(repo, prn)
             if not files:
                 continue
             for fobj in files:
+                if args.max_candidates and total >= args.max_candidates:
+                    break
+                if per_pr_count.get(prn, 0) >= args.max_per_pr:
+                    break
                 before = slice_before(fobj["patch"])
                 if not before:
                     continue
+                dedup_key = (prn, fobj["filename"])
+                if dedup_key in seen:
+                    continue
+                seen.add(dedup_key)
                 is_bug, scenario, severity, rationale = judge_bug(fobj["patch"], pr["title"])
                 if not is_bug:
                     continue
-                h = hashlib.sha1(f"{repo}-{pr['number']}-{fobj['filename']}".encode()).hexdigest()[:10]
+                h = hashlib.sha1(f"{repo}-{prn}-{fobj['filename']}".encode()).hexdigest()[:10]
                 cid = f"auto-{repo.split('/')[-1]}-{h}"
                 finding = {
                     "tool": "pr-mining",
@@ -213,6 +232,7 @@ def main():
                 with open(os.path.join(args.out, f"{cid}.json"), "w") as fh:
                     json.dump(finding, fh, indent=2, ensure_ascii=False)
                 total += 1
+                per_pr_count[prn] = per_pr_count.get(prn, 0) + 1
     sys.stderr.write(f"[pr_mine] 产出候选 {total} 条 → {args.out}\n")
     with open(os.path.join(args.out, "_summary.json"), "w") as fh:
         json.dump({"source": "pr-mining", "count": total, "repos": [r["repo"] for r in repos]}, fh, indent=2)

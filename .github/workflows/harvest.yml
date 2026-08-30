@@ -12,6 +12,10 @@ on:
         type: choice
         options: [all, curl, sqlite, redis, nginx, libuv, openssl, vim, postgres, leveldb, ninja, aetherstack]
         default: all
+      repos:
+        type: string
+        description: "覆盖 repo 选择：空格分隔的仓列表，如 'curl sqlite'（优先于 repo）"
+        default: ""
       since:
         type: string
         description: "历史批扫起点（YYYY-MM-DD）；留空=增量（昨天起）"
@@ -20,6 +24,14 @@ on:
         type: string
         description: "每仓每轮 PR 上限；历史批扫可调大（如 300）"
         default: "50"
+      max_per_pr:
+        type: string
+        description: "每 PR 最多保留候选数（避免单个大 PR 刷屏），默认 3"
+        default: "3"
+      max_candidates:
+        type: string
+        description: "每仓候选总数上限（0=不限），用于历史批扫限流"
+        default: "0"
 
 permissions:
   contents: write
@@ -33,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         source: [sa-scan, pr-mining]
-        repo: ${{ fromJson(github.event.inputs.repo == 'all' && '["curl", "sqlite", "redis", "aetherstack"]' || format('["{0}"]', github.event.inputs.repo)) }}
+        repo: ${{ fromJson(github.event.inputs.repos != '' && format('["{0}"]', replace(github.event.inputs.repos, ' ', '","')) || (github.event.inputs.repo == 'all' && '["curl", "sqlite", "redis", "aetherstack"]' || format('["{0}"]', github.event.inputs.repo))) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -47,7 +59,7 @@ jobs:
         run: pip install requests pyyaml
 
       - name: pr-mining —— 爬 GitHub PR diff + judge + 归一化
-        if: matrix.source == 'pr-mining' && (github.event.inputs.repo == 'all' || github.event.inputs.repo == matrix.repo) && (github.event.inputs.source == 'all' || github.event.inputs.source == 'pr-mining')
+        if: matrix.source == 'pr-mining' && (github.event.inputs.source == 'all' || github.event.inputs.source == 'pr-mining')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -56,11 +68,17 @@ jobs:
           [ -z "$SINCE" ] && SINCE="$(date -d yesterday +%Y-%m-%d)"
           MAXPRS="${{ github.event.inputs.max_prs }}"
           [ -z "$MAXPRS" ] && MAXPRS="50"
+          MAXPERPR="${{ github.event.inputs.max_per_pr }}"
+          [ -z "$MAXPERPR" ] && MAXPERPR="3"
+          MAXCAND="${{ github.event.inputs.max_candidates }}"
+          [ -z "$MAXCAND" ] && MAXCAND="0"
           python3 harvest/tools/pr_mine.py \
             --config harvest/config/repos.yaml \
             --repo-name "${{ matrix.repo }}" \
             --since "$SINCE" \
             --max-prs "$MAXPRS" \
+            --max-per-pr "$MAXPERPR" \
+            --max-candidates "$MAXCAND" \
             --out /tmp/pr-findings-${{ matrix.repo }} 2>&1 | tail -5
 
       - name: 上传 artifact（pr-mining）
@@ -138,7 +156,7 @@ jobs:
           gh label create inbox --description "待审核候选" --color "fbca04" 2>/dev/null || true
           REPORT="$(cat /tmp/eval-inbox/eval_inbox_report.md)"
           BRANCH="harvest/inbox-$(date +%Y%m%d)-${{ github.run_id }}"
-          git config user.name "bench-bot"
+          git config user.name "harvest-bot"
           git config user.email "harvest@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add harvest/inbox/draft

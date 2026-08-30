@@ -45,11 +45,11 @@ jobs:
           # 取动作
           ACTION=$(echo "$BODY" | awk '{print $2}')
           # 取 id 列表（第三字段起，遇到 --reason 止）
-          IDS=$(echo "$BODY" | sed -E 's#^/harvest [a-z]+##; s/--reason.*$//' | tr -s ' ')
+          IDS=$(echo "$BODY" | sed -E 's#^/case [a-z]+##; s/--reason.*$//' | tr -s ' ')
           REASON=$(echo "$BODY" | grep -oP '(?<=--reason ).*' || true)
           [ -z "$REASON" ] && REASON="review reject"
           echo "ACTION=$ACTION IDS=$IDS"
-          git config user.name "bench-bot"
+          git config user.name "harvest-bot"
           git config user.email "harvest@users.noreply.github.com"
           SUMMARY=""
           for cid in $IDS; do
@@ -88,7 +88,7 @@ jobs:
           fi
           # 把处理结果回帖到 PR 评论
           {
-            echo "## case 指令处理结果"
+            echo "## harvest 指令处理结果"
             echo "- 动作：$ACTION"
             echo "- 候选：$IDS"
             echo
