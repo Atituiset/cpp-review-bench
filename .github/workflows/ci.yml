@@ -215,6 +215,28 @@ jobs:
           path: |
             cc-findings/*.json
 
+  joern:
+    runs-on: ubuntu-latest
+    container:
+      image: joern/joern:latest
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: 逐 case 跑 Joern（CPG 图查询定位 golden 锚点 + 危险调用枚举）+ 归一化
+        run: |
+          chmod +x consumers/local/run_joern.sh
+          ./consumers/local/run_joern.sh "$PWD/cases" "$PWD/joern-findings" "$PWD"
+          echo "=== 各例 Joern findings 数 ==="
+          for f in joern-findings/*.json; do [ -f "$f" ] && echo "$(basename $f): $(python3 -c "import json;d=json.load(open('$f'));print(len(d.get('findings',[])))" 2>/dev/null)"; done
+      - name: Joern 四态评测（vs golden）
+        run: python3 tools/eval.py run joern-findings 2>&1 | tail -30 || echo "[warn] joern 四态评测跳过"
+      - name: 汇总 Joern 产物上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: joern-findings
+          path: |
+            joern-findings/*.json
+
   cooddy-verify:
     runs-on: ubuntu-latest
     steps:
