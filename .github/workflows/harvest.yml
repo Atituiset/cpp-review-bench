@@ -96,6 +96,12 @@ jobs:
           python3 harvest/tools/normalize.py --in-dir /tmp/all-findings --out /tmp/norm/all.json
           python3 harvest/tools/vote.py --findings /tmp/norm/all.json --out /tmp/cands/candidates.json --min-tools 1
           python3 harvest/tools/pack_case.py --candidates /tmp/cands/candidates.json --inbox harvest/inbox
+      - name: 上传 inbox/draft 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: inbox-draft
+          path: harvest/inbox/draft
+          if-no-files-found: warn
 
   propose:
     needs: vote
@@ -105,6 +111,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: 下载 inbox/draft 产物
+        uses: actions/download-artifact@v4
+        with:
+          name: inbox-draft
+          path: harvest/inbox/draft
+          if-no-files-found: warn
       - name: 评测环（轻量 SA 看候选片段能否被标出）
         run: |
           pip install requests pyyaml
