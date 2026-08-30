@@ -10,3 +10,7 @@ __pycache__/
 
 # 临时 findings 产物（CI 会重新生成）
 cases/*/findings.json
+
+# harvest 工具缓存
+harvest/tools/__pycache__/
+__pycache__/
