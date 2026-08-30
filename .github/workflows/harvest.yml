@@ -1,7 +1,7 @@
 name: harvest
 on:
   schedule:
-    - cron: "23 3 * * 1,4"   # 周一/周四凌晨（错峰，避免 API 配额尖峰）
+    - cron: "23 3 * * *"   # 每日凌晨（错峰，避免 API 配额尖峰）
   workflow_dispatch:
     inputs:
       source:
@@ -12,6 +12,10 @@ on:
         type: choice
         options: [all, curl, sqlite, redis, aetherstack]
         default: all
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   scan:
@@ -70,16 +74,47 @@ jobs:
           path: /tmp/all-findings
           pattern: "pr-findings-*"
           merge-multiple: true
-      - name: 归一化 + vote + pack → inbox
+      - name: 归一化 + vote + pack → inbox/draft
         run: |
           pip install requests pyyaml
           mkdir -p /tmp/norm /tmp/cands harvest/inbox/draft
           python3 harvest/tools/normalize.py --in-dir /tmp/all-findings --out /tmp/norm/all.json
           python3 harvest/tools/vote.py --findings /tmp/norm/all.json --out /tmp/cands/candidates.json --min-tools 1
           python3 harvest/tools/pack_case.py --candidates /tmp/cands/candidates.json --inbox harvest/inbox
-      - name: 上传 inbox 草稿
-        uses: actions/upload-artifact@v4
+
+  propose:
+    needs: vote
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          name: inbox-draft-${{ github.run_id }}
-          path: harvest/inbox/draft
-          if-no-files-found: warn
+          python-version: "3.11"
+      - name: 评测环（轻量 SA 看候选片段能否被标出）
+        run: |
+          pip install requests pyyaml
+          chmod +x sa/runners/run_eval_inbox.sh
+          ./sa/runners/run_eval_inbox.sh "$PWD" harvest/inbox /tmp/eval-inbox
+      - name: 若有新候选，开 PR 通知审核
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          N=$(ls -1 harvest/inbox/draft 2>/dev/null | wc -l)
+          echo "待审核候选数: $N"
+          if [ "$N" -eq 0 ]; then
+            echo "无新候选，不开 PR"
+            exit 0
+          fi
+          BODY="$(cat /tmp/eval-inbox/eval_inbox_report.md)"
+          BRANCH="harvest/inbox-$(date +%Y%m%d)"
+          git config user.name "harvest-bot"
+          git config user.email "harvest@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add harvest/inbox/draft
+          git commit -m "harvest: 每日候选 $N 条待审核"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "harvest: 每日候选 $N 条待审核（$(date +%Y-%m-%d)）" \
+            --body "$BODY" \
+            --assignee "${{ github.repository_owner }}" \
+            --label "harvest,inbox" || echo "PR 已存在或创建失败"
