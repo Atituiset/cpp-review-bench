@@ -148,6 +148,12 @@ jobs:
         run: |
           bash harvest/tools/make_draft_sarif.sh "$PWD" harvest/inbox /tmp/draft-sarif
           echo "--- 四态表预览 ---"; cat /tmp/draft-sarif/report.md
+      - name: 上传 draft SARIF 到 code-scanning（main，Security tab 可视化）
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: /tmp/draft-sarif/sarif/draft.sarif
+          category: harvest-draft
       - name: 若有新候选，开 PR 通知审核
         env:
           # 默认 GITHUB_TOKEN 无权在同仓建 PR（GitHub 防递归）；用 PAT 秘密 HARVEST_TOKEN 建 PR。

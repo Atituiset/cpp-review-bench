@@ -15,7 +15,7 @@ permissions:
 jobs:
   sarif:
     runs-on: ubuntu-latest
-    if: startsWith(github.head_ref, 'harvest/inbox-')
+    if: false  # 已改由 harvest.yml propose 步骤直接生成+上传 SARIF（同仓 PR 内联受平台限制，统一落 main code-scanning）
     steps:
       - uses: actions/checkout@v4
         # pull_request 事件下不指定 ref → checkout 默认取 refs/pull/N/merge，
