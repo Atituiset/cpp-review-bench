@@ -37,6 +37,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  security-events: write   # upload-sarif 需要（PR 内联标注 + code-scanning）
 
 jobs:
   scan:
@@ -141,8 +142,12 @@ jobs:
       - name: 评测环（轻量 SA 看候选片段能否被标出）
         run: |
           pip install requests pyyaml
-          chmod +x sa/runners/run_eval_inbox.sh
+          chmod +x sa/runners/run_eval_inbox.sh sa/adapters/*.py harvest/tools/*.sh
           ./sa/runners/run_eval_inbox.sh "$PWD" harvest/inbox /tmp/eval-inbox
+      - name: 生成 draft SARIF（PR 内联标注）+ 四态表
+        run: |
+          bash harvest/tools/make_draft_sarif.sh "$PWD" harvest/inbox /tmp/draft-sarif
+          echo "--- 四态表预览 ---"; cat /tmp/draft-sarif/report.md
       - name: 若有新候选，开 PR 通知审核
         env:
           # 默认 GITHUB_TOKEN 无权在同仓建 PR（GitHub 防递归）；用 PAT 秘密 HARVEST_TOKEN 建 PR。
@@ -158,7 +163,9 @@ jobs:
           gh label create harvest --description "harvest 采集管线" --color "0e8a16" 2>/dev/null || true
           gh label create inbox --description "待审核候选" --color "fbca04" 2>/dev/null || true
           REPORT="$(cat /tmp/eval-inbox/eval_inbox_report.md)"
+          FOUR="$(cat /tmp/draft-sarif/report.md)"
           BRANCH="harvest/inbox-$(date +%Y%m%d)-${{ github.run_id }}"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
           git config user.name "bench-bot"
           git config user.email "bench-bot@users.noreply.github.com"
           git checkout -b "$BRANCH"
@@ -168,8 +175,8 @@ jobs:
           # 调试：确认实际解析到哪个 token（ghp_=classic PAT, github_pat_=fine-grained, ghu_/gho_=GITHUB_TOKEN 回退）
           echo "解析到的 token 前缀: ${GH_TOKEN:0:10}***"
           echo "HARVEST_TOKEN 是否非空: $([ -n "${{ secrets.HARVEST_TOKEN }}" ] && echo YES || echo NO)"
-          # PR/issue body：附完整候选清单表 + 细粒度审核指令
-          BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$N" "$REPORT")
+          # PR/issue body：附完整候选清单表 + 四态表 + 细粒度审核指令
+          BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n注意：accept 只是预审进 cases/，merge 才落地 main；merge 前随时可 /case reject 反悔。\n\n## 🔍 候选 SARIF 评测（轻量 SA 四态）\n%s\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$FOUR" "$N" "$REPORT")
           PRERR=$(mktemp)
           if gh pr create \
             --head "$BRANCH" \
@@ -188,3 +195,10 @@ jobs:
               --assignee "${{ github.repository_owner }}" \
               --label "harvest,inbox" || echo "issue 也失败"
           fi
+      - name: 上传 SARIF（草稿已 commit 到 PR 分支，内联标注到 Files changed）
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: /tmp/draft-sarif/sarif/draft.sarif
+          category: harvest-draft
+          ref: ${{ env.BRANCH }}
