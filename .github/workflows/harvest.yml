@@ -159,8 +159,8 @@ jobs:
           gh label create inbox --description "待审核候选" --color "fbca04" 2>/dev/null || true
           REPORT="$(cat /tmp/eval-inbox/eval_inbox_report.md)"
           BRANCH="harvest/inbox-$(date +%Y%m%d)-${{ github.run_id }}"
-          git config user.name "harvest-bot"
-          git config user.email "harvest@users.noreply.github.com"
+          git config user.name "bench-bot"
+          git config user.email "bench-bot@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add harvest/inbox/draft
           git commit -m "harvest: 每日候选 $N 条待审核"

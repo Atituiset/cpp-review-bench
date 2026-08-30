@@ -49,8 +49,8 @@ jobs:
           REASON=$(echo "$BODY" | grep -oP '(?<=--reason ).*' || true)
           [ -z "$REASON" ] && REASON="review reject"
           echo "ACTION=$ACTION IDS=$IDS"
-          git config user.name "harvest-bot"
-          git config user.email "harvest@users.noreply.github.com"
+          git config user.name "bench-bot"
+          git config user.email "bench-bot@users.noreply.github.com"
           SUMMARY=""
           for cid in $IDS; do
             SRC="harvest/inbox/draft/$cid"
