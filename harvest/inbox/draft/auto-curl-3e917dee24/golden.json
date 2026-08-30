@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/md5.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15289 lib: fix function pointers to please UndefinedBehaviorSanitizer :: 启发式命中 \\bmemcpy\\s*\\(|\\bstrcpy\\b|\\bstrncpy\\b|\\bmemmove\\b",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
