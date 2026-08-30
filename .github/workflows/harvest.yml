@@ -132,6 +132,9 @@ jobs:
             echo "无新候选，不开 PR"
             exit 0
           fi
+          # 预建标签（不存在则建，避免 gh pr create 因 label 缺失失败）
+          gh label create harvest --description "harvest 采集管线" --color "0e8a16" 2>/dev/null || true
+          gh label create inbox --description "待审核候选" --color "fbca04" 2>/dev/null || true
           BODY="$(cat /tmp/eval-inbox/eval_inbox_report.md)"
           BRANCH="harvest/inbox-$(date +%Y%m%d)"
           git config user.name "harvest-bot"
