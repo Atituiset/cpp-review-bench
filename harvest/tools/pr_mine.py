@@ -42,6 +42,9 @@ def api_get(path, params=None):
     h = dict(HEADERS)
     if TOKEN:
         h["Authorization"] = f"Bearer {TOKEN}"
+    if path.startswith("/search/commits"):
+        # GitHub commit 搜索需特殊 media type，否则返回空 items
+        h["Accept"] = "application/vnd.github.cloak-preview+json"
     if path.startswith("/search"):
         # 保证两次 search 调用间隔 ≥ 2.1s（≈28/min，留余量）
         gap = 2.1 - (time.time() - _search_call_ts[0])
