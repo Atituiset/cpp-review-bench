@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/hotkeys.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15561 Fix quadratic search of slot duplicates in hotkeys command :: 启发式命中 ->\\w+\\s*\\[|\\barr\\[|\\bbuf\\[|\\b\\[[a-z_]+\\]\\s*=",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

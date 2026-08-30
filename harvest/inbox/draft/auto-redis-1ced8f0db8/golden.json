@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/aof.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15539 Disable defrag during AOF RDB preamble loading to fix template defrag :: 启发式命中 \\*\\s*\\w+|->\\w+\\s*\\(|\\bdelete\\b",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

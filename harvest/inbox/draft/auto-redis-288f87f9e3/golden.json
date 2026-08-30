@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/cluster_legacy.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15530 Fix replica left as a sub-replica after a failover :: 启发式命中 \\*\\s*\\w+|->\\w+\\s*\\(|\\bdelete\\b",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
