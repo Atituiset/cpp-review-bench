@@ -1,0 +1,20 @@
+{
+  "tool": "joern",
+  "tool_version": "unknown",
+  "case_id": "r02-offby-one-guard",
+  "track": "defect",
+  "generated_by": "joern_to_findings.py",
+  "findings": [
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-125",
+      "severity": "important",
+      "file": "parse.c",
+      "line": 14,
+      "column": 0,
+      "message": "joern CPG anchor match: for (uint8_t i = 0; i < len + 1u; i++) {",
+      "check": "joern-cpg"
+    }
+  ]
+}

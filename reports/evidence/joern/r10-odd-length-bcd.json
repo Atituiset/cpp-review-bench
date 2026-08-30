@@ -1,0 +1,20 @@
+{
+  "tool": "joern",
+  "tool_version": "unknown",
+  "case_id": "r10-odd-length-bcd",
+  "track": "defect",
+  "generated_by": "joern_to_findings.py",
+  "findings": [
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-125",
+      "severity": "important",
+      "file": "imsi_bcd.c",
+      "line": 11,
+      "column": 0,
+      "message": "joern CPG anchor match: uint8_t lo = (uint8_t)(digits[i + 1] - '0');",
+      "check": "joern-cpg"
+    }
+  ]
+}

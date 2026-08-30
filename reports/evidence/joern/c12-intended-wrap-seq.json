@@ -1,0 +1,20 @@
+{
+  "tool": "joern",
+  "tool_version": "unknown",
+  "case_id": "c12-intended-wrap-seq",
+  "track": "contract",
+  "generated_by": "joern_to_findings.py",
+  "findings": [
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-787",
+      "severity": "important",
+      "file": "seq.c",
+      "line": 25,
+      "column": 0,
+      "message": "joern CPG anchor match: uint8_t pos = (uint8_t)(seq + idx);   /* 锚点（must_find）：pos 未对 SEQ_MOD 约简 */",
+      "check": "joern-cpg"
+    }
+  ]
+}

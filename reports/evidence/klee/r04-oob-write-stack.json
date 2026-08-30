@@ -1,0 +1,20 @@
+{
+  "tool": "klee",
+  "tool_version": "KLEE 3.2 (https://klee-se.org/)",
+  "case_id": "r04-oob-write-stack",
+  "track": "defect",
+  "generated_by": "klee_to_findings.py",
+  "findings": [
+    {
+      "tool": "klee",
+      "tool_version": "KLEE 3.2 (https://klee-se.org/)",
+      "scenario": "cwe-787",
+      "severity": "important",
+      "file": "src/recv.c",
+      "line": 17,
+      "column": 0,
+      "message": "memory error: out of bound pointer",
+      "check": "klee"
+    }
+  ]
+}

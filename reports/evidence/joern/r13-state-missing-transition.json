@@ -1,0 +1,20 @@
+{
+  "tool": "joern",
+  "tool_version": "unknown",
+  "case_id": "r13-state-missing-transition",
+  "track": "defect",
+  "generated_by": "joern_to_findings.py",
+  "findings": [
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "logic",
+      "severity": "important",
+      "file": "fsm.c",
+      "line": 22,
+      "column": 0,
+      "message": "joern CPG anchor match: return g_table[s][e];",
+      "check": "joern-cpg"
+    }
+  ]
+}

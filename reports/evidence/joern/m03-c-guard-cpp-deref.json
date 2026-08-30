@@ -1,0 +1,8 @@
+{
+  "tool": "joern",
+  "tool_version": "unknown",
+  "case_id": "m03-c-guard-cpp-deref",
+  "track": "contract",
+  "generated_by": "joern_to_findings.py",
+  "findings": []
+}

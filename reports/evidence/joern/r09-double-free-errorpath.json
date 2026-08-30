@@ -1,0 +1,75 @@
+{
+  "tool": "joern",
+  "tool_version": "unknown",
+  "case_id": "r09-double-free-errorpath",
+  "track": "defect",
+  "generated_by": "joern_to_findings.py",
+  "findings": [
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-415",
+      "severity": "important",
+      "file": "ctx.c",
+      "line": 17,
+      "column": 0,
+      "message": "joern CPG anchor match: free(c->buf);       /* 锚点（must_find）：错误路径释放，但未 return */",
+      "check": "joern-cpg"
+    },
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-415",
+      "severity": "important",
+      "file": "ctx.c",
+      "line": 20,
+      "column": 0,
+      "message": "joern CPG anchor match: free(c->buf);           /* 锚点（must_find）：末尾再次释放 c->buf → 双重释放（cwe-415） */",
+      "check": "joern-cpg"
+    },
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-787",
+      "severity": "important",
+      "file": "ctx.c",
+      "line": 17,
+      "column": 0,
+      "message": "joern dangerous call: free",
+      "check": "joern-cpg"
+    },
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-787",
+      "severity": "important",
+      "file": "ctx.c",
+      "line": 20,
+      "column": 0,
+      "message": "joern dangerous call: free",
+      "check": "joern-cpg"
+    },
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-787",
+      "severity": "important",
+      "file": "ctx.c",
+      "line": 33,
+      "column": 0,
+      "message": "joern dangerous call: free",
+      "check": "joern-cpg"
+    },
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-787",
+      "severity": "important",
+      "file": "ctx.c",
+      "line": 37,
+      "column": 0,
+      "message": "joern dangerous call: free",
+      "check": "joern-cpg"
+    }
+  ]
+}

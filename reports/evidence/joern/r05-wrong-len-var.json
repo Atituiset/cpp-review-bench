@@ -1,0 +1,42 @@
+{
+  "tool": "joern",
+  "tool_version": "unknown",
+  "case_id": "r05-wrong-len-var",
+  "track": "defect",
+  "generated_by": "joern_to_findings.py",
+  "findings": [
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-125",
+      "severity": "important",
+      "file": "copy.c",
+      "line": 13,
+      "column": 0,
+      "message": "joern CPG anchor match: memcpy(buf, payload, m);",
+      "check": "joern-cpg"
+    },
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-787",
+      "severity": "important",
+      "file": "copy.c",
+      "line": 13,
+      "column": 0,
+      "message": "joern dangerous call: memcpy",
+      "check": "joern-cpg"
+    },
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-787",
+      "severity": "important",
+      "file": "copy.c",
+      "line": 24,
+      "column": 0,
+      "message": "joern dangerous call: memcpy",
+      "check": "joern-cpg"
+    }
+  ]
+}

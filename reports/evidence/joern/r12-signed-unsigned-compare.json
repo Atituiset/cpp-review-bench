@@ -1,0 +1,20 @@
+{
+  "tool": "joern",
+  "tool_version": "unknown",
+  "case_id": "r12-signed-unsigned-compare",
+  "track": "defect",
+  "generated_by": "joern_to_findings.py",
+  "findings": [
+    {
+      "tool": "joern",
+      "tool_version": "unknown",
+      "scenario": "cwe-190",
+      "severity": "important",
+      "file": "cmp.c",
+      "line": 11,
+      "column": 0,
+      "message": "joern CPG anchor match: if (len < LIM) {",
+      "check": "joern-cpg"
+    }
+  ]
+}
