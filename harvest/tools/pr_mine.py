@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import time
+from datetime import datetime
 
 try:
     import requests
@@ -52,38 +53,98 @@ def api_get(path, params=None):
     return None
 
 
-def fetch_merged_prs(repo, query, max_prs, since):
-    """用 search/issues 找 merged 且带修复信号的 PR。返回 [{number,title,url}]。"""
-    q = f"repo:{repo} is:pr is:merged {query}".strip()
-    if since:
-        q += f" created:>={since}"
-    prs = []
+SEARCH_CAP = 1000  # GitHub search API 单查询硬上限（total_count 最多 1000）
+
+
+def _search_collect(endpoint, q, since, until, per_page=30):
+    """对单个时间窗口翻页收集搜索结果（items）。返回 list[dict]。遇限流重试。"""
+    items_all = []
     page = 1
-    while len(prs) < max_prs:
-        data = api_get("/search/issues", {"q": q, "per_page": 30, "page": page})
+    window_q = q
+    if since:
+        window_q += f" created:>={since}"
+    if until:
+        window_q += f" created:<={until}"
+    while True:
+        data = api_get(endpoint, {"q": window_q, "per_page": per_page, "page": page})
         if not data or "items" not in data:
             break
         items = data["items"]
-        if not items:
+        items_all.extend(items)
+        if len(items) < per_page:
             break
-        for it in items:
-            prs.append({"number": it["number"], "title": it["title"],
-                        "url": it["pull_request"]["html_url"] if it.get("pull_request") else it["html_url"]})
-            if len(prs) >= max_prs:
-                break
-        if len(items) < 30:
+        if len(items_all) >= SEARCH_CAP:
             break
         page += 1
+    return items_all
+
+
+def _sharded_search(endpoint, q, since, until):
+    """时间二分分片绕过 search 单查询 1000 上限：某窗口 total>900 则按中点拆两段递归。
+    since/until 为 YYYY-MM-DD 或 None。"""
+    probe_q = q
+    if since:
+        probe_q += f" created:>={since}"
+    if until:
+        probe_q += f" created:<={until}"
+    probe = api_get(endpoint, {"q": probe_q, "per_page": 1})
+    total = (probe or {}).get("total_count", 0) if probe else 0
+    if total == 0:
+        return []
+    if total <= 900 or not since or not until:
+        return _search_collect(endpoint, q, since, until)
+    d0 = datetime.strptime(since, "%Y-%m-%d").date()
+    d1 = datetime.strptime(until, "%Y-%m-%d").date()
+    mid = d0 + (d1 - d0) // 2
+    mid_s = mid.strftime("%Y-%m-%d")
+    return (_sharded_search(endpoint, q, since, mid_s)
+            + _sharded_search(endpoint, q, mid_s, until))
+
+
+def fetch_merged_prs(repo, query, max_prs, since):
+    """用 search/issues 找 merged 且带修复信号的 PR（时间分片绕过 1000 上限）。
+    返回 [{kind, id, title, url}]。"""
+    q = f"repo:{repo} is:pr is:merged {query}".strip()
+    until = datetime.now().strftime("%Y-%m-%d")
+    items = _sharded_search("/search/issues", q, since, until)
+    prs = []
+    for it in items:
+        prs.append({"kind": "pr", "id": it["number"],
+                    "title": it.get("title", ""),
+                    "url": it.get("pull_request", {}).get("html_url") or it.get("html_url", "")})
+        if len(prs) >= max_prs:
+            break
     return prs
 
 
-def fetch_pr_diff(repo, pr_number):
-    """取 PR 的 files + patch（修复前/后），仅留 C/C++ 文件。"""
-    data = api_get(f"/repos/{repo}/pulls/{pr_number}/files", {"per_page": 100})
-    if not data:
-        return []
+def fetch_commits(repo, query, max_prs, since):
+    """用 search/commits 找带修复信号的 commit（sqlite/postgres/linux 等不走 PR 流程的仓）。
+    返回 [{kind, id, title, url}]。"""
+    q = f"repo:{repo} is:commit {query}".strip()
+    until = datetime.now().strftime("%Y-%m-%d")
+    items = _sharded_search("/search/commits", q, since, until)
+    outs = []
+    for it in items:
+        c = it.get("commit", {})
+        outs.append({"kind": "commit", "id": it["sha"],
+                     "title": c.get("message", "").split("\n")[0][:120],
+                     "url": it.get("html_url", "")})
+        if len(outs) >= max_prs:
+            break
+    return outs
+
+
+def fetch_diff(repo, kind, rid):
+    """取 PR 或 commit 的 files + patch（修复前/后），仅留 C/C++ 文件。
+    kind='pr' → /pulls/{rid}/files；kind='commit' → /commits/{rid}。"""
+    if kind == "commit":
+        data = api_get(f"/repos/{repo}/commits/{rid}", {"per_page": 100})
+        files = (data or {}).get("files", []) if data else []
+    else:
+        data = api_get(f"/repos/{repo}/pulls/{rid}/files", {"per_page": 100})
+        files = data or []
     out = []
-    for f in data:
+    for f in files:
         if not f.get("filename", "").endswith((".c", ".cpp", ".cc", ".cxx", ".h", ".hpp")):
             continue
         if f.get("patch"):
@@ -261,36 +322,41 @@ def main():
         repo = entry["repo"]
         q = entry.get("query") or args.query
         sys.stderr.write(f"[pr_mine] 爬 {repo} (query='{q}') ...\n")
-        prs = fetch_merged_prs(repo, q, args.max_prs, args.since)
-        sys.stderr.write(f"[pr_mine] {repo}: 命中 PR {len(prs)} 条\n")
+        items = fetch_merged_prs(repo, q, args.max_prs, args.since)
+        # 仓特性兜底：PR 流程缺失的仓（sqlite/postgres/linux）改爬 commit
+        if len(items) < 20:
+            sys.stderr.write(f"[pr_mine] {repo}: PR 仅 {len(items)}，回退 commit 源 ...\n")
+            items += fetch_commits(repo, q, args.max_prs, args.since)
+        sys.stderr.write(f"[pr_mine] {repo}: 命中 {len(items)} 条（PR+commit）\n")
         per_pr_count = {}
-        seen = set()  # (pr_number, filename) 去重，避免同一文件多切片重复
-        for pr in prs:
+        seen = set()  # (id, filename) 去重，避免同一文件多切片重复
+        for pr in items:
             if args.max_candidates and total >= args.max_candidates:
                 break
-            prn = pr["number"]
-            if per_pr_count.get(prn, 0) >= args.max_per_pr:
+            iid = pr["id"]
+            if per_pr_count.get(iid, 0) >= args.max_per_pr:
                 continue
-            files = fetch_pr_diff(repo, prn)
+            files = fetch_diff(repo, pr["kind"], iid)
             if not files:
                 continue
             for fobj in files:
                 if args.max_candidates and total >= args.max_candidates:
                     break
-                if per_pr_count.get(prn, 0) >= args.max_per_pr:
+                if per_pr_count.get(iid, 0) >= args.max_per_pr:
                     break
                 before = slice_before(fobj["patch"])
                 if not before:
                     continue
-                dedup_key = (prn, fobj["filename"])
+                dedup_key = (iid, fobj["filename"])
                 if dedup_key in seen:
                     continue
                 seen.add(dedup_key)
                 is_bug, scenario, severity, rationale, anchor, anchor_line = judge_bug(fobj["patch"], pr["title"])
                 if not is_bug:
                     continue
-                h = hashlib.sha1(f"{repo}-{prn}-{fobj['filename']}".encode()).hexdigest()[:10]
+                h = hashlib.sha1(f"{repo}-{iid}-{fobj['filename']}".encode()).hexdigest()[:10]
                 cid = f"auto-{repo.split('/')[-1]}-{h}"
+                kind_tag = "commit" if pr["kind"] == "commit" else "pr"
                 finding = {
                     "tool": "pr-mining",
                     "track": "defect",
@@ -302,10 +368,11 @@ def main():
                     "scenario": scenario,
                     "severity": severity,
                     "verified": False,
-                    "message": f"PR #{pr['number']} {pr['title']} :: {rationale}",
+                    "message": f"{kind_tag.upper()} {iid} {pr['title']} :: {rationale}",
                     "evidence": {
                         "source_repo": repo,
-                        "pr": pr["number"],
+                        "kind": pr["kind"],
+                        "pr": iid,
                         "pr_url": pr["url"],
                         "before_slice": before[:2000],
                         "anchor_line": anchor_line,
@@ -315,7 +382,7 @@ def main():
                 with open(os.path.join(args.out, f"{cid}.json"), "w") as fh:
                     json.dump(finding, fh, indent=2, ensure_ascii=False)
                 total += 1
-                per_pr_count[prn] = per_pr_count.get(prn, 0) + 1
+                per_pr_count[iid] = per_pr_count.get(iid, 0) + 1
     sys.stderr.write(f"[pr_mine] 产出候选 {total} 条 → {args.out}\n")
     with open(os.path.join(args.out, "_summary.json"), "w") as fh:
         json.dump({"source": "pr-mining", "count": total, "repos": [r["repo"] for r in repos]}, fh, indent=2)
