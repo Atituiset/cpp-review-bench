@@ -26,8 +26,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.issue.pull_request.head.ref }}
           token: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
+      - name: 切到 PR 头分支（issue_comment 事件默认 checkout main，需手动切）
+        run: |
+          git fetch origin "${{ github.event.issue.pull_request.head.ref }}"
+          git checkout "${{ github.event.issue.pull_request.head.ref }}"
+          echo "当前分支: $(git branch --show-current)"
+          echo "draft 候选数: $(ls -1 harvest/inbox/draft 2>/dev/null | wc -l)"
       - name: 解析指令并流转
         id: go
         run: |
