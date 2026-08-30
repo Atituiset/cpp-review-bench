@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/t_string.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15626 Fix overflowing relative expiration times in SET :: 启发式命中 \\*\\s*\\w+|->\\w+\\s*\\(|\\bdelete\\b",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

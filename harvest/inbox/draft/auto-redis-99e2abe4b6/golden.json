@@ -1,0 +1,13 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/blocked.c",
+      "anchor": null,
+      "function": null,
+      "rationale": "PR #15594 Fix use-after-free in handleClientsBlockedOnKey :: 启发式命中 malloc|free|alloc|realloc|calloc",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
