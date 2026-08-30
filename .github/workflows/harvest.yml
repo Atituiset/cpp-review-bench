@@ -138,7 +138,7 @@ jobs:
           gh label create inbox --description "待审核候选" --color "fbca04" 2>/dev/null || true
           REPORT="$(cat /tmp/eval-inbox/eval_inbox_report.md)"
           BRANCH="harvest/inbox-$(date +%Y%m%d)-${{ github.run_id }}"
-          git config user.name "harvest-bot"
+          git config user.name "bench-bot"
           git config user.email "harvest@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add harvest/inbox/draft
@@ -148,7 +148,7 @@ jobs:
           echo "解析到的 token 前缀: ${GH_TOKEN:0:10}***"
           echo "HARVEST_TOKEN 是否非空: $([ -n "${{ secrets.HARVEST_TOKEN }}" ] && echo YES || echo NO)"
           # PR/issue body：附完整候选清单表 + 细粒度审核指令
-          BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /harvest accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /harvest contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /harvest reject <id1> ...        将对应候选转 harvest/inbox/rejected/\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$N" "$REPORT")
+          BODY=$(printf '分支 %s 含 %s 条候选草稿。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n## 候选清单（%s 条）\n%s' "$BRANCH" "$N" "$N" "$REPORT")
           PRERR=$(mktemp)
           if gh pr create \
             --head "$BRANCH" \

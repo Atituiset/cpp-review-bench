@@ -1,10 +1,10 @@
 name: harvest-review
-# 方案 A 细粒度评审：在 harvest 候选 PR 里用评论指令控制每个 case 的流向。
+# 方案 A 细粒度评审：在候选 PR 里用评论指令控制每个 case 的流向。
 # 评论示例（一行一条，空格分隔多个 id）：
-#   /harvest accept   auto-curl-03fd447a33 auto-curl-09f32064f8   → 转 cases/defect/（真 bug，merge 后 ci.yml 跑全流程）
-#   /harvest contract auto-curl-1f01fc71c4                        → 转 cases/contract/（确认是 FP 契约，contract.yaml 必填）
-#   /harvest reject   auto-curl-4240076f6e --reason "误报：非内存安全" → 转 harvest/inbox/rejected/ 并记录原因
-# 触发：在候选 PR 下评论即可（pull_request_comment）。
+#   /case accept   auto-curl-03fd447a33 auto-curl-09f32064f8   → 转 cases/defect/（真 bug，merge 后 ci.yml 跑全流程）
+#   /case contract auto-curl-1f01fc71c4                        → 转 cases/contract/（确认是 FP 契约，contract.yaml 必填）
+#   /case reject   auto-curl-4240076f6e --reason "误报：非内存安全" → 转 harvest/inbox/rejected/ 并记录原因
+# 触发：在候选 PR 下评论即可（issue_comment）。
 on:
   issue_comment:
     types: [created]
@@ -16,10 +16,10 @@ permissions:
 
 jobs:
   parse:
-    # 只在 harvest 候选 PR（标题含 "每日候选"）上的 /harvest 指令才响应
+    # 只在候选 PR（标题含 "每日候选"）上的 /case 指令才响应
     if: >-
       github.event.issue.pull_request != null &&
-      startsWith(github.event.comment.body, '/harvest ')
+      startsWith(github.event.comment.body, '/case ')
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
@@ -49,7 +49,7 @@ jobs:
           REASON=$(echo "$BODY" | grep -oP '(?<=--reason ).*' || true)
           [ -z "$REASON" ] && REASON="review reject"
           echo "ACTION=$ACTION IDS=$IDS"
-          git config user.name "harvest-bot"
+          git config user.name "bench-bot"
           git config user.email "harvest@users.noreply.github.com"
           SUMMARY=""
           for cid in $IDS; do
@@ -88,7 +88,7 @@ jobs:
           fi
           # 把处理结果回帖到 PR 评论
           {
-            echo "## harvest 指令处理结果"
+            echo "## case 指令处理结果"
             echo "- 动作：$ACTION"
             echo "- 候选：$IDS"
             echo
