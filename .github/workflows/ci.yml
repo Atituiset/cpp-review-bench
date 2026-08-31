@@ -235,13 +235,23 @@ jobs:
 
   cooddy-verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read   # 拉 GHCR 预建镜像
     steps:
       - uses: actions/checkout@v4
-      - name: 本地 docker build cooddy 镜像（验证 z3 链接修复，不推送）
+      - name: 拉取 GHCR 预建 cooddy 镜像（build-cooddy-image 工作流发布；拉不到回退本地 build）
         run: |
-          docker build -f sa/docker/cooddy/Dockerfile -t cooddy-test:ci . 2>&1 | tee /tmp/cooddy_build.log | tail -3
-          echo "=== 真实报错（make 阶段）==="
-          grep -iE 'error:|cannot find|cannot be used|libz3|z3' /tmp/cooddy_build.log | tail -30
+          IMAGE=ghcr.io/${{ github.repository_owner }}/cooddy:latest
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          if docker pull "$IMAGE"; then
+            docker tag "$IMAGE" cooddy-test:ci
+          else
+            echo "[warn] GHCR 无预建镜像（先跑一次 build-cooddy-image 工作流发布），回退本地 build（约 40 分钟）"
+            docker build -f sa/docker/cooddy/Dockerfile -t cooddy-test:ci . 2>&1 | tee /tmp/cooddy_build.log | tail -3
+            echo "=== 真实报错（make 阶段）==="
+            grep -iE 'error:|cannot find|cannot be used|libz3|z3' /tmp/cooddy_build.log | tail -30
+          fi
       - name: 生成 compdb 并跑 cooddy 验证端到端
         run: |
           cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
