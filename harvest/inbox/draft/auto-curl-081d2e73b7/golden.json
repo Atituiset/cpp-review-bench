@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/digest.c",
+      "anchor": "response = curl_maprintf(\"username=\\\"%s\\\",realm=\\\"%s\\\",nonce=\\\"%s\\\",\"",
+      "line": 4,
+      "function": null,
+      "rationale": "PR 20545 digest: escape double quotes and backslashes in the realm :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

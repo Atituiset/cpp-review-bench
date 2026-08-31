@@ -1,0 +1,55 @@
+// AUTO-DRAFT from curl/curl PR #7278
+ssl_version_max = CURL_SSLVERSION_MAX_TLSv1_2;
+    }
+  }
+  // <<< BUG ANCHOR
+  switch(ssl_version | ssl_version_max) {
+  case CURL_SSLVERSION_TLSv1_0 | CURL_SSLVERSION_MAX_TLSv1_0:
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_0 | CURL_SSLVERSION_MAX_TLSv1_1:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.0:+VERS-TLS1.1";
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_0 | CURL_SSLVERSION_MAX_TLSv1_2:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.0:+VERS-TLS1.1:+VERS-TLS1.2";
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_1 | CURL_SSLVERSION_MAX_TLSv1_1:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.1";
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_1 | CURL_SSLVERSION_MAX_TLSv1_2:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.1:+VERS-TLS1.2";
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_2 | CURL_SSLVERSION_MAX_TLSv1_2:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.3";
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_0 | CURL_SSLVERSION_MAX_DEFAULT:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.0:+VERS-TLS1.1:+VERS-TLS1.2"
+      ":+VERS-TLS1.3";
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_1 | CURL_SSLVERSION_MAX_DEFAULT:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.1:+VERS-TLS1.2"
+      ":+VERS-TLS1.3";
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_2 | CURL_SSLVERSION_MAX_DEFAULT:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.2"
+      ":+VERS-TLS1.3";
+    return CURLE_OK;
+  case CURL_SSLVERSION_TLSv1_3 | CURL_SSLVERSION_MAX_DEFAULT:
+    *prioritylist = GNUTLS_CIPHERS ":-VERS-SSL3.0:-VERS-TLS-ALL:"
+      "+VERS-TLS1.2"
+      ":+VERS-TLS1.3";
+    return CURLE_OK;
+  }
+
+  }
+  else {
+#endif
+    rc =
