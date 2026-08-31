@@ -65,7 +65,9 @@ jobs:
           (github.event.inputs.source == 'all' || github.event.inputs.source == 'pr-mining') &&
           (github.event.inputs.repos == '' || contains(github.event.inputs.repos, matrix.repo))
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # pr-mining 的 search API（含 search/commits）需个人 PAT：GITHUB_TOKEN（Actions 自动令牌）
+          # 对 search/commits 返回 total_count=0（scope/限额限制），HARVEST_TOKEN（classic PAT）才有完整搜索权限。
+          GITHUB_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           # 增量默认=昨天；历史批扫用 dispatch --since 覆盖
           SINCE="${{ github.event.inputs.since }}"
