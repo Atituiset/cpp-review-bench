@@ -155,19 +155,36 @@ def fetch_merged_prs(repo, query, max_prs, since):
 
 
 def fetch_commits(repo, query, max_prs, since):
-    """用 search/commits 找带修复信号的 commit（sqlite/postgres/linux 等不走 PR 流程的仓）。
-    返回 [{kind, id, title, url}]。"""
-    q = f"repo:{repo} is:commit {query}".strip()
-    until = datetime.now().strftime("%Y-%m-%d")
-    items = _sharded_search("/search/commits", q, since, until)
+    """用 repos/{repo}/commits REST 拉最近 commit（日期过滤可靠），不走 search/commits。
+
+    注意：GitHub 的 /search/commits 对带 OR 关键词的查询不按 committer-date 过滤
+    （total 恒为全仓匹配数），二分分片无意义且 collect 会海量翻页卡死。
+    故改用 REST 的 /commits?since=&until= 接口，日期过滤可靠，单窗口 + max_prs 硬限。
+    """
+    until = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    since_iso = f"{since}T00:00:00Z" if since else None
     outs = []
-    for it in items:
-        c = it.get("commit", {})
-        outs.append({"kind": "commit", "id": it["sha"],
-                     "title": c.get("message", "").split("\n")[0][:120],
-                     "url": it.get("html_url", "")})
-        if len(outs) >= max_prs:
+    page = 1
+    hard_cap = max(max_prs, 200)  # 防翻页爆炸的硬上限
+    while len(outs) < hard_cap:
+        params = {"per_page": 100, "page": page}
+        if since_iso:
+            params["since"] = since_iso
+        params["until"] = until
+        data = api_get(f"/repos/{repo}/commits", params)
+        commits = (data or {}).get("commits", (data or {}).get("items", [])) if isinstance(data, dict) else []
+        if not commits:
             break
+        for c in commits:
+            sha = c.get("sha")
+            msg = (c.get("commit", {}).get("message", "") or "").split("\n")[0][:120]
+            outs.append({"kind": "commit", "id": sha,
+                         "title": msg, "url": c.get("html_url", "")})
+            if len(outs) >= max_prs:
+                break
+        if len(outs) >= max_prs or len(commits) < 100:
+            break
+        page += 1
     return outs
 
 
@@ -361,9 +378,11 @@ def main():
         q = entry.get("query") or args.query
         sys.stderr.write(f"[pr_mine] crawling {repo} (query='{q}') ...\n")
         items = fetch_merged_prs(repo, q, args.max_prs, args.since)
-        # 仓特性兜底：PR 流程缺失的仓（sqlite/postgres/linux）改爬 commit
-        if len(items) < 20:
-            sys.stderr.write(f"[pr_mine] {repo}: only {len(items)} PRs, fallback to commit source ...\n")
+        # 仓特性兜底：PR 流程缺失的仓（sqlite/postgres/linux）改爬 commit。
+        # 注意用 ==0 而非 <20：fetch_merged_prs 已按 max_prs 截断，max_prs 小（如 5）
+        # 时 len 必然 <20 会误触发 commit 兜底，浪费配额。只有 PR 源真为空才兜底。
+        if len(items) == 0:
+            sys.stderr.write(f"[pr_mine] {repo}: 0 PRs, fallback to commit source ...\n")
             items += fetch_commits(repo, q, args.max_prs, args.since)
         sys.stderr.write(f"[pr_mine] {repo}: {len(items)} items (PR+commit)\n")
         per_pr_count = {}
