@@ -83,8 +83,9 @@ def api_get(path, params=None):
 SEARCH_CAP = 1000  # GitHub search API 单查询硬上限（total_count 最多 1000）
 
 
-def _search_collect(endpoint, q, since, until, per_page=30):
-    """对单个时间窗口翻页收集搜索结果（items）。返回 list[dict]。遇限流重试。"""
+def _search_collect(endpoint, q, since, until, max_items=SEARCH_CAP, per_page=30):
+    """对单个时间窗口翻页收集搜索结果（items）。返回 list[dict]。遇限流重试。
+    翻页到凑够 max_items 即停（而非武断翻到 SEARCH_CAP），避免多窗口累积爆量卡死。"""
     tf = "committer-date" if endpoint == "/search/commits" else "created"  # commit 搜索用 committer-date，PR 用 created
     items_all = []
     page = 1
@@ -101,15 +102,20 @@ def _search_collect(endpoint, q, since, until, per_page=30):
         items_all.extend(items)
         if len(items) < per_page:
             break
-        if len(items_all) >= SEARCH_CAP:
+        if len(items_all) >= max_items:
             break
         page += 1
     return items_all
 
 
-def _sharded_search(endpoint, q, since, until):
+def _sharded_search(endpoint, q, since, until, max_items=SEARCH_CAP):
     """时间二分分片绕过 search 单查询 1000 上限：某窗口 total>900 则按中点拆两段递归。
-    since/until 为 YYYY-MM-DD 或 None。"""
+    since/until 为 YYYY-MM-DD 或 None。
+
+    关键优化：当 max_items <= 900（日常增量采集，只要 max_prs 条）时，直接单窗口
+    collect 到 max_items 即停，不二分——二分是为历史批扫(max_prs>900)绕 1000 上限
+    才需要；日常场景二分会因 search 日期限定在窄窗口不可靠 + 多窗口累积翻页而卡死。
+    """
     tf = "committer-date" if endpoint == "/search/commits" else "created"
     probe_q = q
     if since:
@@ -121,21 +127,23 @@ def _sharded_search(endpoint, q, since, until):
     sys.stderr.write(f"[shard] {endpoint} probe total_count={total} (since={since} until={until})\n")
     if total == 0:
         return []
-    if total <= 900 or not since or not until:
-        return _search_collect(endpoint, q, since, until)
+    # 日常采集：只要 max_items 条，直接单窗口 collect，不二分（避免卡死）
+    if max_items <= 900 or not since or not until:
+        return _search_collect(endpoint, q, since, until, max_items=max_items)
+    # 历史批扫(max_items>900)：才二分绕 1000 上限
     d0 = datetime.strptime(since, "%Y-%m-%d").date()
     d1 = datetime.strptime(until, "%Y-%m-%d").date()
     # 窗口已细化到单天（或不可逆，d0>=d1）时停止二分，直接 collect，
     # 否则 since==until 时 mid==d0 会让子窗口 (d0,d0) 永不收敛 -> RecursionError。
     if d1 <= d0:
-        return _search_collect(endpoint, q, since, until)
+        return _search_collect(endpoint, q, since, until, max_items=max_items)
     mid = d0 + (d1 - d0) // 2
     mid_s = mid.strftime("%Y-%m-%d")
     # 右半窗口从 mid 的次日算起，确保窗口严格缩小（d1-d0==1 时拆成两个单天窗口），
     # 避免 (d0,d1) -> (d0,mid)=(d0,d0) + (mid,d1)=(d0,d1) 同窗口无限递归。
     mid_next = (mid + timedelta(days=1)).strftime("%Y-%m-%d")
-    return (_sharded_search(endpoint, q, since, mid_s)
-            + _sharded_search(endpoint, q, mid_next, until))
+    return (_sharded_search(endpoint, q, since, mid_s, max_items=max_items)
+            + _sharded_search(endpoint, q, mid_next, until, max_items=max_items))
 
 
 def fetch_merged_prs(repo, query, max_prs, since):
@@ -143,7 +151,7 @@ def fetch_merged_prs(repo, query, max_prs, since):
     返回 [{kind, id, title, url}]。"""
     q = f"repo:{repo} is:pr is:merged {query}".strip()
     until = datetime.now().strftime("%Y-%m-%d")
-    items = _sharded_search("/search/issues", q, since, until)
+    items = _sharded_search("/search/issues", q, since, until, max_items=max_prs)
     prs = []
     for it in items:
         prs.append({"kind": "pr", "id": it["number"],
