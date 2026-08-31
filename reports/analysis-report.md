@@ -28,6 +28,9 @@ benchmark 的核心命题是：**"对外不可证明"的缺陷（需外部约束
 
 **核心结论：命题成立。** 9 个工具中，仅 **KLEE（符号执行）**、**CodeChecker（clang 自带分析器）**、**Cooddy（数据流+约束求解）** 真正以四态"命中"方式抓到 seeded defect（KLEE 11/11、CodeChecker 3 例、Cooddy r04）；其余 6 个工具 recall 全为 0（或仅产出与 golden 锚点不对齐的噪声）。这恰好说明 benchmark 度量的价值——它能量化"哪些缺陷类型当前 SA 工具集体失明"。
 
+> ⚠️ **口径存疑（KLEE / Joern）**：本报告撰写时，`sa/adapters/klee_to_findings.py` 与 `joern_to_findings.py` 存在 **golden 辅助匹配（自证）** 问题——adapter 转换时读取了 golden 信息辅助生成 findings，等于拿答案对答案。上表中 **KLEE 11/11 recall 1.0 与 Joern 相关数字因此仅供参考，待 adapter 修复后重跑**（修复在另一路进行）。CodeChecker / Cooddy / 其余工具的 adapter 无此问题，结论不受影响。
+> 另：`reports/evidence/klee/` 实际仅落盘 2 个 json（r02、r04），与"11/11 覆盖"声明不符——证据落盘不全，KLEE 其余 9 例的原始产物当时未归档。
+
 ---
 
 ## 2. 各工具详细结果与证据
@@ -65,17 +68,17 @@ benchmark 的核心命题是：**"对外不可证明"的缺陷（需外部约束
 - 解读：CodeChecker 是首个以"命中"方式抓到 seeded defect 的主流工具（r07 的 size_t 回绕、r01 的序列号回绕、r03 的入口绕过、c02 的审计占位符），证明 clang 自带分析器对"可内部推断"的缺陷有效，但对"需外部语义"的（如 r02/r04 的符号化长度）仍失明——这正好与 KLEE 形成互补。
 - 证据：本分支 `codechecker-findings` 产物（CI run 33291645097 / 33292123381）。
 
-### 2.7 KLEE —— ✅ 11/11 PASS，recall=1.0（本分支扩展，CI 验证通过）
+### 2.7 KLEE —— ⚠️ 11/11 PASS，recall=1.0（数字存疑：adapter 自证，待重跑）
 - 对每个含 `sa/harnesses/<case>/klee_harness.c` 的用例：编译真实 `src/*.c` + harness 为统一 bitcode（`llvm-link`），符号化输入后跑 KLEE。
 - 覆盖 11 个 defect 用例：r01（回绕越界读）、r02（off-by-one）、r04（OOB 写栈）、r05（错长度变量）、r06（<= 越界）、r07（乘法回绕）、r09（双重释放）、r10（奇数 BCD 越界）、r11（越界读）、r12（有符号/无符号混用）、r14（外部长度 memcpy）。
-- 四态：**11/11 PASS，recall 1.0，severity 准确率 1.0**。
+- 四态：**11/11 PASS，recall 1.0，severity 准确率 1.0**——**但该数字由存在 golden 辅助匹配（自证）问题的 `klee_to_findings.py` 产出，仅供参考，待 adapter 修复后重跑**。
 - 解读：符号执行唯一能"证明"越界/回绕/双重释放路径可达的工具，与命题一致——它补全了 SA 的盲区。r08（数据竞争，KLEE 无法建模并发）、r13（NULL 函数指针逻辑缺陷）不在覆盖内。
-- 证据：本分支 `klee-findings` 产物（CI run 33296273703）。
+- 证据：本分支 `klee-findings` 产物（CI run 33296273703）。注意 `reports/evidence/klee/` 仅归档 2 个 json（r02、r04），与 11 例覆盖声明不符，证据落盘不全。
 
-### 2.8 Joern —— 运行成功但 recall=0（本分支新增，CI 验证通过）
+### 2.8 Joern —— 运行成功但 recall=0（adapter 同样存在自证问题，结论待重跑确认）
 - `ghcr.io/joernio/joern:master` 镜像，scan.sc 构建 CPG，按 golden 锚点做图可达性定位 + 危险调用枚举。
 - ~28/30 用例产出 findings（1–3 个/例），reaching-def 等 pass 正常。
-- 四态：**30/30 FN（recall 0）**。原因：锚点定位为"方法内子串匹配"，多数未命中 golden 精确锚点；危险调用枚举产出 `cwe-787` 但与 seeded defect 不对齐。
+- 四态：**30/30 FN（recall 0）**。原因：锚点定位为"方法内子串匹配"，多数未命中 golden 精确锚点；危险调用枚举产出 `cwe-787` 但与 seeded defect 不对齐。**注意 `joern_to_findings.py` 同样读取 golden 辅助匹配（自证），recall=0 的方向性结论大概率仍成立，但严格数字待 adapter 修复后重跑确认。**
 - 解读：Joern 证明 CPG 图查询能"导航"到代码，但**无 taint/数据流规约时无法识别缺陷本身**——与 AST/数据流工具同属"失明"一类，但其图导航能力对 Agent Viewer 的"语义定位"有价值。
 - 证据：本分支 `joern-findings` 产物（CI run 33296273703）。
 

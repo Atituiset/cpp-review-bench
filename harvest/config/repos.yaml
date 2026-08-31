@@ -1,6 +1,11 @@
 # harvest 目标仓矩阵（pinned ref 钉死，可溯源）
 # build: cmake / make-compiledb / bear
 # scope: 路径白名单（仅扫这些前缀，降低噪声与构建成本）
+#
+# 许可证策略（2026-08 起，pr_mine 写入候选顶层字段，供下游 pack_case 消费）：
+#   license: 该仓许可证（SPDX 风格短名；redis 7.4+ 为 RSALv2，非宽松许可）
+#   port:    direct  = 宽松许可，允许直接移植代码
+#            rewrite = copyleft/非宽松，只允许参考重写（保留语义、重写表达）
 repos:
   - name: curl
     url: https://github.com/curl/curl
@@ -8,89 +13,130 @@ repos:
     build: make-compiledb
     scope: { include: ["lib/", "src/"], exclude: ["tests/", "docs/"] }
     languages: [c]
+    license: MIT
+    port: direct
   - name: sqlite
     url: https://github.com/sqlite/sqlite
     ref: version-3.46.1
     build: make-compiledb
     scope: { include: ["src/"], exclude: ["test/", "tool/"] }
     languages: [c]
+    license: Public-Domain
+    port: direct
   - name: redis
     url: https://github.com/redis/redis
     ref: 7.4.0
     build: make-compiledb
     scope: { include: ["src/"], exclude: ["tests/", "deps/"] }
     languages: [c]
+    license: RSALv2      # redis 7.4+ 非宽松许可
+    port: rewrite
   - name: nginx
     url: https://github.com/nginx/nginx
     ref: release-1.27.1
     build: make-compiledb
     scope: { include: ["src/"], exclude: ["tests/"] }
     languages: [c]
+    license: BSD-2-Clause
+    port: direct
   - name: libuv
     url: https://github.com/libuv/libuv
     ref: v1.48.0
     build: make-compiledb
     scope: { include: ["src/"], exclude: ["test/"] }
     languages: [c]
+    license: MIT
+    port: direct
   - name: openssl
     url: https://github.com/openssl/openssl
     ref: openssl-3.3.1
     build: make-compiledb
     scope: { include: ["crypto/", "ssl/", "apps/"], exclude: ["test/", "doc/"] }
     languages: [c]
+    license: Apache-2.0
+    port: direct
   - name: vim
     url: https://github.com/vim/vim
     ref: v9.1.0000
     build: make-compiledb
     scope: { include: ["src/"], exclude: ["testdir/"] }
     languages: [c]
+    license: Vim         # GPL 兼容
+    port: rewrite
   - name: postgres
     url: https://github.com/postgres/postgres
     ref: REL_16_3
     build: make-compiledb
     scope: { include: ["src/backend/", "src/bin/"], exclude: ["src/test/", "contrib/"] }
     languages: [c]
+    license: PostgreSQL
+    port: direct
   - name: leveldb
     url: https://github.com/google/leveldb
     ref: 1.23
     build: cmake
     scope: { include: ["db/", "include/"], exclude: ["tests/"] }
     languages: [c, cpp]
+    license: BSD-3-Clause
+    port: direct
   - name: ninja
     url: https://github.com/ninja-build/ninja
     ref: v1.12.1
     build: cmake
     scope: { include: ["src/"], exclude: ["misc/"] }
     languages: [c, cpp]
+    license: Apache-2.0
+    port: direct
   - name: aetherstack
     url: https://github.com/<org>/aetherstack   # smoke：占位，实际地址人审填
     ref: main
     build: cmake
     scope: { include: ["src/"], exclude: ["test/"] }
     languages: [c, cpp]
+    license: unknown     # 占位仓，许可证人审填；填前按 rewrite 保守处理
+    port: rewrite
   - name: linux
     url: https://github.com/torvalds/linux
     ref: v6.11
     build: make-compiledb
     scope: { include: ["kernel/", "mm/", "fs/", "net/", "ipc/", "security/"], exclude: ["tools/", "Documentation/", "arch/"] }
     languages: [c]
+    license: GPL-2.0
+    port: rewrite
 
 # pr-mining 采集源专用：爬哪些仓的 PR（GitHub search 语法）
 # 经验：in:title 太窄（curl 仅 35、sqlite/postgres/linux 0）；改全字段搜索后量级对
 # （curl 97、redis 3056）。噪声由 judge_bug 启发式 + 人审兜底。OR 算子 ≤5（GitHub 限制）。
+#
+# fp_query（可选，按仓覆盖）：fp-mining（contract 轨误报矿）第二轮采集用的查询，
+# 抓「修静态分析误报」的 PR；缺省用 pr_mine.py 内置 DEFAULT_FP_QUERY（同下）。
+# 注意 GitHub search 限制 AND/OR/NOT 算子最多 5 个，自定义时不要超限。
 pr_mining:
   targets:
     - repo: curl/curl
+      fp_query: &fp_default '"false positive" OR "false-positive" OR "intended behavior" OR "not a bug" OR cppcheck OR clang-tidy'
     - repo: sqlite/sqlite
+      fp_query: *fp_default
     - repo: redis/redis
+      fp_query: *fp_default
     - repo: nginx/nginx
+      fp_query: *fp_default
     - repo: libuv/libuv
+      fp_query: *fp_default
     - repo: openssl/openssl
+      fp_query: *fp_default
     - repo: vim/vim
+      fp_query: *fp_default
     - repo: postgres/postgres
+      fp_query: *fp_default
     - repo: google/leveldb
+      fp_query: *fp_default
     - repo: ninja-build/ninja
+      fp_query: *fp_default
     - repo: torvalds/linux
+      fp_query: *fp_default
   query: "fix OR bug OR leak OR overflow OR crash"   # 全字段（不限定 in:title），按仓可覆盖
   max_prs_per_run: 50            # 每仓每轮上限（历史批扫可 dispatch 覆盖调大）
   since: "2024-01-01"            # 历史批扫起点；日常增量由 harvest.yml 动态覆盖为「昨天」
+  max_per_scenario: 5            # 每仓每 scenario 候选配额（CLI --max-per-scenario 可覆盖）
+  fp_mining: false               # contract 轨误报矿开关（CLI --fp-mining 显式开启优先）

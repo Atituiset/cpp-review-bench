@@ -8,13 +8,12 @@ on:
         type: choice
         options: [all, sa-scan, pr-mining]
         default: all
-      repo:
-        type: choice
-        options: [all, curl, sqlite, redis, nginx, libuv, openssl, vim, postgres, leveldb, ninja, aetherstack]
-        default: all
+      # 仓过滤统一用这一个文本输入（原 repo choice 是死参数：过滤只看 repos 字符串，已删）。
+      # 过滤语义：逗号分隔，matrix.repo 落在该串中即运行；留空=全量。
+      # 可选仓以 matrix 为准：curl, sqlite, redis, nginx, vim, postgres, linux
       repos:
         type: string
-        description: "覆盖 repo 选择：空格分隔的仓列表，如 'curl sqlite'（优先于 repo）"
+        description: "逗号分隔的仓列表（如 'curl,sqlite'），留空=全量；可选仓：curl, sqlite, redis, nginx, vim, postgres, linux"
         default: ""
       since:
         type: string
@@ -32,6 +31,14 @@ on:
         type: string
         description: "每仓候选总数上限（0=不限），用于历史批扫限流"
         default: "0"
+      max_per_scenario:
+        type: string
+        description: "每 scenario 候选配额（防单一缺陷类型刷屏），默认 5"
+        default: "5"
+      fp_mining:
+        type: boolean
+        description: "开启 contract 轨误报矿（缺陷轮后加跑 fp-mining 第二轮，抓修 SA 误报的 PR）"
+        default: false
 
 permissions:
   contents: write
@@ -86,6 +93,11 @@ jobs:
           [ -z "$MAXPERPR" ] && MAXPERPR="3"
           MAXCAND="${{ github.event.inputs.max_candidates }}"
           [ -z "$MAXCAND" ] && MAXCAND="0"
+          MAXPSC="${{ github.event.inputs.max_per_scenario }}"
+          [ -z "$MAXPSC" ] && MAXPSC="5"
+          # fp-mining 仅 dispatch 显式开启（schedule 时 inputs 为空 → 关闭）
+          FPFLAG=""
+          [ "${{ github.event.inputs.fp_mining }}" = "true" ] && FPFLAG="--fp-mining"
           python3 harvest/tools/pr_mine.py \
             --config harvest/config/repos.yaml \
             --repo-name "${{ matrix.repo }}" \
@@ -93,6 +105,7 @@ jobs:
             --max-prs "$MAXPRS" \
             --max-per-pr "$MAXPERPR" \
             --max-candidates "$MAXCAND" \
+            --max-per-scenario "$MAXPSC" $FPFLAG \
             --out /tmp/pr-findings-${{ matrix.repo }} 2>&1 | tail -5
 
       - name: 上传 artifact（pr-mining）
@@ -190,11 +203,9 @@ jobs:
           git commit -m "harvest: 每日候选 $N 条待审核"
           echo "BRANCH_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}" "$BRANCH"
-          # 调试：确认实际解析到哪个 token（ghp_=classic PAT, github_pat_=fine-grained, ghu_/gho_=GITHUB_TOKEN 回退）
-          echo "解析到的 token 前缀: ${GH_TOKEN:0:10}***"
           echo "HARVEST_TOKEN 是否非空: $([ -n "${{ secrets.HARVEST_TOKEN }}" ] && echo YES || echo NO)"
-          # PR/issue body：附 pr-mining 说明 + 候选溯源总览 + 细粒度审核指令
-          BODY=$(printf '分支 %s 含 %s 条候选草稿（来自真实已合并 fix-PR 爬取）。\n\n## 这是什么\n- **pr-mining**：采集工具，爬 GitHub 已合并的 fix-PR，按标题/diff 含缺陷特征（fix/leak/overflow/null/...）挑出候选 bug 片段。\n- 每条候选 = 「某开源仓某 PR 修复过的一段代码」，可能是真 bug 也可能是误报，待你审核。\n- 草稿文件见 PR 的 Files changed（harvest/inbox/draft/<id>/），含 src/ + golden.json + notes.md（含真实修复 diff + 接受后流程）。\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n注意：accept 只是预审进 cases/，merge 才落地 main；merge 前随时可 /case reject 反悔。\n\n> scenario 为候选初判（非真值），待你正式仓手动触发 LLM 评审定真值；9 工具四态在 /case accept 进 cases/ 后由 ci.yml+eval.py 产生。\n\n%s' "$BRANCH" "$N" "$FOUR")
+          # PR/issue body：draft 定位说明 + 每候选轻验证结论 + 候选溯源总览 + accept 检查清单 + 细粒度审核指令
+          BODY=$(printf '分支 %s 含 %s 条候选草稿（来自真实已合并 fix-PR 爬取）。\n\n## 这是什么（draft 定位）\n- 本草稿**不是半成品用例**，是**线索 + 移植 blueprint**：每条候选 = 一个真实已合并 fix-PR 的可疑片段 + notes.md 里的溯源/移植要点/检查清单。\n- **accept = 承诺移植重写**：参照真实案例重写一个可编译用例；rewrite 许可的仓必须重写表达，不得直接复制切片。\n- **pr-mining**：采集工具，爬 GitHub 已合并的 fix-PR，按标题/diff 含缺陷特征（fix/leak/overflow/null/...）挑出候选 bug 片段；可能是真 bug 也可能是误报，待你审核。\n- 草稿文件见 PR 的 Files changed（harvest/inbox/draft/<id>/），含 src/ + golden.json + notes.md。\n\n## 轻验证结论（单文件 SA，file+anchor 口径）\n\n%s\n\n## 候选溯源总览\n\n%s\n\n## accept 检查清单（移植者完成后再 /case accept）\n- [ ] 编译通过（重写后的 src/ 可独立编译）\n- [ ] golden anchor 真实存在于 src/\n- [ ] 触发条件已用一句话复述（写在 notes.md「缺陷描述与触发条件」）\n- [ ] license 策略已遵守（rewrite 仓代码已重写表达）\n- [ ] `// <<< BUG ANCHOR` 标记已清除\n- [ ] notes 三段式已补全（缺陷描述 / 移植要点 / 契约安全（contract 候选））\n\n## 细粒度审核指令\n在 PR 评论里回复（一行一条，空格分隔多个 id）：\n- /case accept <id1> <id2> ...  将对应候选转 cases/defect/（真 bug）\n- /case contract <id1> ...       将对应候选转 cases/contract/（确认是 FP 契约）\n- /case reject <id1> ...         将对应候选转 harvest/inbox/rejected/\n\n注意：accept 只是预审进 cases/，merge 才落地 main；merge 前随时可 /case reject 反悔。\n\n> scenario 为候选初判（非真值），待你正式仓手动触发 LLM 评审定真值；9 工具四态在 /case accept 进 cases/ 后由 ci.yml+eval.py 产生。\n' "$BRANCH" "$N" "$REPORT" "$FOUR")
           PRERR=$(mktemp)
           if gh pr create \
             --head "$BRANCH" \

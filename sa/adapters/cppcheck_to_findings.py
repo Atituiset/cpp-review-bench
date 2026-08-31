@@ -25,6 +25,22 @@ def norm(s: str) -> str:
     return re.sub(r"\s+", "", s)
 
 
+# 工具原始严重度 -> schema enum；不在表内的视为无法判断（省略 severity 字段）
+SEVERITY_MAP = {
+    "error": "critical", "blocker": "critical", "critical": "critical",
+    "major": "critical", "high": "critical",
+    "warning": "important", "medium": "important",
+    "info": "minor", "style": "minor", "performance": "minor",
+    "portability": "minor", "minor": "minor", "note": "minor",
+}
+
+
+def map_severity(raw: str) -> str | None:
+    if not raw:
+        return None
+    return SEVERITY_MAP.get(str(raw).strip().lower())
+
+
 def line_anchor(src_file: Path, line: int) -> str | None:
     try:
         lines = src_file.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -35,13 +51,20 @@ def line_anchor(src_file: Path, line: int) -> str | None:
     return None
 
 
+def make_doc(tool: str, track: str, case_id: str, version: str | None,
+             findings: list) -> dict:
+    doc = {"tool": tool, "track": track, "case_id": case_id, "findings": findings}
+    if version and version not in ("unknown", "missing"):
+        doc["version"] = version
+    return doc
+
+
 def convert(track: str, case_id: str, src_dir: Path,
             cppcheck_bin: str, tool: str, version: str,
             include_dirs: list[str] | None = None) -> dict:
     sources = sorted(str(p) for p in src_dir.glob("*.c"))
     if not sources:
-        return {"tool": tool, "track": track, "case_id": case_id,
-                "version": version, "findings": []}
+        return make_doc(tool, track, case_id, version, [])
     cmd = [cppcheck_bin, "--enable=warning,style,performance,portability,information",
            "--inconclusive", "--xml", "--xml-version=2"]
     if include_dirs:
@@ -58,8 +81,7 @@ def convert(track: str, case_id: str, src_dir: Path,
         m = re.search(r"<results>.*</results>", raw, re.S)
         if not m:
             sys.stderr.write(f"[warn] cppcheck XML 解析失败 for {case_id}\n")
-            return {"tool": tool, "track": track, "case_id": case_id,
-                    "version": version, "findings": []}
+            return make_doc(tool, track, case_id, version, [])
         root = ET.fromstring(m.group(0))
     for err in root.iter("error"):
         sev = err.get("severity", "")
@@ -79,17 +101,18 @@ def convert(track: str, case_id: str, src_dir: Path,
             anchor = line_anchor(src_file, int(line))
             if anchor is None:
                 continue
-            findings.append({
+            # scenario 未知（cppcheck 无 CWE 标签）故省略
+            f = {
                 "file": str(rel).replace("\\", "/"),
                 "line": int(line),
                 "anchor": anchor,
                 "message": err.get("msg", ""),
-                "scenario": None,
-                "severity": sev,
-                "function": None,
-            })
-    return {"tool": tool, "track": track, "case_id": case_id,
-            "version": version, "findings": findings}
+            }
+            sev = map_severity(err.get("severity", ""))
+            if sev:
+                f["severity"] = sev
+            findings.append(f)
+    return make_doc(tool, track, case_id, version, findings)
 
 
 def main():
@@ -106,9 +129,8 @@ def main():
 
     if shutil.which(args.cppcheck) is None:
         sys.stderr.write(f"[warn] 未找到 {args.cppcheck}，跳过 {args.case_id}\n")
-        json.dump({"tool": args.tool, "track": args.track,
-                   "case_id": args.case_id, "version": "missing",
-                   "findings": []}, sys.stdout, ensure_ascii=False, indent=2)
+        json.dump(make_doc(args.tool, args.track, args.case_id, "missing", []),
+                  sys.stdout, ensure_ascii=False, indent=2)
         sys.stdout.write("\n")
         return
 

@@ -1,5 +1,23 @@
 # harvest vote 规则 + 噪声抑制 + scenario 键映射
 # 规则 ID（CSA checker / CppCheck id）→ CWE 键（与 schema/golden.schema.json 的 scenario 对齐）
+#
+# 接线状态（2026-08 核实）：
+#   已生效：vote.min_tools、vote.line_tolerance —— vote.py 在 CLI 未显式传
+#           --min-tools/--line-tol 时读取本节作默认值（CLI 显式传参优先）。
+#           注意 CI（harvest.yml vote 步骤）显式传 --min-tools 1（单源退化期），
+#           故本文件的 min_tools: 2 在 CI 中不生效，仅对手动运行生效。
+#   规划项（尚未接线，勿当作已生效配置）：scenario_map、noise_blacklist、
+#           vote.single_tool_high_conf、unmapped_bucket —— 待 normalize.py 接入
+#           scenario 映射与噪声抑制后生效。
+#
+# pr-mining 采集端相关（配置在 repos.yaml pr_mining 段，非本文件；2026-08 起生效）：
+#   max_per_scenario —— 已生效：pr_mine.py 按 judge_bug 判出的 scenario 分桶计数，
+#           桶满跳过后续同 scenario 候选（防单一仓单一缺陷类型刷屏），
+#           兜底链 CLI --max-per-scenario > config > 内置默认 5。
+#   fp_mining —— 已生效但默认 false：需 CLI --fp-mining 或 config fp_mining: true
+#           显式开启；开启后对每仓额外跑一轮「修静态分析误报」PR 采集（contract 轨
+#           误报矿，query 用 targets[].fp_query），产出 track_hint=contract /
+#           polarity=must_not_find 候选，与缺陷候选共用 scenario 配额桶。
 
 vote:
   min_tools: 2            # ≥2 工具独立命中（file+line±3+scenario 家族一致）→ 候选

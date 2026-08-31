@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # 本地 / CI 共用：把 CppCheck 接到 bench。
 # 用法：
-#   ./consumers/local/run_cppcheck.sh <output_dir>
-# 产出：每个 case 一个归一化 findings JSON（tools/cppcheck_to_findings.py 输出），
+#   ./sa/runners/run_cppcheck.sh <output_dir>
+# 产出：每个 case 一个归一化 findings JSON（sa/adapters/cppcheck_to_findings.py 输出），
 #       置于 <output_dir>/<case_id>.json，可直接喂 tools/eval.py run <output_dir>
 #
 # 依赖：cppcheck（CI 用 apt 装，Ubuntu 源 cppcheck 2.13）。版本钉死写入 findings.version。

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # 本地 / CI 共用：把 Clang Static Analyzer 接到 bench。
 # 用法：
-#   ./consumers/local/run_csa.sh [singletu|ctu] <output_dir>
-# 产出：每个 case 一个归一化 findings JSON（tools/csa_to_findings.py 输出），
+#   ./sa/runners/run_csa.sh [singletu|ctu] <output_dir>
+# 产出：每个 case 一个归一化 findings JSON（sa/adapters/csa_to_findings.py 输出），
 #       置于 <output_dir>/<case_id>.json，可直接喂 tools/eval.py run <output_dir>
 #
 # 依赖：clang / clang-extdef-mapping（ctu 模式需要）。版本钉死写入 findings.version。
@@ -14,11 +14,16 @@ CLANG_BIN="${CLANG_BIN:-clang}"
 EXTDEF_BIN="${EXTDEF_BIN:-clang-extdef-mapping}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-INC="-isystem /usr/lib/gcc/x86_64-linux-gnu/13/include -isystem /usr/include/x86_64-linux-gnu -isystem /usr/include"
-# 若非 Debian/Ubuntu，回退到 clang 自带资源头
-CLANG_VER="$("$CLANG_BIN" --version | head -1 | grep -oE '[0-9]+\.[0-9]+' | head -1)"
+# 系统头：以 clang 自带 resource-dir 为主（可移植，内含 stddef/stdarg/limits 等内建头，
+# 足以覆盖原硬编码 gcc include 目录的作用）；/usr/include 与 multiarch 目录为平台头补充，
+# 不存在则跳过（原先硬编码 /usr/lib/gcc/x86_64-linux-gnu/13/include 是 Debian/Ubuntu
+# gcc-13 专属布局，其他环境会失效，故删除，统一靠 resource-dir 兜底）
+INC=""
 CLANG_RES="$("$CLANG_BIN" -print-resource-dir 2>/dev/null)"
-[ -n "$CLANG_RES" ] && INC="$INC -isystem $CLANG_RES/include"
+[ -n "$CLANG_RES" ] && INC="-isystem $CLANG_RES/include"
+for d in /usr/include/x86_64-linux-gnu /usr/include; do
+  [ -d "$d" ] && INC="$INC -isystem $d"
+done
 
 TOOL_VER="$("$CLANG_BIN" --version | head -1)"
 mkdir -p "$OUT"

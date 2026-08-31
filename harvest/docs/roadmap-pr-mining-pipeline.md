@@ -5,7 +5,8 @@
 > 关系：本文件是 `harvest/docs/design-v0.1.md` 的**姊妹规划**——design-v0.1 走「SA 扫描开源仓源码」路线；
 > 本文新增「**爬 GitHub 历史 PR**」采集路线，并把 design-v0.1 的「SA 间共识」验证环升级为
 > 「**进仓根 cases/ 用 9 工具实测能否检出**」的硬核评测环（用户核心诉求）。
-> 状态：规划阶段，骨架已在分支 `exp/harvest-pipeline` 起步。未合 main。
+> 状态：**已实现并跑过多轮**——已并入 cpp-review-bench 单仓（main），pr-mining 采集源每日 cron 在跑
+> （matrix 7 仓：curl/sqlite/redis/nginx/vim/postgres/linux）；sa-scan 源为占位未实现，vote 单源退化 min-tools 1。
 
 ---
 
@@ -84,14 +85,16 @@ inbox 三态人审」。本文**不推翻它，而是叠加两条增强**：
 ```
 cpp-review-bench/                 # 现有仓（main 已含 sa/ + KLEE 11 例 + cooddy r04 命中）
 ├── cases/  schema/  tools/  sa/  reports/   # bench 评测（不变）
-├── harvest/                       # 新增子目录（本规划载体）
+├── harvest/                       # 采集管线子目录（已并入 main）
 │   ├── docs/design-v0.1.md
 │   ├── docs/roadmap-pr-mining-pipeline.md   # 本文件
 │   ├── config/{repos,rules}.yaml
-│   ├── tools/{pr_mine,build_compdb,scan_csa,scan_cppcheck,normalize,vote,evidence,pack_case}.py/.sh
-│   ├── .github/workflows/{harvest,package}.yml
-│   └── inbox/{draft,confirmed,rejected}/     # 候选三态（仓内目录）
-└── .github/workflows/ci.yml        # 现有 9 工具（不变）
+│   ├── tools/{pr_mine,normalize,vote,pack_case}.py   # 已实现（pr-mining 唯一采集源）
+│   │      # build_compdb.sh / scan_csa.sh / scan_cppcheck.sh / evidence.py：sa-scan 路线规划项，未实现
+│   └── inbox/{draft,rejected}/          # 候选落盘（confirm = 移植重写完成后进 cases/，无 confirmed/）
+└── .github/workflows/             # 仓根：ci.yml（9 工具评测）+ harvest.yml（采集，每日 cron，matrix 7 仓）
+                                   # + harvest-package.yml（三态流转）+ harvest-review.yml
+                                   # + harvest-pr-sarif.yml（if:false 禁用中）+ build-cooddy-image.yml
 ```
 
 ---
@@ -112,7 +115,7 @@ harvest.yml（matrix: source × repo）
     ④ 归一化：→ findings（schema 与 schema/findings.schema.json 同源）
     ⑤ pack：→ harvest/inbox/<auto-<repo>-<hash>/ 五文件草稿
 
-package.yml（候选打包 + inbox 三态流转辅助）
+harvest-package.yml（候选打包 + inbox 三态流转辅助）
   对 source 产出统一打包；inbox 三态由人审在仓内流转（confirm-tp/confirm-fp/reject）
 
 仓根评测环（承接 inbox）：
@@ -161,11 +164,46 @@ package.yml（候选打包 + inbox 三态流转辅助）
 
 ## 8. 是否启动的建议
 
-**已启动（单仓 + 分支）**：用户决策「单仓开发，并分支开发」。分支 `exp/harvest-pipeline` 已建，
-本规划 + design-v0.1 单仓版 + 骨架已落盘。下一步 M1 写 `pr_mine.py` 真实爬取，
-M2 写 `run_eval_inbox.sh` 评测环，均可与 bench main 并行（不污染 main）。
+**已完成启动并落地（事后记录）**：单仓方案已执行，管线已合入 main 并跑过多轮——`pr_mine.py` 真实爬取（M1）、
+`sa/runners/run_eval_inbox.sh` 评测环（M2）、三态流转（M3）均已实现；sa-scan 采集源仍为占位，
+vote 暂以 `--min-tools 1` 单源退化运行。
 
-**启动范围（M0+M1 即可起步）**：先跑通 1 个真实仓的 PR 爬取骨架，不急于全管线。
-bench 评测环（M2）可与 harvest M1 并行（仓根写 inbox 评测 runner）。
+---
 
-**分支纪律**：所有 harvest 工作在 `exp/harvest-pipeline`，不碰 main；验收线达成后再合 main。
+## 9. 定位修正轮（2026-08）：线索 + blueprint
+
+**动机——五个缺口**：
+
+1. **编译军规冲突**：bench 军规要求 cases/ 下一切用例真实可编译，而 draft 的 src/ 是 diff 原始切片，
+   天然不可直接编译——「draft 即半成品用例、确认即入仓」的旧定位与军规直接冲突。
+2. **真值未验证**：judge 启发式只判「像不像 bug」，候选触发条件未经验证，人审缺少可复述的判定依据。
+3. **license 混染**：候选 src 来自不同许可的源仓（MIT/BSD 与 GPL/RSALv2/Vim 混杂），直接移植有
+   copyleft 污染风险，此前无 license 策略。
+4. **contract 轨无来源**：defect 候选有 pr-mining 矿，contract 轨（must_not_find）没有对应的采集来源。
+5. **分布偏斜**：首跑 76 条候选 72 条来自 nginx，单一仓单一缺陷类型刷屏，无配额约束。
+
+**改造内容（已落地）**：
+
+- **新定位**：harvest = 候选线索生产线 + 人审移植流水线。draft = 线索 + 移植 blueprint，不是半成品用例；
+  accept（confirm-tp/contract）= 承诺参照真实案例移植重写一个可编译用例（军规：真实可编译、自然风格、
+  无播种标记）后入 cases/，不再是「确认即入仓」。
+- **license 策略**：候选 JSON 新增 `license`/`port`/`track_hint`/`polarity` 四顶层字段
+  （pr_mine 产出、vote 透传、pack_case 消费；旧候选默认 unknown/rewrite/defect/must_find）。
+  direct 组（curl=MIT、sqlite=Public-Domain、nginx=BSD-2-Clause、postgres=PostgreSQL）允许直接移植；
+  rewrite 组（redis=RSALv2、vim=Vim、linux=GPL-2.0）只允许参考重写（保留语义、重写表达）。
+  license/port/源 PR 只进 notes.md 溯源表，不进 golden.json（golden schema context 为
+  additionalProperties:false，冻结不动）。
+- **场景配额**：repos.yaml `pr_mining.max_per_scenario`（默认 5，CLI `--max-per-scenario`，
+  兜底链 CLI > config > 5）；同一 scenario 桶满后跳过。
+- **fp-mining（contract 轨误报矿）**：repos.yaml `pr_mining.fp_mining`（默认 false）+ CLI `--fp-mining`
+  显式开启；每仓缺陷轮之后第二轮用 target 的 `fp_query` 抓「修静态分析误报」的 PR（GitHub search
+  最多 5 个 OR 算子），不跑 judge_bug，产出 track_hint=contract + polarity=must_not_find 候选，
+  scenario 从 PR 标题/diff 关键词映射（映射不了省略）。
+- **blueprint notes**：pack_case.py 的 notes.md 改为移植 blueprint 六段——溯源表、缺陷描述与触发条件
+  （含「移植者须知：accept 前必须能复述触发条件」）、真实修复 diff、移植要点（外部符号启发式 +
+  src/ 不可直接编译声明 + `// <<< BUG ANCHOR` 移植时必须删除 + golden anchor 改用重写后真实代码行）、
+  为什么契约安全（仅 contract 候选）、accept 检查清单六项。contract 候选 golden 写 must_not_find 骨架。
+- **四态判定口径修正**：`make_draft_sarif.sh` 从 scenario 数字 grep（必不命中）改为 file+anchor 口径
+  （SA 命中行源码文本去空白与 golden anchor 互为子串，与 eval.py L1 一致）。
+- **propose PR body**：harvest.yml propose 的 PR body 含 draft 定位说明段、轻验证结论
+  （run_eval_inbox 产出的 eval_inbox_report.md）、候选溯源总览、accept 检查清单六项、审核指令。

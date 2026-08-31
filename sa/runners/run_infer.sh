@@ -25,6 +25,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
   # 合并该 case 所有 report.json -> 归一化 findings
   python3 "$REPO_ROOT/sa/adapters/infer_to_findings.py" "$track" "$cid" "$raw_dir" \
     --tool infer --version "$(infer --version 2>/dev/null | head -1)" \
+    --case-dir "$case_dir" \
     --out "$OUT_ROOT/$cid.json" 2>/dev/null \
     || echo "[warn] $cid 归一化失败"
   echo "[done] $cid -> $OUT_ROOT/$cid.json"

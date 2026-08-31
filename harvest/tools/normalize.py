@@ -6,6 +6,11 @@
 
 M1 骨架：CSA/CppCheck 的 SARIF→findings 映射占位；pr-mining 的 findings 直接透传。
 真实实现复用仓根 sa/adapters/*_to_findings.py（同 schema），本脚本做汇总入口。
+
+rules.yaml（harvest/config/rules.yaml）接线状态：本脚本目前不读 rules.yaml。
+  规划项（待接入）：scenario_map（规则 ID→CWE 键映射）、noise_blacklist
+  （路径/规则 ID 噪声抑制进 reject 桶）、unmapped_bucket（未映射规则进人审桶）。
+  vote.min_tools / vote.line_tolerance 已由 vote.py 接线，见该文件头注。
 """
 import argparse
 import json

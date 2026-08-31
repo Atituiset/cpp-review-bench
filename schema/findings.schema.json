@@ -13,7 +13,7 @@
     },
     "track": {
       "type": "string",
-      "enum": ["contract", "defect"],
+      "enum": ["contract", "defect", "calibration"],
       "description": "本次 findings 对应的轨（eval 按 case 的 track 取 golden）"
     },
     "case_id": {

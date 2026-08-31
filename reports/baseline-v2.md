@@ -15,6 +15,8 @@
 | CodeQL | Datalog DSL（GitHub 原生） | github/codeql-action@v3 | 跑通（v3 将于 2026-12 弃用，后续升 v4） |
 | Cooddy | 数据流+约束求解 | 自 build 镜像（GHCR） | **降级**：17 次 build 卡 z3 链接（Solver target `-lz3`），根因见 reports/evidence/cooddy/README.md |
 
+> 版本说明：CSA/clang-tidy 版本已钉（clang 21.1.8）；CppCheck（apt）、Infer（setup-infer）、CodeQL（codeql-action@v3 内置）的精确版本当时未记录——后续基线需钉版本（design §4.1 教训①）。
+
 ## 评测结果（CI 真跑，本地重算一致）
 
 每个工具对 30 例的评测（eval.py L1 协议：file + anchor 匹配；CWE 工具 scenario=null 时不强制）：
@@ -59,14 +61,14 @@
 
 ```
 # 本地
-./consumers/local/run_csa.sh singletu /tmp/csa_singletu
-./consumers/local/run_cppcheck.sh /tmp/cppcheck
-CLANG_TIDY_BIN=clang-tidy-21 ./consumers/local/run_clang_tidy.sh
+./sa/runners/run_csa.sh singletu /tmp/csa_singletu
+./sa/runners/run_cppcheck.sh /tmp/cppcheck
+CLANG_TIDY_BIN=clang-tidy-21 ./sa/runners/run_clang_tidy.sh
 # Infer 需容器/setup-infer 环境
 python3 tools/eval.py run <findings-dir>   # 四态评测
 
 # CI（golden 路径）
-gh workflow run bench-ci.yml   # 跑 CSA/CppCheck/clang-tidy + Infer，产物 all-findings / infer-findings
+gh workflow run ci.yml   # 跑 CSA/CppCheck/clang-tidy + Infer，产物 all-findings / infer-findings
 ```
 
 ## 证据

@@ -30,7 +30,7 @@ jobs:
       - name: Build 并推送 cooddy 镜像
         uses: docker/build-push-action@v6
         with:
-          context: ./docker/cooddy
+          context: ./sa/docker/cooddy
           push: true
           tags: ghcr.io/atituiset/cooddy:${{ inputs.tag }}
           # 禁用层缓存强制重建：避免复用早期失败的 RUN 层（cooddy make 层曾 exit 2 被缓存）

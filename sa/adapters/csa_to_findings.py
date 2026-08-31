@@ -62,22 +62,22 @@ def convert(track: str, case_id: str, src_dir: Path, plist_dir: Path,
             anchor = line_anchor(src_file, int(line))
             if anchor is None:
                 continue
-            findings.append({
+            # scenario 未知（CSA 无 CWE 标签）故省略；severity 无法从 plist 判定故省略
+            f = {
                 "file": rel,
                 "line": int(line),
                 "anchor": anchor,
                 "message": d.get("description", ""),
-                "scenario": None,
-                "severity": None,
-                "function": (d.get("issue_context") or "").strip() or None,
-            })
-    return {
-        "tool": tool,
-        "track": track,
-        "case_id": case_id,
-        "version": version,
-        "findings": findings,
-    }
+            }
+            func = (d.get("issue_context") or "").strip()
+            if func:
+                f["function"] = func
+            findings.append(f)
+    doc = {"tool": tool, "track": track, "case_id": case_id,
+           "findings": findings}
+    if version and version != "unknown":
+        doc["version"] = version
+    return doc
 
 
 def main():

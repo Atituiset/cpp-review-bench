@@ -4,7 +4,7 @@
 > 工具：`csa-singletu` / `csa-ctu`（clang 21.1.8，官方 LLVM apt 源 `clang-21` / `clang-tools-21`）
 > 评测器：`tools/eval.py`（design §4 两层匹配协议）
 > 环境钉死（design §4.1 教训①）：Ubuntu clang 21.1.8 / gcc 13 头文件 / `-std=c11 -Wall`
-> 口径：每条 finding 经 `tools/csa_to_findings.py` 转归一化格式（anchor = 源文件对应行源码，去空白）
+> 口径：每条 finding 经 `sa/adapters/csa_to_findings.py` 转归一化格式（anchor = 源文件对应行源码，去空白）
 > 证据归档：`reports/evidence/csa/`（CI artifact 原样落盘 + 复现路径）
 
 ## 1. 结论速览
@@ -37,15 +37,15 @@
 
 本机自装 clang 21 缺 `clang-extdef-mapping`（初装时仅拷 clang/clang++/clangd），无法本地跑原生 CTU。
 补全路径改在 CI：GitHub Actions `ubuntu-latest` 经官方 LLVM apt 源装 `clang-tools-21`，自带 `clang-extdef-mapping-21`，
-`consumers/local/run_csa.sh ctu` 走标准流程（`clang-extdef-mapping gen` → `clang --analyze -ctu-dir=... -analyzer-config experimental-enable-naive-ctu=true`）。
+`sa/runners/run_csa.sh ctu` 走标准流程（`clang-extdef-mapping gen` → `clang --analyze -ctu-dir=... -analyzer-config experimental-enable-naive-ctu=true`）。
 CI run 33258703246 已验证 CTU 真生效且 recall 仍 0。
 
 ## 5. 复现命令
 
 ```bash
 # 本地（需 clang-21 + clang-extdef-mapping-21 在 PATH）
-./consumers/local/run_csa.sh singletu /tmp/csa_singletu   # 单 TU 默认
-./consumers/local/run_csa.sh ctu      /tmp/csa_ctu        # 原生 CTU
+./sa/runners/run_csa.sh singletu /tmp/csa_singletu   # 单 TU 默认
+./sa/runners/run_csa.sh ctu      /tmp/csa_ctu        # 原生 CTU
 python3 tools/eval.py run /tmp/csa_singletu
 python3 tools/eval.py run /tmp/csa_ctu
 ```

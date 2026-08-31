@@ -20,7 +20,7 @@
 | 消费方 | 形态 | 入口 |
 |---|---|---|
 | SA / 分析器（本地直跑） | 全量扫描 | `cmake -S . -B build && <your-analyzer> build/compile_commands.json`，或用例级 `cases/<track>/<id>/src/` 直接指给分析器 |
-| SA / 分析器（CI 跑） | GitHub Actions | 本仓 `.github/workflows/ci.yml`：checkout → 全量构建 → CSA 单 TU + 原生 CTU → 评分 |
+| SA / 分析器（CI 跑） | GitHub Actions | 本仓 `.github/workflows/ci.yml`：build-and-eval（全量构建 + check_cases + eval selftest + CSA singletu/CTU + CppCheck + clang-tidy，产物传 artifact）→ infer / codeql / klee / codechecker / joern（各带 eval 评分）→ cooddy-verify（r04 smoke） |
 | Agent+LLM 评审 | diff/PR | 用例 src 可物化为 `diff.patch`（空 base → 新增），或直接以源码树消费 |
 | 索引/提取工具 | 编译数据库 | 一键 compdb（`context.navmap_expect` 提供提取判定锚点） |
 
@@ -46,7 +46,7 @@ python3 tools/eval.py run /tmp/csa_singletu
 ## 目录结构
 
 ```
-cases/        contract/(16 例) + defect/(14 例) + calibration/
+cases/        contract/(16 例) + defect/(14 例)（calibration/ 校准子集为规划项，未建）
 schema/       golden.schema.json(v2) + findings.schema.json
 cmake/        AllCases.cmake 一键全量构建 + 统一 compdb
 tools/        eval.py(评分器) + check_cases.py(自检) + 其余 *_to_findings.py 已归入 sa/adapters
@@ -56,12 +56,15 @@ sa/           静态分析工程化归一目录：
               scripts/    工具专属查询（joern/scan.sc）
               harnesses/  KLEE 符号执行入口（按 case 归置 klee_harness.c）
               docker/     工具镜像（cooddy/Dockerfile）
-harvest/      采集管线子目录（自动数据入口，单仓开发）：
+harvest/      采集管线子目录（候选线索生产线 + 人审移植流水线：draft=线索+移植 blueprint，
+              accept=承诺移植重写可编译用例后入 cases/）：
               docs/       设计+双管线规划（design-v0.1 / roadmap-pr-mining-pipeline）
-              config/     目标仓矩阵 + vote 规则
-              tools/      pr_mine.py（爬 PR）+ SA 扫描 + 归一化/共识/打包
-              .github/workflows/  harvest.yml（采集）/ package.yml（inbox 三态）
-              inbox/      候选三态（draft/confirmed/rejected）
+              config/     目标仓矩阵（7 仓）+ vote 规则
+              tools/      pr_mine.py（爬 PR）+ normalize/vote/pack_case（归一化/共识/打包）；
+                          sa-scan 路线的 build_compdb.sh/scan_*.sh 为规划项未实现
+              inbox/      候选两态落盘（draft/rejected；confirm = 移植重写完成后进 cases/）
+              workflow    在仓根 .github/workflows/：harvest.yml（采集）/ harvest-package.yml（inbox 三态）/
+                          harvest-review.yml / harvest-pr-sarif.yml（if:false 禁用中）/ build-cooddy-image.yml
 reports/      各工具基线报告（持续积累，格式见 reports/README.md）
 ```
 
@@ -78,8 +81,9 @@ reports/      各工具基线报告（持续积累，格式见 reports/README.md
 - [x] `tools/eval.py` 两层匹配 + 四态 + 汇总 + 构造 findings 自检通过
 - [x] `cmake/AllCases.cmake` 一键全量构建 + 统一 compdb
 - [x] CSA 基线（单 TU 默认 + 原生 CTU）经 CI 跑通
-- [ ] 30 例全部铺满
-- [ ] 标注审计、≥2 工具基线、Martian 兼容报表
+- [x] 30 例全部铺满（contract 16 + defect 14）
+- [x] 9 工具基线（CSA singletu/CTU、CppCheck、clang-tidy、Infer、CodeQL、CodeChecker、KLEE、Joern、Cooddy，见 reports/；KLEE/Joern recall 数字因 adapter 修复待重跑）
+- [ ] 标注审计、Martian 兼容报表、consumers/ 消费入口
 
 ## 公信力争议点
 

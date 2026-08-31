@@ -6,18 +6,17 @@
 
 **C/C++（含混合编程）代码评审基准**，双轨：Contract Track（测 FP 抑制）+ Defect Track（测 TP 检出）。军规：**一切用例都是真实可编译的 C/C++ 代码**（不是题目描述）。与任何检视工具（SA/LLM）和上下文工具（navmap/codegraph/clangd/CSA）解耦，消费形态四种（本地直跑 / CI 消费者 workflow / Agent PR 评审 / compdb 提取）。
 
-姊妹仓（都在 `~/Projects/` 下）：
+相关仓（都在 `~/Projects/` 下）：
 
 | 仓 | 关系 |
 |---|---|
 | `agent-reviewer` | 研发母仓：场景库 SKILL、CI 可复用 workflow、SARIF 转换器、试验归档 trials/、调研与设计文档 |
-| `cpp-review-harvest` | 自动数据入口（CI 采集开源仓 → 共识 → 用例草稿 → 本仓 inbox 人审） |
-| `cpp-review-bench`（本仓） | 场景资产 + golden + 评分器 |
+| `cpp-review-bench`（本仓） | 场景资产 + golden + 评分器 + sa/ 归一层 + harvest/ 采集管线（原独立仓 `cpp-review-harvest` 已并入本仓 `harvest/` 子目录，单仓开发） |
 
 ## 2. 权威设计文档（按优先级读）
 
 1. **`docs/design-v0.4.md`**（本仓）——军规、双轨、golden schema v2（must_find = scenario+severity+file+anchor+function+rationale）、两层匹配评测协议、消费形态矩阵、30 例清单、建成线
-2. `~/Projects/cpp-review-harvest/docs/design-v0.1.md`——自动入库管线与三态人审
+2. **`harvest/docs/design-v0.1.md`**（本仓）——自动入库管线与三态人审
 3. `~/Projects/agent-viewer-research/docs/design/high-fp-scenarios.md`——四篇 70 条误报地图（场景素材目录）
 4. `~/Projects/open-code-review/papers/cpp-review-benchmark-research.md`——三层金字塔、golden comment 规范、标注协议（Defect Track 二期真实 CVE 轨）
 5. `~/Projects/open-code-review/papers/cpp-review-benchmark-plan-assessment.md`——成本/风险/验收
@@ -25,7 +24,7 @@
 
 ## 2.5 设计冻结点（协作军规，不可违反）
 
-1. **契约冻结**：不得修改 `design-v0.4.md`（bench）的判定语义、golden schema、归一化 findings 格式，以及 `design-v0.1.md`（harvest）的候选打包契约——两仓靠 inbox/schema 对接，任何变更必须先回主会话讨论，单方私改即断链
+1. **契约冻结**：不得修改 `design-v0.4.md`（bench）的判定语义、golden schema、归一化 findings 格式，以及 `harvest/docs/design-v0.1.md`（harvest）的候选打包契约——单仓内靠 `harvest/inbox/` → `cases/` 目录与 schema 对接，任何变更必须先回主会话讨论，单方私改即断链
 2. **用例先审**：前 3 个 case 产出后**必须先交审**（军规执行：代码自然度、golden 锚点真实性、notes 三段式），通过后才允许批量产出——风格跑偏只在规模前拦得住
 3. **里程碑评审**：到达验收线才交付评审（bench v1 建成线 §7.1 / harvest 端到端首跑 §6），中途不需要过程汇报；未达验收线的半成品不进入评审
 
@@ -39,16 +38,17 @@
 | CI 可复用 workflow 模式 | `agent-reviewer/.github/workflows/ai-review-reusable.yml` | consumers/github-action 的参照（豁免/防重置/fail-open/pinned ref） |
 | 门禁自测模式 | `agent-reviewer/scripts/selftest.sh`（22 例沙箱自测） | eval.py 自测的写法参照 |
 | 试验归档结构 | `agent-reviewer/trials/` | reports/ 归档格式参照 |
+| SA 归一层 | 本仓 `sa/`（adapters/ 9 个 `*_to_findings.py` + `findings_to_sarif.py`；runners/ 7 个 `run_*.sh`；scripts/joern/scan.sc；harnesses/ 11 个 KLEE harness；docker/cooddy/） | 9 工具扫描 → 归一化 findings → eval.py 评分的工程化入口，CI（ci.yml）与本地复现共用 |
 
 ## 4. v1 实施任务清单（建成线，按 design-v0.4 §7.1）
 
-1. `cases/contract/` 16 例 + `cases/defect/` 14 例：五文件齐备（src/CMakeLists/golden.json/contract.yaml(仅 contract 轨)/notes.md 三段式），自然风格代码，无「试验/播种」字样
-2. `schema/golden.schema.json` + `schema/findings.schema.json`，全部 golden 过校验
-3. `cmake/AllCases.cmake`：一键全量构建 + 统一 `compile_commands.json`
-4. `tools/eval.py`：两层匹配（L1 规则：scenario 家族/file/anchor 去空白/line±tolerance；L2 可选 judge），输出 per-case 四态（PASS/FP/FN/EXTRA）+ 汇总（per-track pass 率、裸 FP vs 契约违反分列、severity 正确率、verified 计数）；对构造 findings（故意 1FP+1FN+1 契约违反）判定正确
-5. `consumers/github-action/bench.yml`（三行接入）+ `consumers/local/`
-6. `README.md`（军规置顶 + 双轨 + 快速上手）、`LICENSE`(Apache-2.0)、`CONTRIBUTING.md`、`CITATION.cff`、`reports/README.md`
-7. 首份基线：用 agent-reviewer 场景评审跑 ≥1 轨，写 `reports/baseline-v1.md`
+1. ✅ `cases/contract/` 16 例 + `cases/defect/` 14 例：五文件齐备（src/CMakeLists/golden.json/contract.yaml(仅 contract 轨)/notes.md 三段式），自然风格代码，无「试验/播种」字样
+2. ✅ `schema/golden.schema.json` + `schema/findings.schema.json`，全部 golden 过校验
+3. ✅ `cmake/AllCases.cmake`：一键全量构建 + 统一 `compile_commands.json`
+4. ✅ `tools/eval.py`：两层匹配（L1 规则：scenario 家族/file/anchor 去空白/line±tolerance；L2 可选 judge），输出 per-case 四态（PASS/FP/FN/EXTRA）+ 汇总（per-track pass 率、裸 FP vs 契约违反分列、severity 正确率、verified 计数）；对构造 findings（故意 1FP+1FN+1 契约违反）判定正确
+5. ❌ `consumers/` 未建（github-action/bench.yml 与 local/ 入口均未实现；现由 `.github/workflows/ci.yml` 7 个 job + `sa/runners/*` 承担工具接入）
+6. ✅ `README.md`（军规置顶 + 双轨 + 快速上手）、`LICENSE`(Apache-2.0)、`CONTRIBUTING.md`、`CITATION.cff`、`reports/README.md`
+7. ✅ 基线：`reports/baseline-v1.md`（CSA，3 例早期子集）、`baseline-v2.md`（4+ 工具全 30 例）、`analysis-report.md`（9 工具）
 
 ## 5. 工程约定（从母项目继承的教训，别再踩）
 
@@ -63,6 +63,9 @@
 
 ## 6. 当前状态
 
-- `docs/design-v0.4.md` 已定稿（用户审过）；实现尚未开始（cases/ 为空）
-- 12 个场景种子分支在 AetherStack 等用户检查（与本仓 S 级用例有重叠，移植时对齐）
-- benchmark 先行、harvest 后行；格式上输出 Martian 兼容报表（便于与既有 PR 级评测交叉对照）
+- **cases/ 30 例已铺满**（contract 16 + defect 14），五文件齐备、全量编译通过、golden 全过 schema 校验
+- **9 工具基线已跑**（CSA singletu/CTU、CppCheck、clang-tidy、Infer、CodeQL、CodeChecker、KLEE、Joern、Cooddy），报告见 `reports/baseline-v1.md` / `baseline-v2.md` / `analysis-report.md`；注意 KLEE/Joern 的 adapter 存在 golden 自证问题（修复中），其 recall 数字待重跑
+- **harvest 采集管线已并入本仓**（`harvest/` 子目录，单仓开发）：pr-mining 采集源已实现并跑过多轮（matrix 7 仓：curl/sqlite/redis/nginx/vim/postgres/linux，每日 cron）；sa-scan 源为占位未实现；workflow 在仓根 `.github/workflows/`（harvest.yml / harvest-package.yml / harvest-review.yml / harvest-pr-sarif.yml（if:false 禁用中）/ build-cooddy-image.yml）。2026-08 定位修正：harvest 是「候选线索生产线 + 人审移植流水线」——draft = 线索 + 移植 blueprint（非半成品用例），accept = 承诺移植重写一个可编译用例后入 cases/；新增 license/port 策略与场景配额，fp-mining（contract 轨误报矿）可选开启
+- 待办：`consumers/` 消费入口未建、`cases/calibration/` 为规划项、标注审计未做、KLEE/Joern 基线待 adapter 修复后重跑
+- 12 个场景种子分支在 AetherStack（与本仓 S 级用例有重叠，已移植对齐）
+- 格式上输出 Martian 兼容报表（便于与既有 PR 级评测交叉对照）仍为 v1.1 规划项

@@ -6,12 +6,14 @@
 
 ## 1. 这是什么
 
-**benchmark 的自动化数据入口**：基于 GitHub CI（schedule 矩阵）自动采集开源 C/C++ 仓的真实缺陷候选，
-经「多工具共识 + 人审管线」转化为仓根 `cases/` 的标准用例。与仓根评测管线构成**双管线闭环**
+**候选线索生产线 + 人审移植流水线**：基于 GitHub CI（schedule 矩阵）自动采集开源 C/C++ 仓的真实缺陷
+候选（draft = 线索 + 移植 blueprint，不是半成品用例），经「多工具共识 + 人审移植」转化为仓根 `cases/`
+的标准用例——accept（confirm-tp/contract）= 承诺参照真实案例移植重写一个真实可编译用例
+（自然风格、无播种标记）后入仓，不再是「确认即入仓」。与仓根评测管线构成**双管线闭环**
 （采集 → 候选 → 进 cases/ 由 9 工具实测能否检出）。
 
-核心设计：**一条管线，两头收货**——真缺陷候选 → `cases/defect/`；工具报了但人审判 FP 的 → `cases/contract/`
-（真实世界契约案例，每条 FP 确认 = 一条 exemption_pattern 契约入库）。
+核心设计：**一条管线，两头收货**——真缺陷候选 → `cases/defect/`；fp-mining 误报矿（可选开启）与
+人审判 FP 的候选 → `cases/contract/`（真实世界契约案例，每条 FP 确认 = 一条 exemption_pattern 契约入库）。
 
 ## 2. 权威设计文档（按优先级读）
 
@@ -41,11 +43,17 @@
 
 ## 4. v0.1 实施任务清单（验收线，按 design §6）
 
-1. `config/repos.yaml`（aetherstack smoke + curl/sqlite/redis，pinned ref、build 配置、路径白/黑名单）+ `config/rules.yaml`（规则 ID→scenario 映射、噪声黑名单、vote 规则）
-2. `tools/pr_mine.py`（GitHub API 爬 PR diff+review → 切片 → LLM judge 占位）+ `tools/build_compdb.sh`、`scan_csa.sh`、`scan_cppcheck.sh`
-3. `tools/normalize.py`、`vote.py`、`evidence.py`、`pack_case.py`（五文件草稿）
-4. `.github/workflows/harvest.yml`（matrix: source × repo，`fail-fast: false`，artifacts）+ `package.yml`（inbox 三态流转辅助）
-5. 仓内联动验证：一次完整三态流转（confirm-tp / confirm-fp（contract.yaml 非空）/ reject 带原因）
+1. ✅ `config/repos.yaml`（curl/sqlite/redis/nginx/vim/postgres/linux 7 仓 matrix，pinned ref、build 配置、路径白/黑名单）+ `config/rules.yaml`（规则 ID→scenario 映射、噪声黑名单、vote 规则）
+2. ✅ `tools/pr_mine.py`（GitHub API 爬 PR diff+review → 切片 → judge 启发式）——**pr-mining 是当前唯一采集源**；sa-scan 路线的 `build_compdb.sh`、`scan_csa.sh`、`scan_cppcheck.sh` 为规划项未实现
+3. ✅ `tools/normalize.py`、`vote.py`（单源退化 min-tools 1）、`pack_case.py`（五文件草稿）；`evidence.py` 为规划项未实现
+4. ✅ 仓根 `.github/workflows/harvest.yml`（matrix: source × repo，`fail-fast: false`，artifacts，每日 cron）+ `harvest-package.yml`（inbox 三态流转辅助）+ `harvest-review.yml` + `harvest-pr-sarif.yml`（if:false 禁用中）
+5. ⏳ 仓内联动验证：三态流转机制已实现（confirm-tp/contract 经 harvest-package.yml git mv 进 cases/，rejected 落 harvest/inbox/rejected/），confirmed/ 目录不使用
+6. ✅ 定位修正轮（2026-08，线索 + blueprint）：
+   - **license 策略**：候选 JSON 新增 `license`/`port`/`track_hint`/`polarity` 四顶层字段（pr_mine 产出、vote 透传、pack_case 消费；旧候选默认 unknown/rewrite/defect/must_find）；direct 组（curl/sqlite/nginx/postgres）可直接移植，rewrite 组（redis/vim/linux）只允许参考重写；license/port/源 PR 只进 notes.md 溯源表，不进 golden.json
+   - **场景配额**：`pr_mining.max_per_scenario`（默认 5，CLI `--max-per-scenario`，兜底链 CLI > config > 5），同 scenario 桶满即跳过
+   - **fp-mining**：`pr_mining.fp_mining`（默认 false）+ CLI `--fp-mining`，缺陷轮之后第二轮抓「修静态分析误报」PR，产出 track_hint=contract + polarity=must_not_find 候选
+   - **blueprint notes**：pack_case.py 的 notes.md 改为移植 blueprint 六段（溯源表/缺陷描述与触发条件/真实修复 diff/移植要点/为什么契约安全/accept 检查清单六项）
+   - **四态判定口径修正**：`make_draft_sarif.sh` 从 scenario 数字 grep（必不命中）改为 file+anchor 口径，与 eval.py L1 一致；harvest.yml propose 的 PR body 含 draft 定位说明、轻验证结论（eval_inbox_report.md）、候选溯源总览、accept 检查清单、审核指令
 
 ## 5. 工程约定（继承母项目教训）
 
@@ -61,7 +69,13 @@
 
 ## 6. 当前状态
 
-- `harvest/docs/design-v0.1.md` 已定稿（单仓版，基于原独立仓设计改写）
-- 双管线规划 `harvest/docs/roadmap-pr-mining-pipeline.md` 已落盘
-- 实现尚未开始（本分支 `exp/harvest-pipeline` 起步）
-- v0.1 先做 sa-scan（CSA + CppCheck）+ pr-mining（爬 PR）两采集源；Infer 构建重，v0.2 评估
+- **已并入 cpp-review-bench 单仓**（原 cpp-review-harvest 独立仓设计已改写为仓内子目录版）；管线已实现并在 CI 跑过多轮
+- **定位（2026-08 修正）**：候选线索生产线 + 人审移植流水线——draft = 线索 + 移植 blueprint（notes.md 六段 + 原始切片 src/），不是半成品用例；accept（confirm-tp/contract）= 承诺参照真实案例移植重写一个可编译用例后入 cases/，不再是「确认即入仓」
+- 采集源现状：**pr-mining 是唯一实现的采集源**（爬 GitHub 历史 PR → 切片 → judge 启发式）；sa-scan（SA 扫描源码）为占位未实现
+- 采集开关：场景配额 `pr_mining.max_per_scenario`（默认 5）；fp-mining `pr_mining.fp_mining`（默认 false，CLI `--fp-mining` 显式开启，产出 contract 轨 must_not_find 候选）
+- 候选 JSON 契约：`license`/`port`/`track_hint`/`polarity` 四顶层字段；license/port/源 PR 只进 notes.md 溯源表，不进 golden.json（golden schema context 为 additionalProperties:false，冻结不动）
+- matrix 7 仓：curl/sqlite/redis/nginx/vim/postgres/linux；每日 cron（`23 3 * * *`）
+- vote 单源退化：`--min-tools 1`（design 的 ≥2 工具共识待 sa-scan 上线后恢复）
+- inbox 三态实际形态：draft/rejected 落盘 `harvest/inbox/`；confirm-tp/contract 动作经 harvest-package.yml git mv 进 `cases/`（语义上 = 移植重写完成后的入仓动作，不再是「确认即入仓」），`confirmed/` 目录不使用
+- workflow 在仓根 `.github/workflows/`：harvest.yml（采集+vote+propose）、harvest-package.yml（三态流转）、harvest-review.yml、harvest-pr-sarif.yml（if:false 禁用中）、build-cooddy-image.yml
+- v0.2 候选：sa-scan 采集源（CSA + CppCheck）、Infer 构建重待评估

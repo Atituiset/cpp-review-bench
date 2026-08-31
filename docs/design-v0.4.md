@@ -37,7 +37,7 @@
 | 消费方 | 形态 | 入口 |
 |---|---|---|
 | SA / 分析器团队（本地直跑） | 全量扫描 | `cmake -S . -B build && <your-analyzer> build/compile_commands.json`，或用例级 `cases/<track>/<id>/src/` 直接指给分析器 |
-| SA / 分析器团队（CI 跑） | GitHub Actions | 本仓提供可复用消费者 workflow（`consumers/github-action/`）：checkout 本仓 → 全量构建 → 调用你的工具 → 输出归一化 findings → 自动评分 |
+| SA / 分析器团队（CI 跑） | GitHub Actions | 可复用消费者 workflow（`consumers/github-action/`，**未建**；现由本仓 `.github/workflows/ci.yml` 承担）：checkout 本仓 → 全量构建 → 调用你的工具 → 输出归一化 findings → 自动评分 |
 | Agent+LLM 评审 | diff/PR | 用例 src 可物化为 `diff.patch`（空 base → 新增），或直接以源码树消费 |
 | 索引/提取工具 | 编译数据库 | AllCases 一键 compdb；`context.navmap_expect` 提供提取结果的判定锚点 |
 
@@ -77,19 +77,19 @@ cpp-review-bench/
 ├── CITATION.cff
 ├── CONTRIBUTING.md            # 用例提交流程与评审标准（见 §7.3）
 ├── docs/
-│   └── design-v0.2.md         # 本文件
+│   └── design-v0.4.md         # 本文件
 ├── cases/
 │   ├── contract/              # Contract Track（16 例）
 │   │   └── <case-id>/{src/,CMakeLists.txt,golden.json,contract.yaml,notes.md}
 │   ├── defect/                # Defect Track（14 例）
 │   │   └── <case-id>/{src/,CMakeLists.txt,golden.json,notes.md}
-│   └── calibration/           # 校准子集（smoke test / FP 校准，不进主指标）
-├── inbox/                    # harvest 候选入口（draft/confirmed/rejected 三态，见 §5.4）
+│   └── calibration/           # 校准子集（smoke test / FP 校准，不进主指标）——规划项，未建
+├── harvest/inbox/             # harvest 候选入口（draft/rejected 落盘，confirm 直接进 cases/，见 §5.4）
 ├── schema/
 │   ├── golden.schema.json
 │   └── findings.schema.json
 ├── cmake/AllCases.cmake       # 一键全量构建 + 统一 compile_commands.json
-├── consumers/
+├── consumers/                 # 未建（工具接入现由 .github/workflows/ci.yml + sa/runners/* 承担）
 │   ├── github-action/         # 可复用消费者 workflow（工具团队 CI 里 `uses:` 即跑通 benchmark）
 │   └── local/                 # 本地直跑入口（make 目标 / 脚本：构建 → 工具占位 → findings 转换样例）
 ├── tools/
@@ -187,8 +187,8 @@ L2 语义判等（可选，轻量 judge）:
 | 2 | `r02-offby-one-guard` | 长度守卫少算一字节（报文解析） | cwe-125 | easy |
 | 3 | `r03-public-entry-bypass` | 判空仅覆盖单一路径，公开入口可绕过 | cwe-476 | medium |
 | 4 | `r04-oob-write-stack` | 无界拷贝进定长栈缓冲 | cwe-787 | easy |
-| 5 | `r05-early-return-leak` | early-return 路径未释放 | cwe-401 | easy |
-| 6 | `r06-use-after-free-callback` | 回调注册后对象先释放，未反注册 | cwe-416 | medium |
+| 5 | `r05-wrong-len-var` | 拷贝长度用错变量导致越界 | cwe-125 | easy |
+| 6 | `r06-loop-leq-offbyone` | 循环条件用 `<=` 导致多越一字节 | cwe-787 | easy |
 | 7 | `r07-alloc-size-wrap` | `malloc(n*size)` 乘法回绕 → 小分配大写入 | cwe-190+787 | medium |
 | 8 | `r08-missing-lock-increment` | 多线程计数器无锁递增 | cwe-362 | medium |
 | 9 | `r09-double-free-errorpath` | 错误路径重复释放 | cwe-415 | medium |
@@ -205,7 +205,7 @@ L2 语义判等（可选，轻量 judge）:
 | 级 | 来源 | 标签正确率 | 成本 | 阶段 |
 |---|---|---|---|---|
 | **S（合成）** | 真实缺陷模式的最小复刻（§5.2 的 14 例） | 高（设计时已知） | 低 | v1 |
-| **R（真实仓采集）** | **cpp-review-harvest**（自建自动入库仓，见其设计 v0.1）：CI 矩阵 schedule 驱动，多 SA 扫描开源仓 → SARIF 归一化 → ≥2 工具投票共识 → 用例草稿打包 → **bench inbox 三态人审**（confirm-tp 入 defect/ / confirm-fp 入 contract/（必填契约）/ reject 回流噪声画像） | 中（共识过滤 + 人审兜底） | 中 | v1.1 |
+| **R（真实仓采集）** | **harvest/ 采集管线**（本仓子目录，设计见 harvest/docs/design-v0.1.md）：CI 矩阵 schedule 驱动，多 SA 扫描开源仓 → SARIF 归一化 → ≥2 工具投票共识 → 用例草稿打包 → **harvest/inbox 三态人审**（confirm-tp 入 defect/ / confirm-fp 入 contract/（必填契约）/ reject 回流噪声画像） | 中（共识过滤 + 人审兜底） | 中 | v1.1 |
 | **C（CVE 修复 PR）** | 三层金字塔 L1 管线：CVEfixes（NVD→commit 溯源）+ DiverseVul（issue 站锚点）+ SecVulEval（严过滤、语句级、2023-24 新 CVE），PrimeVul 质控工序（OneFunc/NVDCheck 初筛、归一化去重、时间序切分） | 高（双人盲标共识） | 高（标注资源） | v2（立项制） |
 
 三级的 golden 共享同一 schema（§3），评分协议不变——**数据可追溯性要求**：R/C 级用例在 notes.md 中记录来源 commit、命中的工具、人审人。
@@ -302,9 +302,9 @@ L2 语义判等（可选，轻量 judge）:
 - **报告兼容**：v1.1 起 eval.py 支持输出 Martian 形态报表（per-PR findings + precision/recall），Defect Track 的 R/C 级用例可与 Martian 的 50 PR 交叉对照
 - **从 OCR 第三方复测学到的四条**（`open-code-review/docs/src/appendix/benchmark.md`）：① 评测版本必须钉死并在报告中注明；② 子集/全量分开报告，不混用；③ ground-truth 判定口径必须显式文档化（本仓 §3.3 判定语义 + 口径审计记录公开）；④ recall 粒度（逐条 finding vs 逐 PR）在报表中显式标注
 
-## 5.4 自动入库管线（cpp-review-harvest）
+## 5.4 自动入库管线（harvest/ 子目录）
 
-benchmark 的 R 级数据由独立仓 `cpp-review-harvest` 自动采集（设计见其 docs/design-v0.1.md）：CI 矩阵（repo × tool）定时扫描开源仓 → 共识投票 → 用例草稿 → 本仓 `inbox/`。人审三态：confirm-tp → `cases/defect/`；confirm-fp → `cases/contract/`（**必填 contract.yaml**——每条 FP 确认即一条真实世界 exemption_pattern 入库）；reject → 回流采集器噪声画像。双轨由同一管线喂养是其核心设计。
+benchmark 的 R 级数据由本仓 `harvest/` 子目录的采集管线自动采集（设计见 harvest/docs/design-v0.1.md）：CI 矩阵（repo × tool）定时扫描开源仓 → 共识投票 → 用例草稿 → `harvest/inbox/`。人审三态：confirm-tp → `cases/defect/`；confirm-fp → `cases/contract/`（**必填 contract.yaml**——每条 FP 确认即一条真实世界 exemption_pattern 入库）；reject → 回流采集器噪声画像。双轨由同一管线喂养是其核心设计。
 
 ## 6. 构建与编译保证
 
@@ -312,9 +312,9 @@ benchmark 的 R 级数据由独立仓 `cpp-review-harvest` 自动采集（设计
 - IPC/混合用例的 `src/mock/` 提供契约 API mock 头（`ipc_alloc/ipc_send/ipc_register_handler`、extern "C" 桥接宏），列入 compdb
 - C 用例 `-std=c11`、C++ 用例 `-std=c++17`，统一 `-Wall`；r08 并发用例链接 `-pthread`
 
-### 6.1 可复用消费者 workflow（consumers/github-action/）
+### 6.1 可复用消费者 workflow（consumers/github-action/，未建）
 
-为工具团队提供的「三行接入」：
+为工具团队提供的「三行接入」（规划，consumers/ 尚未实现；现阶段工具接入参照本仓 `.github/workflows/ci.yml` 的 job 写法 + `sa/runners/`）：
 
 ```yaml
 jobs:
@@ -331,11 +331,11 @@ workflow 内部：checkout 本仓（pinned ref）→ AllCases 构建 + compdb �
 
 ### 7.1 质量闸门（建成线）
 
-- [ ] 30 例全部编译通过 + 统一 compdb；golden 全过 schema 校验
-- [ ] 每例 notes.md 三段式（真实仓形态 / 为什么契约安全或真缺陷 / 各工具误判方式）
+- [x] 30 例全部编译通过 + 统一 compdb；golden 全过 schema 校验
+- [x] 每例 notes.md 三段式（真实仓形态 / 为什么契约安全或真缺陷 / 各工具误判方式）
 - [ ] 标注审计：每类抽 ≥3 例第三方复核 golden 判定，出审计记录（对齐 research.md「每 CWE 类抽 50 复核」的等比缩小版）
-- [ ] ≥2 个真实工具全量基线报告入 `reports/`（建议：agent-reviewer 场景评审 × 1 个 SA/CSA 类工具）
-- [ ] eval.py 对构造 findings（故意含 1 FP + 1 FN + 1 契约违反）输出正确判定
+- [x] ≥2 个真实工具全量基线报告入 `reports/`（已超额：9 工具，见 reports/baseline-v1.md / baseline-v2.md / analysis-report.md）
+- [x] eval.py 对构造 findings（故意含 1 FP + 1 FN + 1 契约违反）输出正确判定
 
 ### 7.2 防泄漏
 
@@ -361,7 +361,7 @@ workflow 内部：checkout 本仓（pinned ref）→ AllCases 构建 + compdb �
 | 阶段 | 内容 |
 |---|---|
 | **v1（当前）** | 30 例双轨 + 评分器 + ≥2 工具基线 |
-| v1.1 | R 级数据接入（cpp-review-harvest 采集管线）；Martian 兼容报表；consumers/github-action 上线（≥1 个外部 SA 工具经三行接入跑出报告）；用例变体生成器；navmap_expect 全量化 |
+| v1.1 | R 级数据接入（harvest/ 采集管线）；Martian 兼容报表；consumers/github-action 上线（≥1 个外部 SA 工具经三行接入跑出报告）；用例变体生成器；navmap_expect 全量化 |
 | v2 | Defect Track 接入真实 CVE 修复 PR（research.md 三层金字塔 L1/L2，需双人盲标资源立项） |
 | v3 | online 轮换轨 + 多配置变体（同一用例多 -D 编译形态） |
 | 远期 | 社区排行榜（reports/ 聚合多工具基线） |

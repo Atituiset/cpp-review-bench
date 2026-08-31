@@ -73,8 +73,7 @@ jobs:
           CLANG_TIDY_BIN: clang-tidy-21
         run: |
           chmod +x sa/runners/run_clang_tidy.sh
-          ./sa/runners/run_clang_tidy.sh
-          mkdir -p /tmp/clang-tidy && cp reports/evidence/clang-tidy/*.json /tmp/clang-tidy/ 2>/dev/null || true
+          ./sa/runners/run_clang_tidy.sh /tmp/clang-tidy
 
       - name: 汇总全部工具 findings 上传 artifact
         uses: actions/upload-artifact@v4
@@ -143,7 +142,7 @@ jobs:
           SARIF=$(find . -path '*codeql-results*' -name 'cpp.sarif' -type f 2>/dev/null | head -1)
           [ -z "$SARIF" ] && SARIF=$(find . -name '*.sarif' -type f 2>/dev/null | head -1)
           echo "SARIF=$SARIF"
-          python3 tools/sarif_to_findings.py "$SARIF" codeql-findings 2>&1 | tail -5
+          python3 sa/adapters/sarif_to_findings.py "$SARIF" codeql-findings --tool codeql --repo-root "$PWD" 2>&1 | tail -5
           ls codeql-findings/*.json 2>/dev/null | wc -l
           python3 tools/eval.py run codeql-findings 2>&1 | tail -30
 
@@ -199,7 +198,7 @@ jobs:
       - name: 归一化 + 四态评测
         run: |
           if [ -f cc_export.json ]; then
-            python3 sa/adapters/codechecker_to_findings.py cc_export.json "$PWD/cases" --out-dir cc-findings 2>&1 | tail -20
+            python3 sa/adapters/codechecker_to_findings.py cc_export.json "$PWD/cases" --out-dir cc-findings --version "$(CodeChecker --version 2>/dev/null | head -1)" 2>&1 | tail -20
             python3 tools/eval.py run cc-findings 2>&1 | tail -30 || echo "[warn] codechecker 四态评测跳过"
           else
             echo "[warn] cc_export.json 不存在，跳过归一化"
@@ -219,7 +218,7 @@ jobs:
       options: --user root
     steps:
       - uses: actions/checkout@v4
-      - name: 逐 case 跑 Joern（CPG 图查询定位 golden 锚点 + 危险调用枚举）+ 归一化
+      - name: 逐 case 跑 Joern（CPG 通用查询：危险调用枚举，不读 golden）+ 归一化
         run: |
           chmod +x sa/runners/run_joern.sh
           ./sa/runners/run_joern.sh "$PWD/cases" "$PWD/joern-findings" "$PWD"

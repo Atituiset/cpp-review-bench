@@ -18,5 +18,5 @@
 ## 公信力约定
 
 - 所有数字标注「自测口径」，**不做绝对质量承诺**。
-- 欢迎第三方复测 PR：fork → 跑 `consumers/local/run_csa.sh` 或接你的工具 → 提 `baseline-<tool>.md`。
+- 欢迎第三方复测 PR：fork → 跑 `sa/runners/run_csa.sh` 或接你的工具 → 提 `baseline-<tool>.md`。
 - 标注主观性争议：golden 评审记录、合约豁免依据（contract.yaml）随仓公开。

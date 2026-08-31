@@ -31,11 +31,6 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
   llvm-link -o "$bc" $bcs 2>>"$OUT_ROOT/$cid.compile.err" \
     || { echo "[warn] $cid: llvm-link 失败"; continue; }
 
-  # 读取 golden 期望锚点（KLEE 命中后归一到该真实源位置，便于四态评测对齐）
-  gfile=$(python3 -c "import json;print(json.load(open('$gj'))['expected']['must_find'][0]['file'])" 2>/dev/null || true)
-  gline=$(python3 -c "import json,glob,os;g=json.load(open('$gj'))['expected']['must_find'][0];a=g.get('anchor','');print([i+1 for i,l in enumerate(open(os.path.join('$src_dir',g['file']))) if a.strip() in l][0] if a and os.path.exists(os.path.join('$src_dir',g['file'])) else 0)" 2>/dev/null || echo 0)
-  gscen=$(python3 -c "import json;print(json.load(open('$gj'))['expected']['must_find'][0].get('scenario',''))" 2>/dev/null || true)
-
   klee_out="$OUT_ROOT/$cid.klee"
   rm -rf "$klee_out"
   klee --output-dir="$klee_out" --max-time=60 "$bc" >"$OUT_ROOT/$cid.klee.log" 2>&1 \
@@ -43,7 +38,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
 
   python3 "$REPO_ROOT/sa/adapters/klee_to_findings.py" "$track" "$cid" "$klee_out" \
     --tool klee --version "$(klee --version 2>/dev/null | head -1)" \
-    --golden-file "$gfile" --golden-line "$gline" --scenario "$gscen" \
+    --case-dir "$case_dir" \
     --out "$OUT_ROOT/$cid.json" 2>/dev/null \
     || echo "[warn] $cid 归一化失败"
   echo "[done] $cid -> $OUT_ROOT/$cid.json"

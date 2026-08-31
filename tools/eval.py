@@ -48,7 +48,49 @@ def load_json(p: Path):
     return json.loads(p.read_text(encoding="utf-8"))
 
 
-def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool) -> dict:
+def locate_gline(case_dir: Path | None, g: dict) -> int | None:
+    """把 golden 的 anchor 定位到 case 源文件行号：anchor 去空白后是某行去空白内容的
+    子串即取该行（首个匹配行）。文件/anchor 找不到时返回 None（line 容差兜底不生效）。"""
+    if case_dir is None:
+        return None
+    gfile = g.get("file")
+    ganchor = norm(g.get("anchor", ""))
+    if not gfile or not ganchor:
+        return None
+    src = case_dir / gfile
+    if not src.is_file():
+        return None
+    for i, line in enumerate(
+            src.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+        if ganchor in norm(line):
+            return i
+    return None
+
+
+def finding_hits_must(g: dict, f: dict, gline: int | None) -> bool:
+    """must_find 命中判定：scenario 家族 + function 精确（golden 有 function 时）+
+    （anchor 去空白互为子串，优先；或 finding.line ∈ [gline±line_tolerance]，兜底）。"""
+    if not scenario_family_match(g["scenario"], f.get("scenario")):
+        return False
+    gfunc = g.get("function")
+    if gfunc and f.get("function") and f.get("function") != gfunc:
+        return False
+    ganchor = norm(g.get("anchor", ""))
+    fanchor = norm(f.get("anchor", ""))
+    if ganchor and (ganchor in fanchor or fanchor in ganchor):
+        return True
+    # line±tolerance 兜底（仅当调用方解析出 gline 且 finding 带 line）
+    if gline is not None and f.get("line"):
+        tol = g.get("line_tolerance", 3)
+        try:
+            return abs(int(f["line"]) - gline) <= tol
+        except (TypeError, ValueError):
+            return False
+    return False
+
+
+def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool,
+              case_dir: Path | None = None) -> dict:
     track = golden["track"]
     cid = golden["id"]
     g_must = golden["expected"]["must_find"]
@@ -60,31 +102,16 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool) 
     for f in findings:
         by_file.setdefault(f.get("file"), []).append(f)
 
+    # 预定位每条 must_find 的 golden 行号（line 容差兜底用）
+    glines = [locate_gline(case_dir, g) for g in g_must]
+
     # must_find 命中判定
     must_hit = []
-    for g in g_must:
+    for gi, g in enumerate(g_must):
         gf = g["file"]
-        ganchor = norm(g.get("anchor", ""))
-        gfunc = g.get("function")
-        gline = None  # golden 无 line，仅 anchor；tolerance 用于 finding.line
-        tol = g.get("line_tolerance", 3)
         hit = False
         for f in by_file.get(gf, []):
-            # scenario 家族匹配
-            if not scenario_family_match(g["scenario"], f.get("scenario")):
-                continue
-            # function 精确（golden 有 function 时）
-            if gfunc and f.get("function") and f.get("function") != gfunc:
-                continue
-            # anchor 子串 OR line±tolerance
-            fanchor = norm(f.get("anchor", ""))
-            anchor_ok = bool(ganchor) and (ganchor in fanchor or fanchor in ganchor)
-            line_ok = False
-            if not anchor_ok and f.get("line"):
-                # 用 anchor 反查 golden 源文件行号较复杂；此处仅当 finding.line 给定且
-                # golden anchor 在源中时由调用方提供 gline。默认 line_ok=False。
-                pass
-            if anchor_ok:
+            if finding_hits_must(g, f, glines[gi]):
                 hit = True
                 break
         must_hit.append({"scenario": g["scenario"], "hit": hit,
@@ -118,16 +145,11 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool) 
     # 注意：absorbed 必须用 (file, local_index) 元组键，避免不同文件局部索引冲突
     absorbed = set()
     for gi, g in enumerate(g_must):
-        gf = g["file"]; ganchor = norm(g.get("anchor", "")); gfunc = g.get("function")
+        gf = g["file"]
         for fi, f in enumerate(by_file.get(gf, [])):
             if (gf, fi) in absorbed:
                 continue
-            if not scenario_family_match(g["scenario"], f.get("scenario")):
-                continue
-            if gfunc and f.get("function") and f.get("function") != gfunc:
-                continue
-            fanchor = norm(f.get("anchor", ""))
-            if ganchor and (ganchor in fanchor or fanchor in ganchor):
+            if finding_hits_must(g, f, glines[gi]):
                 absorbed.add((gf, fi))
     for g in g_not:
         gf = g.get("file"); ganchor = norm(g.get("anchor", ""))
@@ -165,14 +187,9 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool) 
         if must_hit[gi]["hit"]:
             sev_total += 1
             # 找到命中该 g 的 finding 的 severity
-            gf = g["file"]; ganchor = norm(g.get("anchor", "")); gfunc = g.get("function")
+            gf = g["file"]
             for f in by_file.get(gf, []):
-                if not scenario_family_match(g["scenario"], f.get("scenario")):
-                    continue
-                if gfunc and f.get("function") and f.get("function") != gfunc:
-                    continue
-                fanchor = norm(f.get("anchor", ""))
-                if ganchor and (ganchor in fanchor or fanchor in ganchor):
+                if finding_hits_must(g, f, glines[gi]):
                     if f.get("severity") == g.get("severity"):
                         sev_ok += 1
                     break
@@ -214,7 +231,7 @@ def eval_all(track_filter=None) -> list:
             fdoc = load_json(fpath)
         # contract 轨是否注入契约：golden.context.contract 存在即视为已注入
         contract_injected = bool(golden.get("context", {}).get("contract"))
-        results.append(eval_case(golden, fdoc, contract_injected))
+        results.append(eval_case(golden, fdoc, contract_injected, case_dir))
     return results
 
 
@@ -276,7 +293,7 @@ def cmd_run(args):
             continue
         golden = load_json(gj)
         contract_injected = bool(golden.get("context", {}).get("contract"))
-        results.append(eval_case(golden, doc, contract_injected))
+        results.append(eval_case(golden, doc, contract_injected, gj.parent))
     print(json.dumps({"summary": summarize(results), "cases": results},
                      ensure_ascii=False, indent=2))
 
@@ -305,6 +322,18 @@ def synthetic_findings() -> dict:
             "tool": "synthetic", "track": "contract", "case_id": "c01-upstream-nullguard",
             "version": "selftest",
             "findings": [],  # 故意漏报 must_find => FN
+        },
+        # line 容差兜底：anchor 故意与 golden 互不子串，但 line=42 落在
+        # golden anchor 实际行（guti.c:40）±line_tolerance(3) 内 => 兜底命中 => PASS
+        "c01-line": {
+            "tool": "synthetic", "track": "contract", "case_id": "c01-upstream-nullguard",
+            "version": "selftest",
+            "findings": [
+                {"file": "src/guti.c",
+                 "anchor": "/* line-fallback probe */",
+                 "scenario": "cwe-190", "severity": "important",
+                 "function": "guti_group_size", "line": 42},
+            ],
         },
     }
 
@@ -338,6 +367,15 @@ def cmd_selftest(args):
         ok = False
     else:
         print(f"[ OK ] c08(未注入契约): 裸 FP={r8b['bare_fp']}（权重 < 契约违反）")
+    # line 容差兜底：anchor 不命中但 line 在 gline±tolerance 内 => PASS（且被 must_find 吸收，无 EXTRA）
+    r1l = eval_case(g1, syn["c01-line"], contract_injected=True,
+                    case_dir=ROOT / "cases/contract/c01-upstream-nullguard")
+    if not (r1l["state"] == "PASS" and r1l["must_find_hit"] == 1 and r1l["extra"] == 0):
+        print(f"[FAIL] c01-line 期望 PASS（line 容差兜底命中）, 实际 {r1l['state']} "
+              f"hit={r1l['must_find_hit']} extra={r1l['extra']}")
+        ok = False
+    else:
+        print(f"[ OK ] c01-line: {r1l['state']}（anchor 未命中，line±tolerance 兜底命中）")
     print("SELFTEST", "PASS" if ok else "FAIL")
     sys.exit(0 if ok else 1)
 
