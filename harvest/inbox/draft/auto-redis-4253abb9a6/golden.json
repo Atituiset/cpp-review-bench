@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/hnsw.c",
+      "anchor": "while (rand() < threshold && level < HNSW_MAX_LEVEL)",
+      "line": 3,
+      "function": null,
+      "rationale": "PR 15662 Redis 8.6.6 :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
