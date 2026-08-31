@@ -65,6 +65,8 @@ harvest/      采集管线子目录（候选线索生产线 + 人审移植流水
               inbox/      候选两态落盘（draft/rejected；confirm = 移植重写完成后进 cases/）
               workflow    在仓根 .github/workflows/：harvest.yml（采集）/ harvest-package.yml（inbox 三态）/
                           harvest-review.yml / harvest-pr-sarif.yml（if:false 禁用中）/ build-cooddy-image.yml
+              使用手册    harvest/README.md「使用流程（端到端）」（采集 → 候选 PR → 移植重写 →
+                          /case 评论指令流转 → merge，含 dispatch 输入说明与操作顺序）
 reports/      各工具基线报告（持续积累，格式见 reports/README.md）
 ```
 

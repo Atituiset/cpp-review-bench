@@ -34,6 +34,73 @@ python3 harvest/tools/vote.py --findings /tmp/norm.json --out /tmp/cands.json --
 python3 harvest/tools/pack_case.py --candidates /tmp/cands.json --inbox harvest/inbox
 ```
 
+## 使用流程（端到端）
+
+### 1. 采集：自动 or 手动
+
+- **日常**：`harvest.yml` 每日 cron 自动跑（缺陷轮，fp-mining 默认关闭），有候选就开审核 PR。
+- **手动**：Actions → harvest → Run workflow，输入说明：
+
+| 输入 | 含义 | 默认 |
+|---|---|---|
+| `source` | all / sa-scan（占位）/ pr-mining | all |
+| `repos` | 逗号分隔仓过滤（curl, sqlite, redis, nginx, vim, postgres, linux），留空=全量 | 空 |
+| `since` | 历史批扫起点 YYYY-MM-DD；留空=增量（昨天起） | 空 |
+| `max_prs` | 每仓每轮 PR 上限；深历史批扫调大（如 1000） | 50 |
+| `max_per_pr` | 每 PR 最多候选数（防大 PR 刷屏） | 3 |
+| `max_candidates` | 每仓候选总数上限（0=不限） | 0 |
+| `max_per_scenario` | 每 scenario 配额（防单一缺陷类型刷屏） | 5 |
+| `fp_mining` | 开启 contract 轨误报矿（缺陷轮后加跑第二轮） | false |
+
+### 2. 看候选 PR
+
+propose 自动开出「harvest: 每日候选 N 条待审核」PR，body 含五段：draft 定位说明 →
+轻验证结论（单文件 SA 的 file+anchor 命中报表）→ 候选溯源总览（四态表）→ accept 检查清单 →
+审核指令。每条候选在 `harvest/inbox/draft/<id>/` 下五文件，**notes.md 是移植 blueprint**：
+溯源表（源仓/源 PR/许可证/移植策略）→ 缺陷描述与触发条件 → 真实修复 diff → 移植要点 →
+（contract 候选）为什么契约安全 → accept 检查清单。
+
+**draft 不是用例**：src/ 是原始切片、不可直接编译、可能带 `// <<< BUG ANCHOR` 标记；
+golden.json 是骨架（缺 id/track/title 等必填字段）。
+
+### 3. 移植重写（accept 前必须完成）
+
+在候选分支上操作（`git checkout harvest/inbox-<date>-<run_id>`），对每条要收的候选：
+
+1. 读 notes.md，**用一句话复述触发条件**并写进 notes
+2. 参照真实案例**重写 src/ 为可独立编译的代码**（自然风格、无播种痕迹）；
+   `port=rewrite` 的仓（redis/vim/linux）只许保留语义、重写表达，不得照抄切片
+3. 删除 `// <<< BUG ANCHOR` 标记；golden.json 补全 schema 必填字段，
+   **anchor 改用重写后真实存在的代码行**
+4. contract 候选：填 `contract.yaml`（FP 因何契约成立）+ notes「为什么契约安全」段
+5. 本地验证后 push 回候选分支：
+
+```bash
+python3 tools/check_cases.py     # golden 过 schema + anchor/file 真实存在
+cmake -S . -B build && cmake --build build   # 全量编译通过
+```
+
+### 4. 评论指令流转（在 PR 评论区执行，非本地）
+
+指令由 `harvest-review.yml`（GitHub Actions，issue_comment 触发）在**候选分支**上执行
+git mv 并回帖结果；一行一条，空格分隔多个 id：
+
+```
+/case accept   auto-curl-aaa auto-curl-bbb    → git mv 到 cases/defect/<id>/
+/case contract auto-curl-ccc                  → git mv 到 cases/contract/<id>/（contract.yaml 非空才执行，否则跳过）
+/case reject   auto-curl-ddd --reason "误报：非内存安全"   → git mv 到 harvest/inbox/rejected/<id>/ + REJECT_REASON.md
+```
+
+注意：**流转是机械 git mv，不校验移植是否完成**——所以第 3 步必须先做，
+否则骨架 case 进 cases/ 后 `check_cases.py` 挂、merge 后 main CI 变红。
+track 方向别搞反：fp 矿候选（notes 溯源表标「contract 候选」）用 `/case contract`，
+用 `/case accept` 会错误进入 defect 轨。
+
+### 5. merge 落地
+
+候选 PR merge 进 main 后，入 cases/ 的用例由 `ci.yml` 跑 9 工具四态（eval.py），
+rejected/ 候选的原因回流 rules.yaml 噪声黑名单。
+
 ## CI
 
 - `.github/workflows/harvest.yml`：matrix(source × 7 仓) 每日 schedule + dispatch；pr-mining 已实现并跑过多轮，sa-scan 占位未实现；vote 单源退化 `--min-tools 1`；propose 步骤产出含 draft 定位说明、轻验证结论（eval_inbox_report.md）、候选溯源总览与 accept 检查清单的 PR

@@ -78,4 +78,5 @@
 - vote 单源退化：`--min-tools 1`（design 的 ≥2 工具共识待 sa-scan 上线后恢复）
 - inbox 三态实际形态：draft/rejected 落盘 `harvest/inbox/`；confirm-tp/contract 动作经 harvest-package.yml git mv 进 `cases/`（语义上 = 移植重写完成后的入仓动作，不再是「确认即入仓」），`confirmed/` 目录不使用
 - workflow 在仓根 `.github/workflows/`：harvest.yml（采集+vote+propose）、harvest-package.yml（三态流转）、harvest-review.yml、harvest-pr-sarif.yml（if:false 禁用中）、build-cooddy-image.yml
+- **使用手册**：`harvest/README.md`「使用流程（端到端）」——采集（cron/dispatch 输入表）→ 候选 PR 结构 → 移植重写五步（先过 check_cases.py + 全量编译）→ `/case accept|contract|reject` 评论指令流转（机械 git mv、不校验移植完成度，故必须先移植后流转）→ merge 进 main 跑 9 工具四态
 - v0.2 候选：sa-scan 采集源（CSA + CppCheck）、Infer 构建重待评估

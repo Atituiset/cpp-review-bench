@@ -181,6 +181,12 @@ eval_inbox_report.md 进 PR body；`make_draft_sarif.sh` 的四态判定已从 s
 （必不命中）改为 file+anchor 口径（SA 命中行源码文本去空白与 golden anchor 互为子串，
 与 eval.py L1 一致）。
 
+**操作顺序（重要）**：流转指令（`harvest-review.yml`，PR 评论 `/case accept|contract|reject`，
+在候选分支上机械 git mv）**不校验移植是否完成**。因此必须先在候选分支上完成移植重写
+（重写可编译 src/、清 BUG ANCHOR 标记、补全 golden 必填字段、过 check_cases.py 与全量编译），
+再发流转指令，最后 merge——否则骨架 case 进 cases/ 会打挂 main CI。
+逐步操作手册见 `harvest/README.md`「使用流程（端到端）」。
+
 治理原则：双人复核（confirm 需第二人签字）；审核 SLA 与积压量进度量；候选标题带来源仓+commit/PR 便于追溯。
 
 ## 6. v0.1 范围与验收
