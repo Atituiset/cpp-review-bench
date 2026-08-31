@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/mime.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "COMMIT bc440a89d47aa8f3a5d02b01985fd7f6fb7e7e0a mime.c: avoid integer overflow in base64 size calculation :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

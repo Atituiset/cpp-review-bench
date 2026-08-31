@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/vtls_scache.h",
+      "anchor": "const void *sdata;           /* session ticket data, plain bytes */",
+      "line": 3,
+      "function": null,
+      "rationale": "COMMIT 0dc22b690dd8dba4048d494f09a50122dd7c0dd4 ssls: fix potential memory leak on import :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
