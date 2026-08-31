@@ -13,6 +13,10 @@
 #   $3/eval_inbox_report.json  每候选的 {case_id, scenario, csa_hit, cppcheck_hit, verdict}
 #   $3/eval_inbox_report.md    人审用摘要（附 PR body）
 set -u
+# 强制 UTF-8 流编码：CI runner 默认 LANG=C，Python 往 stderr/stdout 写中文会触发
+# UnicodeEncodeError -> runner 流处理放大成 RecursionError 使步骤崩溃。
+export PYTHONIOENCODING=utf-8
+export LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 REPO_ROOT="${1:?用法: $0 <repo_root> <inbox_root> <out_dir>}"
 INBOX="${2:?}"

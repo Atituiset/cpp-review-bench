@@ -27,7 +27,7 @@ def convert(track, case_id, src_dir, clang_tidy_bin, tool, version, build_dir=No
     src_dir = Path(src_dir)
     sources = sorted(str(p) for p in src_dir.glob('*.c')) + sorted(str(p) for p in src_dir.glob('*.cpp'))
     if not sources:
-        print(f'[warn] {case_id}: 无源文件', file=sys.stderr)
+        print(f'[warn] {case_id}: no source file', file=sys.stderr)
         return None
 
     cmd = [clang_tidy_bin, '-checks=bugprone-*,clang-analyzer-*', f'-p={build_dir or src_dir.parent.parent}']

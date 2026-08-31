@@ -12,6 +12,17 @@ import os
 import sys
 
 
+def _ensure_utf8_streams():
+    # CI runner 默认 LANG=C 时，stdout/stderr 是 ascii 编码，写中文会触发
+    # UnicodeEncodeError 并被 runner 流处理放大成 RecursionError。强制 utf-8 兜底。
+    for s in (sys.stdout, sys.stderr):
+        if hasattr(s, "reconfigure"):
+            try:
+                s.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+            except Exception:
+                pass
+
+
 def pack(finding, inbox_root):
     cid = finding["case_id"]
     d = os.path.join(inbox_root, "draft", cid)
@@ -80,6 +91,7 @@ def pack(finding, inbox_root):
 
 
 def main():
+    _ensure_utf8_streams()
     ap = argparse.ArgumentParser()
     ap.add_argument("--candidates", required=True)
     ap.add_argument("--inbox", required=True)
@@ -88,7 +100,7 @@ def main():
         cands = json.load(fh)
     for f in cands:
         pack(f, args.inbox)
-    sys.stderr.write(f"[pack_case] {len(cands)} 个草稿 → {args.inbox}/draft/\n")
+    sys.stderr.write(f"[pack_case] {len(cands)} drafts -> {args.inbox}/draft/\n")
 
 
 if __name__ == "__main__":

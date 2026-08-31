@@ -26,8 +26,25 @@ from datetime import datetime
 try:
     import requests
 except ImportError:
-    sys.stderr.write("ERROR: requests 未安装（pip install requests）\n")
+    sys.stderr.write("ERROR: requests not installed (pip install requests)\n")
     sys.exit(2)
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
+
+def _ensure_utf8_streams():
+    # CI runner 默认 LANG=C 时，stdout/stderr 是 ascii 编码，写中文会触发
+    # UnicodeEncodeError 并被 runner 流处理放大成 RecursionError。强制 utf-8 兜底。
+    for s in (sys.stdout, sys.stderr):
+        if hasattr(s, "reconfigure"):
+            try:
+                s.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+            except Exception:
+                pass
+
 
 API = "https://api.github.com"
 HEADERS = {"Accept": "application/vnd.github+json"}
@@ -53,11 +70,11 @@ def api_get(path, params=None):
         if r.status_code == 403 and "rate limit" in r.text.lower():
             reset = int(r.headers.get("X-RateLimit-Reset", time.time() + 60))
             wait = max(1, reset - int(time.time()))
-            sys.stderr.write(f"[rate-limit] 等待 {min(wait,300)}s\n")
+            sys.stderr.write(f"[rate-limit] waiting {min(wait,300)}s\n")
             time.sleep(min(wait, 300))
             continue
         if r.status_code != 200:
-            sys.stderr.write(f"[api {r.status_code}] {path} {r.text[:120]}\n")
+            sys.stderr.write(f"[api {r.status_code}] {path} {r.text[:120]}\n".encode("utf-8", "replace").decode("ascii", "replace"))
             return None
         return r.json()
     return None
@@ -283,6 +300,7 @@ def judge_bug(patch, title):
 
 
 def main():
+    _ensure_utf8_streams()
     ap = argparse.ArgumentParser()
     ap.add_argument("--config")
     ap.add_argument("--repo", help="owner/repo")
@@ -306,7 +324,7 @@ def main():
         cfg = yaml_safe_load(args.config) if args.config else {}
         entry = next((r for r in cfg.get("repos", []) if r["name"] == args.repo_name), None)
         if not entry:
-            sys.stderr.write(f"ERROR: config 中无 repo {args.repo_name}\n")
+            sys.stderr.write(f"ERROR: config has no repo {args.repo_name}\n")
             sys.exit(2)
         repos = [{"repo": entry["url"].split("github.com/")[-1]}]
         pm = cfg.get("pr_mining", {})
@@ -327,20 +345,20 @@ def main():
         args.since = args.since or pm.get("since")
     else:
 
-        sys.stderr.write("ERROR: 需 --repo / --repo-name / --config\n")
+        sys.stderr.write("ERROR: need --repo / --repo-name / --config\n")
         sys.exit(2)
 
     total = 0
     for entry in repos:
         repo = entry["repo"]
         q = entry.get("query") or args.query
-        sys.stderr.write(f"[pr_mine] 爬 {repo} (query='{q}') ...\n")
+        sys.stderr.write(f"[pr_mine] crawling {repo} (query='{q}') ...\n")
         items = fetch_merged_prs(repo, q, args.max_prs, args.since)
         # 仓特性兜底：PR 流程缺失的仓（sqlite/postgres/linux）改爬 commit
         if len(items) < 20:
-            sys.stderr.write(f"[pr_mine] {repo}: PR 仅 {len(items)}，回退 commit 源 ...\n")
+            sys.stderr.write(f"[pr_mine] {repo}: only {len(items)} PRs, fallback to commit source ...\n")
             items += fetch_commits(repo, q, args.max_prs, args.since)
-        sys.stderr.write(f"[pr_mine] {repo}: 命中 {len(items)} 条（PR+commit）\n")
+        sys.stderr.write(f"[pr_mine] {repo}: {len(items)} items (PR+commit)\n")
         per_pr_count = {}
         seen = set()  # (id, filename) 去重，避免同一文件多切片重复
         for pr in items:
@@ -396,19 +414,17 @@ def main():
                     json.dump(finding, fh, indent=2, ensure_ascii=False)
                 total += 1
                 per_pr_count[iid] = per_pr_count.get(iid, 0) + 1
-    sys.stderr.write(f"[pr_mine] 产出候选 {total} 条 → {args.out}\n")
+    sys.stderr.write(f"[pr_mine] produced {total} candidates -> {args.out}\n")
     with open(os.path.join(args.out, "_summary.json"), "w") as fh:
         json.dump({"source": "pr-mining", "count": total, "repos": [r["repo"] for r in repos]}, fh, indent=2)
 
 
 def yaml_safe_load(path):
-    try:
-        import yaml
-        with open(path) as fh:
-            return yaml.safe_load(fh)
-    except ImportError:
-        sys.stderr.write("WARN: 未装 pyyaml，pr_mining.targets 需手动 --repo 指定\n")
+    if yaml is None:
+        sys.stderr.write("WARN: pyyaml not installed; pr_mining.targets need manual --repo\n")
         return {}
+    with open(path) as fh:
+        return yaml.safe_load(fh)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,19 @@ import json
 import sys
 
 
+def _ensure_utf8_streams():
+    # CI runner 默认 LANG=C 时，stdout/stderr 是 ascii 编码，写中文会触发
+    # UnicodeEncodeError 并被 runner 流处理放大成 RecursionError。强制 utf-8 兜底。
+    for s in (sys.stdout, sys.stderr):
+        if hasattr(s, "reconfigure"):
+            try:
+                s.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+            except Exception:
+                pass
+
+
 def main():
+    _ensure_utf8_streams()
     ap = argparse.ArgumentParser()
     ap.add_argument("--findings", required=True)
     ap.add_argument("--out", required=True)
@@ -26,7 +38,7 @@ def main():
     sources = {f.get("tool") for f in findings}
     if len(sources) < args.min_tools:
         candidates = [f for f in findings if f.get("tool") == "pr-mining"]
-        sys.stderr.write(f"[vote] 单源（{sources}），退化为 pr-mining 候选 {len(candidates)} 条\n")
+        sys.stderr.write(f"[vote] single-source {sources}, fallback to pr-mining candidates: {len(candidates)}\n")
     else:
         # 真实共识：按 (file, scenario) 聚类，line 在 ±tol 内计同位置
         by_key = {}
@@ -34,7 +46,7 @@ def main():
             key = (f.get("file"), f.get("scenario"))
             by_key.setdefault(key, []).append(f)
         candidates = [fs[0] for fs in by_key.values() if len({x.get("tool") for x in fs}) >= args.min_tools]
-        sys.stderr.write(f"[vote] 多源共识候选 {len(candidates)} 条\n")
+        sys.stderr.write(f"[vote] multi-source consensus candidates: {len(candidates)}\n")
 
     with open(args.out, "w") as fh:
         json.dump(candidates, fh, indent=2, ensure_ascii=False)

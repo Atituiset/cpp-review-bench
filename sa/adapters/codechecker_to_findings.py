@@ -81,7 +81,7 @@ def rel_path(path: str):
 def convert(cc_json, cases_root, out_dir=None):
     cases_root = Path(cases_root)
     if not os.path.isfile(cc_json):
-        print(f'[warn] 找不到 {cc_json}，跳过（可能 CodeChecker 无产出）')
+        print(f'[warn] {cc_json} not found, skip (CodeChecker may have no output)')
         return {}
     with open(cc_json, encoding='utf-8', errors='ignore') as f:
         data = json.load(f)

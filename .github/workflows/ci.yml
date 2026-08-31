@@ -10,6 +10,12 @@ on:
 jobs:
   build-and-eval:
     runs-on: ubuntu-latest
+    # 强制 UTF-8 流编码：CI runner 默认 LANG=C，Python 往 stderr/stdout 写中文会触发
+    # UnicodeEncodeError -> runner 流处理放大成 RecursionError 使步骤崩溃。
+    env:
+      PYTHONIOENCODING: utf-8
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
     steps:
       - uses: actions/checkout@v4
 

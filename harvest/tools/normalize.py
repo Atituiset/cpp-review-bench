@@ -13,9 +13,18 @@ import os
 import sys
 
 
+def _ensure_utf8_streams():
+    # CI runner 默认 LANG=C 时，stdout/stderr 是 ascii 编码，写中文会触发
+    # UnicodeEncodeError 并被 runner 流处理放大成 RecursionError。强制 utf-8 兜底。
+    for s in (sys.stdout, sys.stderr):
+        if hasattr(s, "reconfigure"):
+            try:
+                s.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+            except Exception:
+                pass
 def normalize_sarif(path):
     # 占位：真实实现见仓根 sa/adapters/{csa,cppcheck,clang_tidy,infer,sarif}_to_findings.py
-    sys.stderr.write(f"[normalize] SARIF 适配走 sa/adapters/（{path} 跳过占位）\n")
+    sys.stderr.write(f"[normalize] SARIF adapter via sa/adapters/ ({path} skipped placeholder)\n")
     return []
 
 
@@ -25,6 +34,7 @@ def normalize_prmining(path):
 
 
 def main():
+    _ensure_utf8_streams()
     ap = argparse.ArgumentParser()
     ap.add_argument("--in-dir", required=True)
     ap.add_argument("--out", required=True)
@@ -38,7 +48,7 @@ def main():
             findings += normalize_prmining(p)
     with open(args.out, "w") as fh:
         json.dump(findings, fh, indent=2, ensure_ascii=False)
-    sys.stderr.write(f"[normalize] {len(findings)} 条 → {args.out}\n")
+    sys.stderr.write(f"[normalize] {len(findings)} findings -> {args.out}\n")
 
 
 if __name__ == "__main__":

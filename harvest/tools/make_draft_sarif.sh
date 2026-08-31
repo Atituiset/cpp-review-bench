@@ -7,6 +7,10 @@
 # 用法: make_draft_sarif.sh <repo_root> <inbox_root> <out_dir>
 # 依赖: clang --analyze, cppcheck, python3 sa/adapters/findings_to_sarif.py
 set -u
+# 强制 UTF-8 流编码：CI runner 默认 LANG=C，Python 往 stderr/stdout 写中文会触发
+# UnicodeEncodeError -> runner 流处理放大成 RecursionError 使步骤崩溃。
+export PYTHONIOENCODING=utf-8
+export LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 REPO_ROOT="$(cd "${1:?用法: $0 <repo_root> <inbox_root> <out_dir>}" && pwd)"
 INBOX="$(cd "${2:?}" && pwd)"

@@ -39,6 +39,14 @@ permissions:
   issues: write
   security-events: write   # upload-sarif 需要（PR 内联标注 + code-scanning）
 
+# CI runner 默认 LANG=C（无 UTF-8）：Python 往 stderr/stdout 写中文会触发
+# UnicodeEncodeError，GitHub runner 流处理将其喂进 email._policybase 递归爆栈
+# （RecursionError），使步骤崩溃。统一把流编码钉成 UTF-8 根治整类问题。
+env:
+  PYTHONIOENCODING: utf-8
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -62,8 +70,8 @@ jobs:
       - name: pr-mining —— 爬 GitHub PR diff + judge + 归一化
         if: >-
           matrix.source == 'pr-mining' &&
-          (github.event.inputs.source == 'all' || github.event.inputs.source == 'pr-mining') &&
-          (github.event.inputs.repos == '' || contains(github.event.inputs.repos, matrix.repo))
+          (github.event_name == 'schedule' || github.event.inputs.source == 'all' || github.event.inputs.source == 'pr-mining') &&
+          (github.event_name == 'schedule' || github.event.inputs.repos == '' || contains(github.event.inputs.repos, matrix.repo))
         env:
           # pr-mining 的 search API（含 search/commits）需个人 PAT：GITHUB_TOKEN（Actions 自动令牌）
           # 对 search/commits 返回 total_count=0（scope/限额限制），HARVEST_TOKEN（classic PAT）才有完整搜索权限。
