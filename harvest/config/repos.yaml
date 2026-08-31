@@ -140,3 +140,4 @@ pr_mining:
   since: "2024-01-01"            # 历史批扫起点；日常增量由 harvest.yml 动态覆盖为「昨天」
   max_per_scenario: 5            # 每仓每 scenario 候选配额（CLI --max-per-scenario 可覆盖）
   fp_mining: false               # contract 轨误报矿开关（CLI --fp-mining 显式开启优先）
+  closure: true                  # 同文件闭包切片开关（CLI --no-closure 关闭；拉 base 版完整文件递归带上同文件定义）

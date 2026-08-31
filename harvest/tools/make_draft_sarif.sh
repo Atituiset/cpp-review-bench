@@ -166,15 +166,21 @@ cid=os.environ['CID']; scen=os.environ['SCEN']; state=os.environ['STATE']
 csa=os.environ['CSA']; cpp=os.environ['CPP']; anchorline=os.environ['ANCHORLINE']
 cdir=os.environ['CDIR']; path=os.environ['ROWS']
 ev = {}
+dep = ""
 nr = os.path.join(cdir, "notes.md")
 if os.path.isfile(nr):
     txt = open(nr, encoding="utf-8", errors="replace").read()
     m = _re.search(r"源 PR: #(\d+) \((https?://[^)]+)\)", txt)
     if m:
         ev = {"pr": int(m.group(1)), "pr_url": m.group(2)}
+    # 外部依赖数（pack_case 写在 notes 溯源表；旧草稿无此行则留空）
+    md = _re.search(r"外部依赖数（dep_count）\s*\|\s*(\d+)", txt)
+    if md:
+        dep = md.group(1)
 with open(path, "a") as f:
     f.write(json.dumps({"case_id": cid, "scenario": scen, "state": state,
         "csa": csa.strip(), "cppcheck": cpp.strip(), "anchorline": anchorline,
+        "dep_count": dep,
         "pr": ev.get("pr"), "pr_url": ev.get("pr_url")}, ensure_ascii=False) + "\n")
 PY
 done
@@ -200,9 +206,9 @@ with open(os.path.join(out, "report.md"), "w", encoding="utf-8") as f:
     f.write("> 每条候选来自真实已合并 fix-PR，采集信号 = 标题/修复 diff 含缺陷特征。\n")
     f.write("> **scenario 为候选初判（非真值）**，待你正式仓手动触发 LLM 评审（agent-reviewer）后写入 golden。\n")
     f.write("> 四态评测（9 工具 PASS/FN/FP/EXTRA）在 `/case accept` 进 cases/ 后由 `ci.yml`+`eval.py` 产生。\n\n")
-    f.write("| 候选 | 初判scenario | 锚点行 | 采集工具 | 源PR | accept命令 |\n|---|---|---|---|---|---|\n")
+    f.write("| 候选 | 初判scenario | 锚点行 | dep | 采集工具 | 源PR | accept命令 |\n|---|---|---|---|---|---|---|\n")
     for r in rows:
-        f.write(f"| {r['case_id']} | {r['scenario']}（待定） | {r.get('anchorline') or '-'} | pr-mining | "
+        f.write(f"| {r['case_id']} | {r['scenario']}（待定） | {r.get('anchorline') or '-'} | {r.get('dep_count') or '-'} | pr-mining | "
                 f"[PR#{r.get('pr')}]({r.get('pr_url')}) | `/case accept {r['case_id']}` |\n")
     f.write(f"\n**共 {len(rows)} 条候选**（curl/redis 等真实仓 fix-PR 爬取）。\n")
     f.write("\n> 上表 scenario 列是采集阶段的启发式初判，可能不准（见 notes.md 真实修复 diff）。accept 后用 9 工具实测 + 你手动 LLM 评审定真值。\n")

@@ -8,6 +8,8 @@ draft 定位：不是半成品用例，是「线索 + 移植 blueprint」。acce
 contract.yaml（空）、notes.md（溯源表 + 缺陷描述 + 真实修复 diff + 移植要点 + accept 清单）。
 
 M1 骨架：pr-mining 候选用 evidence.before_slice 落 src/ 草稿；真实函数边界抽取留给 v0.2。
+策略 2：消费候选顶层 dep_count（外部依赖数，缺省 None 不崩）——notes 溯源表记录、
+dep_count==0 标题打 🟢 零依赖候选标记、>=10 提示只做 PR/diff 形态评审；打包按 dep_count 升序。
 """
 import argparse
 import datetime
@@ -35,13 +37,14 @@ def _ensure_utf8_streams():
 
 
 def _extern_symbols(before):
-    """启发式列出 before 切片依赖的外部符号。
+    """启发式列出 before 切片依赖的外部符号（与 pr_mine._extern_symbols 同款，自包含各留一份）。
 
-    返回 (外部函数, 大写宏)：切片中被调用但未在切片内定义的函数名，
-    以及切片中出现但未 #define 的全大写宏。类型依赖不易启发，留模板让人填。
+    返回 (外部函数, 大写宏, 外部类型)：被调用但未定义的函数名；出现但未 #define 的
+    全大写宏；类型级依赖（struct/union/enum 标签引用但无定义体、首字母大写或 _t
+    结尾且未定义的标识符）。
     """
     if not before.strip():
-        return [], []
+        return [], [], []
     called = set(re.findall(r"\b([a-z_][A-Za-z0-9_]*)\s*\(", before))
     # 函数定义粗判：name(...) { 且括号内无 ;{}（调用语句后跟 ; 或表达式，不匹配）
     defined = set(re.findall(r"\b([a-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*\{", before))
@@ -49,7 +52,14 @@ def _extern_symbols(before):
     macros_all = set(re.findall(r"\b([A-Z][A-Z0-9_]{2,})\b", before))
     macro_defined = set(re.findall(r"^\s*#\s*define\s+([A-Z][A-Z0-9_]+)", before, re.M))
     macros = sorted(macros_all - macro_defined)
-    return funcs, macros
+    # 类型级依赖（stub 需求的大头，此前漏统计）
+    tags_ref = set(re.findall(r"\b(?:struct|union|enum)\s+([A-Za-z_]\w*)\b", before))
+    tags_def = set(re.findall(r"\b(?:struct|union|enum)\s+([A-Za-z_]\w*)\s*\{", before))
+    typedef_def = set(re.findall(r"\btypedef\b[^;]*?\b([A-Za-z_]\w*)\s*;", before))
+    cap_types = set(re.findall(r"\b([A-Z][A-Za-z0-9_]*[a-z][A-Za-z0-9_]*)\b(?!\s*\()", before))
+    t_suffix = set(re.findall(r"\b([a-z_][A-Za-z0-9_]*_t)\b(?!\s*\()", before))
+    types = sorted((tags_ref - tags_def) | (cap_types | t_suffix) - typedef_def - set(macros))
+    return funcs, macros, types
 
 
 def pack(finding, inbox_root):
@@ -65,6 +75,10 @@ def pack(finding, inbox_root):
     track_hint = finding.get("track_hint") or "defect"
     polarity = finding.get("polarity") or "must_find"
     is_contract = track_hint == "contract" or polarity == "must_not_find"
+    # 策略 2：外部依赖数（采集端 pr_mine 统计；旧候选无此字段按 None 处理，不崩）
+    dep_count = finding.get("dep_count")
+    # 编译地板：gcc/cc -fsyntax-only 错误数（权威可编译性信号；旧候选/无编译器为 None）
+    compile_errors = finding.get("compile_errors")
     port_label = "direct（宽松许可，可直接移植）" if port == "direct" \
         else "rewrite（只允许参考，必须重写表达）"
     harvested_at = finding.get("harvested_at") or datetime.date.today().isoformat()
@@ -131,9 +145,12 @@ def pack(finding, inbox_root):
     # notes：移植 blueprint（溯源表 + 缺陷描述 + 真实修复 diff + 移植要点 + accept 清单）
     raw_patch = (finding.get("raw", {}) or {}).get("patch", "")
     desc = finding.get("rationale") or finding.get("message") or "（候选未带描述，待移植者补）"
-    funcs, macros = _extern_symbols(before)
+    funcs, macros, types = _extern_symbols(before)
     with open(os.path.join(d, "notes.md"), "w") as fh:
-        fh.write(f"# {cid}\n\n")
+        # 🟢 零依赖候选：优先按编译地板（compile_errors==0）判定，无编译器数据时退回 dep_count==0
+        zero_ok = (compile_errors == 0) if compile_errors is not None else (dep_count == 0)
+        zero_mark = " 🟢 零依赖候选" if zero_ok else ""
+        fh.write(f"# {cid}{zero_mark}\n\n")
         fh.write("> 本文件是**移植 blueprint**：draft 不是半成品用例，accept = 承诺参照真实案例"
                  "移植重写一个可编译用例。\n\n")
         fh.write("## 溯源\n\n")
@@ -143,7 +160,13 @@ def pack(finding, inbox_root):
         fh.write(f"| 许可证 | {license_} |\n")
         fh.write(f"| 移植策略 | {port_label} |\n")
         fh.write(f"| 采集时间 | {harvested_at} |\n")
-        fh.write(f"| track 方向 | {track_hint} 候选（polarity={polarity}） |\n\n")
+        fh.write(f"| track 方向 | {track_hint} 候选（polarity={polarity}） |\n")
+        # 兼容：make_draft_sarif.sh 用正则从这行提取 dep_count 写进四态表，格式勿改
+        dep_label = str(dep_count) if dep_count is not None else "未知（旧候选未带）"
+        fh.write(f"| 外部依赖数（dep_count） | {dep_label} |\n")
+        ce_label = (f"{compile_errors}（0=切片已达编译地板）" if compile_errors is not None
+                    else "未测（采集端无编译器或旧候选）")
+        fh.write(f"| 编译错误数（gcc syntax-only） | {ce_label} |\n\n")
         fh.write(f"- 采集工具: pr-mining（GitHub 已合并 fix-PR 爬取）\n")
         fh.write(f"- 采集信号: 标题/修复 diff 含缺陷特征（fix/leak/overflow/null/...）\n")
         # 兼容：make_draft_sarif.sh 用正则从这行提取 PR 号/链接写进 SARIF 与四态表，格式勿改
@@ -160,18 +183,23 @@ def pack(finding, inbox_root):
         else:
             fh.write("（无 diff）\n\n")
         fh.write("## 移植要点\n\n")
-        if funcs or macros:
+        if funcs or macros or types:
             fh.write("before 切片依赖的外部符号（启发式粗判，移植时需补桩/声明）：\n\n")
             for s in funcs:
                 fh.write(f"- 外部函数：`{s}`\n")
             for s in macros:
                 fh.write(f"- 大写宏：`{s}`\n")
+            for s in types:
+                fh.write(f"- 外部类型：`{s}`\n")
         else:
             fh.write("外部符号依赖（启发式未列出，移植者补）：\n\n")
             fh.write("- 外部函数：（待填）\n")
             fh.write("- 外部类型/宏：（待填）\n")
         fh.write("\n- **src/ 是原始切片，不可直接编译**；移植时要补全上下文使其独立编译。\n")
-        fh.write("- `// <<< BUG ANCHOR` 标记在移植时必须删除，golden anchor 改用重写后真实代码行。\n\n")
+        fh.write("- `// <<< BUG ANCHOR` 标记在移植时必须删除，golden anchor 改用重写后真实代码行。\n")
+        if isinstance(dep_count, int) and dep_count >= 10:
+            fh.write("- **依赖重（dep_count≥10）**：可考虑只做 PR/diff 形态评审，不做独立 case。\n")
+        fh.write("\n")
         if is_contract:
             fh.write("## 为什么契约安全\n\n")
             fh.write("（模板，移植者填：此处报出为什么是误报？豁免契约是什么？"
@@ -198,6 +226,15 @@ def main():
     args = ap.parse_args()
     with open(args.candidates) as fh:
         cands = json.load(fh)
+    # 策略 2：按可编译性升序打包（编译地板优先，其次 dep_count 启发式，都缺=旧候选排最后），
+    # 使 inbox/draft 目录列举顺序即移植优先级。稳定排序，同键保持原顺序。
+    def _prio(f):
+        if f.get("compile_errors") is not None:
+            return (0, f["compile_errors"], f.get("dep_count") or 0)
+        if f.get("dep_count") is not None:
+            return (1, f["dep_count"], 0)
+        return (2, 0, 0)
+    cands.sort(key=_prio)
     for f in cands:
         pack(f, args.inbox)
     sys.stderr.write(f"[pack_case] {len(cands)} drafts -> {args.inbox}/draft/\n")

@@ -15,17 +15,24 @@
 - 场景配额：--max-per-scenario 按 scenario 分桶限流（CLI > config > 默认 5），防单一缺陷类型刷屏；
 - contract 轨误报矿：--fp-mining 开启后对每仓额外跑一轮「修静态分析误报」PR 采集，
   产出 track_hint=contract / polarity=must_not_find 候选（与缺陷候选共用 scenario 配额桶）。
+- 同文件闭包切片（策略 1，默认开，--no-closure 关）：拉 base 版完整文件，把切片引用的
+  同文件定义（static 函数/typedef/struct/#define）递归带上，减少编译所需 stub；
+- dep_count（策略 2）：闭包切片后仍外部的符号数（libc 白名单外），写候选顶层供下游排序。
 
 用法（CI 内）：
   python3 pr_mine.py --config harvest/config/repos.yaml --repo-name curl --out /tmp/out
   python3 pr_mine.py --repo curl/curl --max-prs 50 --since 2024-01-01 --out /tmp/out
 """
 import argparse
+import bisect
 import hashlib
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timedelta
 
@@ -135,6 +142,46 @@ def api_get(path, params=None):
 
 
 SEARCH_CAP = 1000  # GitHub search API 单查询硬上限（total_count 最多 1000）
+
+
+def _core_get(path, params=None, raw=False):
+    """core API（非 search）调用：走预算闸（_budget.consume_call）+ 限流重试。
+
+    raw=True 时用 application/vnd.github.raw+json 直接拿原文（contents API 拉文件用）。
+    任何失败返回 None（调用方静默降级），不抛异常不崩采集。
+    """
+    if _budget is not None:
+        if not _budget.can_call():
+            sys.stderr.write("[budget] core call 预算耗尽，跳过（静默降级）\n")
+            return None
+        _budget.consume_call()
+    h = dict(HEADERS)
+    if raw:
+        h["Accept"] = "application/vnd.github.raw+json"
+    if TOKEN:
+        h["Authorization"] = f"Bearer {TOKEN}"
+    for attempt in range(3):
+        try:
+            r = requests.get(API + path, headers=h, params=params, timeout=30)
+        except Exception as e:
+            sys.stderr.write(f"[closure] 请求异常 {path}: {e}（静默降级）\n")
+            return None
+        if r.status_code == 403 and "rate limit" in r.text.lower():
+            reset = int(r.headers.get("X-RateLimit-Reset", time.time() + 60))
+            wait = max(1, reset - int(time.time()))
+            sys.stderr.write(f"[rate-limit] waiting {min(wait,300)}s\n")
+            time.sleep(min(wait, 300))
+            continue
+        if r.status_code != 200:
+            sys.stderr.write(f"[closure] [{r.status_code}] {path}（静默降级为函数级切片）\n")
+            return None
+        return r.text if raw else r.json()
+    return None
+
+
+def fetch_base_file(repo, path, base_sha):
+    """拉 base 版本完整文件原文（contents API，raw Accept）。失败返回 None。"""
+    return _core_get(f"/repos/{repo}/contents/{path}", {"ref": base_sha}, raw=True)
 
 
 def _search_collect(endpoint, q, since, until, budget, per_page=30):
@@ -267,15 +314,28 @@ def fetch_commits(repo, query, max_prs, since):
     return outs
 
 
-def fetch_diff(repo, kind, rid):
+def fetch_diff(repo, kind, rid, want_base=False):
     """取 PR 或 commit 的 files + patch（修复前/后），仅留 C/C++ 文件。
-    kind='pr' → /pulls/{rid}/files；kind='commit' → /commits/{rid}。"""
+    kind='pr' → /pulls/{rid}/files；kind='commit' → /commits/{rid}。
+
+    返回 (files, base_sha)。want_base=True 时顺带取 base 版本 sha（闭包切片拉原文用）：
+    commit 源复用 /commits 响应里的 parents[0].sha（零额外调用）；
+    PR 源多调一次 /pulls/{rid} 取 base.sha（files 端点不带 base 信息）。"""
+    base_sha = None
     if kind == "commit":
         data = api_get(f"/repos/{repo}/commits/{rid}", {"per_page": 100})
         files = (data or {}).get("files", []) if data else []
+        if data and want_base:
+            parents = data.get("parents") or []
+            if parents:
+                base_sha = parents[0].get("sha")
     else:
         data = api_get(f"/repos/{repo}/pulls/{rid}/files", {"per_page": 100})
         files = data or []
+        if want_base:
+            detail = _core_get(f"/repos/{repo}/pulls/{rid}")
+            if detail:
+                base_sha = (detail.get("base") or {}).get("sha")
     out = []
     for f in files:
         if not f.get("filename", "").endswith((".c", ".cpp", ".cc", ".cxx", ".h", ".hpp")):
@@ -283,7 +343,7 @@ def fetch_diff(repo, kind, rid):
         if f.get("patch"):
             out.append({"filename": f["filename"], "patch": f["patch"],
                         "status": f.get("status"), "sha": f.get("sha")})
-    return out
+    return out, base_sha
 
 
 def slice_before(patch):
@@ -300,6 +360,350 @@ def slice_before(patch):
         elif ln.startswith(" "):
             before.append(ln[1:])
     return "\n".join(before).strip()
+
+
+# ---------------------------------------------------------------------------
+# 策略 1：同文件闭包切片 —— 切片引用的同文件定义（static 函数/typedef/struct/#define）
+# 递归带上，都是同仓真实代码，零 stub。策略 2：dep_count 统计闭包后仍外部的符号数。
+# ---------------------------------------------------------------------------
+
+# libc/POSIX 白名单：不算外部依赖，不纳入闭包，也不计 dep_count
+_LIBC_WHITELIST = {
+    # 内存/字符串
+    "memcpy", "memmove", "memset", "memcmp", "malloc", "calloc", "realloc", "free",
+    "strlen", "strcmp", "strncmp", "strcpy", "strncpy", "strcat", "strncat",
+    "strchr", "strrchr", "strstr", "strdup", "strndup", "strspn", "strcspn",
+    "strtok", "strtol", "strtoul", "strtoll", "strtod", "strcasecmp", "strncasecmp",
+    # IO/格式化
+    "printf", "fprintf", "sprintf", "snprintf", "vprintf", "vfprintf", "vsprintf",
+    "vsnprintf", "sscanf", "fgets", "fputs", "fputc", "putchar", "puts",
+    "fopen", "fclose", "fflush", "fseek", "ftell", "fread", "fwrite",
+    # 字符分类/转换/其他常见
+    "isspace", "isdigit", "isalpha", "isalnum", "isupper", "islower", "isxdigit",
+    "toupper", "tolower", "atoi", "atol", "atof", "abs", "labs", "qsort", "bsearch",
+    "exit", "abort", "assert", "getenv", "time", "gettimeofday", "offsetof",
+    "va_start", "va_arg", "va_end", "va_copy",
+    # 类型/常量宏
+    "size_t", "ssize_t", "ptrdiff_t", "intptr_t", "uintptr_t", "FILE",
+    "uint8_t", "uint16_t", "uint32_t", "uint64_t",
+    "int8_t", "int16_t", "int32_t", "int64_t",
+    "NULL", "EOF", "bool", "true", "false",
+}
+
+# C/C++ 关键字与内建类型：不是符号依赖
+_C_WORDS = {
+    "if", "else", "for", "while", "do", "switch", "case", "default", "break",
+    "continue", "return", "goto", "sizeof", "typedef", "struct", "union", "enum",
+    "const", "static", "extern", "register", "volatile", "inline", "restrict",
+    "auto", "signed", "unsigned", "long", "short", "int", "char", "float",
+    "double", "void", "alignof", "decltype", "static_assert", "_Bool",
+    "namespace", "class", "public", "private", "protected", "virtual", "template",
+    "typename", "new", "delete", "this", "operator", "friend", "mutable",
+    "explicit", "using", "try", "catch", "throw", "noexcept", "constexpr",
+    "override", "final", "asm", "wchar_t",
+}
+
+
+def _scrub(text):
+    """把字符串/字符字面量与注释内容替换为空格（保留换行与整体结构）。
+
+    供括号配平/结构匹配用，避免字面量或注释里的 {}() 干扰启发式。
+    """
+    def repl(m):
+        return "".join("\n" if c == "\n" else " " for c in m.group(0))
+    text = re.sub(r'"(?:\\.|[^"\\\n])*"', repl, text)
+    text = re.sub(r"'(?:\\.|[^'\\\n])*'", repl, text)
+    text = re.sub(r"/\*.*?\*/", repl, text, flags=re.S)
+    text = re.sub(r"//[^\n]*", repl, text)
+    return text
+
+
+def _referenced_idents(scrub_text):
+    """scrubbed 文本里被引用的全部标识符（去关键字/白名单）。"""
+    return set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", scrub_text)) - _C_WORDS - _LIBC_WHITELIST
+
+
+def _defined_idents(scrub_text):
+    """scrubbed 文本里「已定义」的标识符粗判（这些不算外部依赖，不再查闭包）。"""
+    d = set(re.findall(r"\b([A-Za-z_]\w*)\s*\([^;{}]*\)\s*\{", scrub_text))          # 函数定义
+    d |= set(re.findall(r"^\s*#\s*define\s+([A-Za-z_]\w*)", scrub_text, re.M))       # 宏
+    d |= set(re.findall(r"^\s*typedef\s+[^;{]*\b([A-Za-z_]\w*)\s*;", scrub_text, re.M))  # 单行 typedef
+    d |= set(re.findall(r"\b(?:struct|union|enum)\s+([A-Za-z_]\w*)\s*\{", scrub_text))   # tag 定义
+    # 声明形态的局部名（type name / type *name / name[...]）：粗判，宁多勿漏
+    d |= set(re.findall(r"\b[A-Za-z_]\w*[\s\*]+\*?\s*([a-z_]\w*)\s*(?:\[[^\]]*\])?\s*[=;,)]", scrub_text))
+    return d
+
+
+def _line_offsets(text):
+    """每行（splitlines 口径）的起始字符偏移，供位置→行号换算。"""
+    offs = []
+    pos = 0
+    for ln in text.splitlines(keepends=True):
+        offs.append(pos)
+        pos += len(ln)
+    return offs
+
+
+def _line_of(offs, pos):
+    return bisect.bisect_right(offs, pos) - 1
+
+
+def _balance(text, pos, open_ch, close_ch, limit=0):
+    """从 text[pos]==open_ch 起配平，返回匹配 close_ch 的位置；失败返回 None。
+    limit>0 时最多向后扫 limit 字符（函数签名防失控用）。"""
+    depth = 0
+    i = pos
+    end = len(text) if limit <= 0 else min(len(text), pos + limit)
+    while i < end:
+        c = text[i]
+        if c == open_ch:
+            depth += 1
+        elif c == close_ch:
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    return None
+
+
+def _build_def_index(scrub):
+    """对 scrubbed 全文扫一遍，建立 标识符 → 同文件定义行区间（0-based [start, end)）索引。
+
+    覆盖四类：#define（含续行）、typedef ... name;、struct/union/enum name { ... };、
+    函数定义（允许多行签名，近似：name(...) 后配平括号紧跟 {）。启发式，漏判误判都可能。
+    """
+    lines = scrub.splitlines()
+    offs = _line_offsets(scrub)
+    n = len(lines)
+    idx = {}
+
+    # 1) #define NAME（含反斜杠续行）
+    for m in re.finditer(r"^[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)", scrub, re.M):
+        sline = _line_of(offs, m.start())
+        eline = sline
+        while eline < n and lines[eline].rstrip().endswith("\\"):
+            eline += 1
+        idx.setdefault(m.group(1), (sline, min(eline + 1, n)))
+
+    # 2) typedef ... name;（含 typedef struct {...} name;：按花括号深度找 0 级分号，
+    #    取分号前最后一个标识符为 typedef 名；函数指针 typedef 形态放弃）
+    for m in re.finditer(r"\btypedef\b", scrub):
+        i = m.end()
+        depth = 0
+        end = None
+        while i < len(scrub):
+            c = scrub[i]
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+            elif c == ";" and depth == 0:
+                end = i
+                break
+            i += 1
+        if end is None:
+            continue
+        nm = re.search(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*$", scrub[m.start():end])
+        if nm:
+            idx.setdefault(nm.group(1), (_line_of(offs, m.start()), _line_of(offs, end) + 1))
+
+    # 3) struct/union/enum name { ... }（到配平 } 为止；typedef 变体已被 2) 收编，setdefault 不覆盖）
+    for m in re.finditer(r"\b(?:struct|union|enum)[ \t]+([A-Za-z_]\w*)[ \t]*\{", scrub):
+        bend = _balance(scrub, m.end() - 1, "{", "}")
+        if bend is None:
+            continue
+        idx.setdefault(m.group(1), (_line_of(offs, m.start()), _line_of(offs, bend) + 1))
+
+    # 4) 函数定义：name( ... ) 后紧跟 {（允许空白/换行；签名配平限 4000 字符防失控）
+    for m in re.finditer(r"\b([A-Za-z_]\w*)[ \t]*\(", scrub):
+        name = m.group(1)
+        if name in idx or name in _C_WORDS:
+            continue
+        pclose = _balance(scrub, m.end() - 1, "(", ")", limit=4000)
+        if pclose is None:
+            continue
+        j = pclose + 1
+        while j < len(scrub) and scrub[j] in " \t\r\n":
+            j += 1
+        if j >= len(scrub) or scrub[j] != "{":
+            continue  # 是调用/声明，不是定义
+        bend = _balance(scrub, j, "{", "}")
+        if bend is None:
+            continue
+        sline = _line_of(offs, m.start())
+        mline = sline
+        # 多行返回类型/宏修饰向上回溯：不跨 ;{} 结尾行、# 预处理行、续行符，最多 6 行
+        while sline > 0 and mline - sline < 6:
+            prev = lines[sline - 1].rstrip()
+            if not prev or prev.endswith((";", "{", "}", "\\")) or prev.lstrip().startswith("#"):
+                break
+            sline -= 1
+        idx.setdefault(name, (sline, _line_of(offs, bend) + 1))
+    return idx
+
+
+def _merge_ranges(ranges):
+    """合并重叠/相邻的 0-based [start, end) 行区间，按原文件行号排序。"""
+    out = []
+    for s, e in sorted(ranges):
+        if out and s <= out[-1][1]:
+            out[-1] = (out[-1][0], max(out[-1][1], e))
+        else:
+            out.append((s, e))
+    return out
+
+
+def _hunk_old_ranges(patch):
+    """从 patch 解析初始切片在原文件（修复前）中的行区间，1-based 闭区间 list。"""
+    ranges = []
+    start = prev = None
+    for _ltype, _text, old_line, _new in _parse_hunk_lines(patch):
+        if old_line is None:
+            continue
+        if prev is not None and old_line == prev + 1:
+            prev = old_line
+        else:
+            if start is not None:
+                ranges.append((start, prev))
+            start = prev = old_line
+    if start is not None:
+        ranges.append((start, prev))
+    return ranges
+
+
+def closure_slice(before_text, slice_ranges, max_rounds=5):
+    """同文件闭包切片：初始切片行区间 + 递归带上的同文件定义，按原行号排序拼接。
+
+    before_text: 修复前完整文件原文；slice_ranges: 初始切片行区间（1-based 闭区间，
+    见 _hunk_old_ranges）。区间之间插一行省略标记。失败/空输入返回 None（调用方降级）。
+    """
+    lines = before_text.splitlines()
+    n = len(lines)
+    ranges = [(s - 1, e) for (s, e) in slice_ranges if s and e and 1 <= s <= e <= n]
+    if not ranges:
+        return None
+    scrub = _scrub(before_text)
+    slines = scrub.splitlines()
+    idx = _build_def_index(scrub)
+
+    def text_of(rs):
+        return "\n".join("\n".join(slines[s:e]) for (s, e) in rs)
+
+    # 迭代到不动点：新纳入的定义可能引用更多同文件符号（max_rounds 防失控）
+    attempted = _defined_idents(text_of(ranges))  # 切片内已定义的不算外部
+    frontier = _referenced_idents(text_of(ranges)) - attempted
+    for _ in range(max_rounds):
+        new_ranges = []
+        for ident in sorted(frontier):
+            d = idx.get(ident)
+            if d:
+                new_ranges.append(d)
+        attempted |= frontier  # 查过（无论找没找到）不再重复查
+        if not new_ranges:
+            break
+        ranges.extend(new_ranges)
+        new_text = text_of(new_ranges)
+        attempted |= _defined_idents(new_text)
+        frontier = _referenced_idents(new_text) - attempted
+
+    out = []
+    prev_end = None
+    for s, e in _merge_ranges(ranges):
+        if prev_end is not None and s > prev_end:
+            out.append("/* …（同文件无关代码省略）… */")
+        out.extend(lines[s:e])
+        prev_end = e
+    return "\n".join(out)
+
+
+def _extern_symbols(before):
+    """与 pack_case._extern_symbols 一致的启发式（两脚本自包含各留一份）。
+
+    返回 (外部函数, 大写宏, 外部类型)：切片中被调用但未在切片内定义的函数名；
+    切片中出现但未 #define 的全大写宏；以及类型级依赖——struct/union/enum 标签
+    被引用但切片内无其定义体、首字母大写或 _t 结尾的标识符未定义且非函数调用。
+    """
+    if not before.strip():
+        return [], [], []
+    called = set(re.findall(r"\b([a-z_][A-Za-z0-9_]*)\s*\(", before))
+    defined = set(re.findall(r"\b([a-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*\{", before))
+    funcs = sorted(called - defined - _C_WORDS)
+    macros_all = set(re.findall(r"\b([A-Z][A-Z0-9_]{2,})\b", before))
+    macro_defined = set(re.findall(r"^\s*#\s*define\s+([A-Z][A-Z0-9_]+)", before, re.M))
+    macros = sorted(macros_all - macro_defined)
+    # 类型级依赖（stub 需求的大头，此前漏统计）
+    tags_ref = set(re.findall(r"\b(?:struct|union|enum)\s+([A-Za-z_]\w*)\b", before))
+    tags_def = set(re.findall(r"\b(?:struct|union|enum)\s+([A-Za-z_]\w*)\s*\{", before))
+    typedef_def = set(re.findall(r"\btypedef\b[^;]*?\b([A-Za-z_]\w*)\s*;", before))
+    cap_types = set(re.findall(r"\b([A-Z][A-Za-z0-9_]*[a-z][A-Za-z0-9_]*)\b(?!\s*\()", before))
+    t_suffix = set(re.findall(r"\b([a-z_][A-Za-z0-9_]*_t)\b(?!\s*\()", before))
+    types = sorted((tags_ref - tags_def) | (cap_types | t_suffix) - typedef_def - set(macros))
+    return funcs, macros, types
+
+
+def extern_dep_count(before):
+    """dep_count：闭包切片后「仍然外部」的符号数（_extern_symbols 启发式 − libc 白名单）。"""
+    funcs, macros, types = _extern_symbols(before)
+    funcs = [f for f in funcs if f not in _LIBC_WHITELIST]
+    macros = [m for m in macros if m not in _LIBC_WHITELIST]
+    types = [t for t in types if t not in _LIBC_WHITELIST]
+    return len(funcs) + len(macros) + len(types)
+
+
+# 标准库符号 → 头文件。切片不带 #include（闭包只拉同文件定义），syntax check 会被
+# libc 隐式声明噪声淹没；按切片实际用到的符号补标准头前导，既净化编译检查信号，
+# 也让 draft 更接近可编译形态（include 是自然 C 代码，非 stub）。
+_STD_INCLUDE_MAP = {
+    "stdio.h": ["printf", "fprintf", "snprintf", "sprintf", "fopen", "fclose", "fread",
+                "fwrite", "fgets", "fputs", "sscanf", "FILE", "EOF", "stderr", "stdout"],
+    "stdlib.h": ["malloc", "calloc", "realloc", "free", "strtol", "strtoul", "atoi",
+                 "exit", "abort", "qsort", "rand", "getenv", "NULL"],
+    "string.h": ["memcpy", "memmove", "memset", "memcmp", "strlen", "strcmp", "strncmp",
+                 "strcpy", "strncpy", "strcat", "strchr", "strstr", "strdup", "strerror"],
+    "stdint.h": ["uint8_t", "uint16_t", "uint32_t", "uint64_t", "int8_t", "int16_t",
+                 "int32_t", "int64_t", "uintptr_t", "INT32_MAX", "UINT64_MAX"],
+    "stdbool.h": ["bool", "true", "false"],
+    "stddef.h": ["size_t", "ptrdiff_t", "NULL", "offsetof"],
+    "ctype.h": ["isdigit", "isalpha", "isspace", "isxdigit", "toupper", "tolower"],
+    "errno.h": ["errno"],
+    "assert.h": ["assert"],
+    "time.h": ["time", "clock", "time_t"],
+}
+
+
+def _std_prelude(code):
+    """按切片用到的 libc 符号生成标准头 include 块；没用到则返回空串。"""
+    used = set(re.findall(r"\b([A-Za-z_]\w*)\b", code))
+    incs = sorted(h for h, syms in _STD_INCLUDE_MAP.items()
+                  if any(s in used for s in syms))
+    if not incs:
+        return ""
+    lines = ["/* 标准头由采集器按切片用到的 libc 符号推断补齐 */"]
+    lines += [f"#include <{h}>" for h in incs]
+    return "\n".join(lines) + "\n\n"
+
+
+def _syntax_error_count(code):
+    """gcc/cc -fsyntax-only 的错误数（「编译地板」的真实信号）；无编译器或超时返回 None。"""
+    cc = shutil.which("gcc") or shutil.which("cc")
+    if not cc:
+        return None
+    path = None
+    try:
+        with tempfile.NamedTemporaryFile("w", suffix=".c", delete=False) as t:
+            t.write(code)
+            path = t.name
+        r = subprocess.run([cc, "-fsyntax-only", "-std=c11", path],
+                           capture_output=True, text=True, timeout=30)
+        return r.stderr.count("error:")
+    except Exception:
+        return None
+    finally:
+        if path:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
 
 
 # 从修复 diff 反推真实 bug：锚点行（修复前的 - 行）+ scenario（由 + 行的修复动作推断）
@@ -450,7 +854,7 @@ def _harvest_items(items, repo, entry, args, mode, state, quota):
         iid = pr["id"]
         if per_pr_count.get(iid, 0) >= args.max_per_pr:
             continue
-        files = fetch_diff(repo, pr["kind"], iid)
+        files, base_sha = fetch_diff(repo, pr["kind"], iid, want_base=args.closure)
         if not files:
             continue
         for fobj in files:
@@ -465,6 +869,17 @@ def _harvest_items(items, repo, entry, args, mode, state, quota):
             if dedup_key in seen:
                 continue
             seen.add(dedup_key)
+            # 策略 1 同文件闭包切片：拉 base 版完整文件，把切片引用的同文件定义
+            # （static 函数/typedef/struct/#define）递归带上。base 上不存在该文件
+            # （纯新增/改名）或拉取失败时静默降级为原函数级切片。
+            used_closure = False
+            if args.closure and base_sha and fobj.get("status") in (None, "modified"):
+                base_text = fetch_base_file(repo, fobj["filename"], base_sha)
+                if base_text:
+                    closed = closure_slice(base_text, _hunk_old_ranges(fobj["patch"]))
+                    if closed:
+                        before = closed
+                        used_closure = True
             if mode == "fp":
                 scenario = _map_fp_scenario(f"{pr['title']}\n{fobj['patch']}")
                 severity = "medium"
@@ -486,6 +901,20 @@ def _harvest_items(items, repo, entry, args, mode, state, quota):
             h = hashlib.sha1(hsrc.encode()).hexdigest()[:10]
             cid = f"auto-{repo.split('/')[-1]}-{h}"
             kind_tag = "commit" if pr["kind"] == "commit" else "pr"
+            # 策略 2：dep_count = 闭包切片后仍外部的符号数（白名单外未定义标识符）
+            dep_count = extern_dep_count(before)
+            # 标准头前导 + 编译地板检查：prelude 净化 libc 隐式声明噪声，
+            # compile_errors（gcc/cc -fsyntax-only，无编译器则 None）是权威信号
+            prelude = _std_prelude(before)
+            if prelude:
+                before = prelude + before
+            compile_errors = _syntax_error_count(before)
+            # 切片长度上限（防 JSON 膨胀）；闭包切片放宽到 6000。
+            # 锚点必须完整保留（下游 golden anchor/src 对齐依赖它），截断会丢锚点时整段保留。
+            cap = 6000 if used_closure else 2000
+            ev_slice = before[:cap]
+            if anchor and anchor.strip() and anchor.strip() not in ev_slice:
+                ev_slice = before
             finding = {
                 "tool": "pr-mining",
                 "track": "contract" if mode == "fp" else "defect",
@@ -497,17 +926,22 @@ def _harvest_items(items, repo, entry, args, mode, state, quota):
                 "severity": severity,
                 "polarity": "must_not_find" if mode == "fp" else "must_find",
                 "verified": False,
+                "dep_count": dep_count,
                 "message": f"{kind_tag.upper()} {iid} {pr['title']} :: {rationale}",
                 "evidence": {
                     "source_repo": repo,
                     "kind": pr["kind"],
                     "pr": iid,
                     "pr_url": pr["url"],
-                    "before_slice": before[:2000],
+                    "before_slice": ev_slice,
                     "anchor_line": anchor_line,
+                    "closure": used_closure,
                 },
                 "raw": {"patch": fobj["patch"][:4000]},
             }
+            # 编译地板（gcc/cc -fsyntax-only 错误数）：权威的可编译性信号；无编译器时省略
+            if compile_errors is not None:
+                finding["compile_errors"] = compile_errors
             # scenario：缺陷轨必有（judge_bug 兜底）；fp 轨映射不了则省略
             if scenario:
                 finding["scenario"] = scenario
@@ -548,6 +982,9 @@ def main():
     # 生效链：CLI 显式开启 > config(pr_mining.fp_mining) > 默认 false。
     ap.add_argument("--fp-mining", action="store_true", default=None,
                     help="开启 contract 轨误报矿：对每仓额外跑一轮「修静态分析误报」PR 采集")
+    # 生效链：CLI --no-closure > config(pr_mining.closure) > 默认 true。
+    ap.add_argument("--no-closure", dest="closure", action="store_false", default=None,
+                    help="关闭同文件闭包切片（退回函数级切片，不拉 base 版完整文件）")
     # 生效链：CLI 显式值 > config(pr_mining.since) > 内置默认 2024-01-01。
     ap.add_argument("--since", default=None)
     ap.add_argument("--out", required=True)
@@ -578,6 +1015,8 @@ def main():
             args.max_per_scenario = pm.get("max_per_scenario")
         if args.fp_mining is None:
             args.fp_mining = pm.get("fp_mining", False)
+        if args.closure is None:
+            args.closure = pm.get("closure")
     elif args.config:
         cfg = yaml_safe_load(args.config)
         pm = cfg.get("pr_mining", {})
@@ -597,6 +1036,8 @@ def main():
             args.max_per_scenario = pm.get("max_per_scenario")
         if args.fp_mining is None:
             args.fp_mining = pm.get("fp_mining", False)
+        if args.closure is None:
+            args.closure = pm.get("closure")
     else:
 
         sys.stderr.write("ERROR: need --repo / --repo-name / --config\n")
@@ -611,6 +1052,8 @@ def main():
         args.max_per_scenario = 5
     if args.fp_mining is None:
         args.fp_mining = False
+    if args.closure is None:
+        args.closure = True
 
     state = {"total": 0}  # 跨仓候选总数（max_candidates 全局限流用）
     for entry in repos:

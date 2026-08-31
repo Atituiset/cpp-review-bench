@@ -60,8 +60,10 @@ propose 自动开出「harvest: 每日候选 N 条待审核」PR，body 含五�
 溯源表（源仓/源 PR/许可证/移植策略）→ 缺陷描述与触发条件 → 真实修复 diff → 移植要点 →
 （contract 候选）为什么契约安全 → accept 检查清单。
 
-**draft 不是用例**：src/ 是原始切片、不可直接编译、可能带 `// <<< BUG ANCHOR` 标记；
-golden.json 是骨架（缺 id/track/title 等必填字段）。
+**draft 不是用例**：src/ 是原始切片（策略 1 闭包后已带上同文件依赖与标准头），
+golden.json 是骨架（缺 id/track/title 等必填字段）。**优先挑低 stub 成本的候选做**：
+notes 溯源表有「编译错误数（gcc syntax-only）」与「dep_count」两列，🟢 零依赖候选
+（compile_errors=0）开箱即编译，错误数 ≤3 的通常只需补两三个类型声明。
 
 ### 3. 移植重写（accept 前必须完成）
 
@@ -114,5 +116,11 @@ rejected/ 候选的原因回流 rules.yaml 噪声黑名单。
 - **fp-mining**：`pr_mining.fp_mining`（默认 false）+ CLI `--fp-mining`，每仓缺陷轮之后第二轮抓「修静态分析误报」PR，产出 contract 轨 must_not_find 候选
 - **blueprint notes**：pack_case.py 的 notes.md 改为移植 blueprint 六段（溯源表/缺陷描述与触发条件/真实修复 diff/移植要点/为什么契约安全/accept 检查清单六项）
 - **四态判定口径修正**：`make_draft_sarif.sh` 从 scenario 数字 grep（必不命中）改为 file+anchor 口径，与 eval.py L1 一致
+
+## 本轮改造完成项（2026-08，少用/不用 stub 即可编译：策略 1+2）
+
+- **策略 1 同文件闭包切片**（默认开，`pr_mining.closure` / CLI `--no-closure`）：拉 base commit 完整文件，把切片引用的同文件定义（static 函数/typedef/struct/#define）递归带上——同仓真实代码，零 stub；另按切片用到的 libc 符号补标准头 include 前导（自然 C 代码，非 stub）
+- **策略 2 可编译性打分与优先**：候选带两个信号——`dep_count`（启发式外部符号数，含函数/宏/类型）与 `compile_errors`（gcc/cc `-fsyntax-only` 实测错误数，权威「编译地板」，无编译器时省略）；pack_case 按 compile_errors → dep_count 升序打包，🟢 零依赖标记以 compile_errors==0 优先判定，notes 溯源表两列齐出，四态表带 dep 列
+- 实测口径（curl 10 PR）：4 条候选 gcc 错误 ≤3（低 stub 成本，优先移植），重依赖候选（如 digest.c=12 错）降级——curl 系仓的类型依赖多住在仓内头文件，如需进一步降 stub 再走策略 3（仓内头文件补一层，未做）
 
 详见 `docs/design-v0.1.md` 与 `docs/roadmap-pr-mining-pipeline.md`。
