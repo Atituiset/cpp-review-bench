@@ -42,9 +42,6 @@ def api_get(path, params=None):
     h = dict(HEADERS)
     if TOKEN:
         h["Authorization"] = f"Bearer {TOKEN}"
-    if path.startswith("/search/commits"):
-        # GitHub commit 搜索需特殊 media type，否则返回空 items
-        h["Accept"] = "application/vnd.github.cloak-preview+json"
     if path.startswith("/search"):
         # 保证两次 search 调用间隔 ≥ 2.1s（≈28/min，留余量）
         gap = 2.1 - (time.time() - _search_call_ts[0])
@@ -104,6 +101,7 @@ def _sharded_search(endpoint, q, since, until):
         probe_q += f" {tf}:<={until}"
     probe = api_get(endpoint, {"q": probe_q, "per_page": 1})
     total = (probe or {}).get("total_count", 0) if probe else 0
+    sys.stderr.write(f"[shard] {endpoint} probe total_count={total} (since={since} until={until})\n")
     if total == 0:
         return []
     if total <= 900 or not since or not until:
