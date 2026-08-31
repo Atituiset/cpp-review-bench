@@ -71,13 +71,14 @@ SEARCH_CAP = 1000  # GitHub search API 单查询硬上限（total_count 最多 1
 
 def _search_collect(endpoint, q, since, until, per_page=30):
     """对单个时间窗口翻页收集搜索结果（items）。返回 list[dict]。遇限流重试。"""
+    tf = "committer-date" if endpoint == "/search/commits" else "created"  # commit 搜索用 committer-date，PR 用 created
     items_all = []
     page = 1
     window_q = q
     if since:
-        window_q += f" created:>={since}"
+        window_q += f" {tf}:>={since}"
     if until:
-        window_q += f" created:<={until}"
+        window_q += f" {tf}:<={until}"
     while True:
         data = api_get(endpoint, {"q": window_q, "per_page": per_page, "page": page})
         if not data or "items" not in data:
@@ -95,11 +96,12 @@ def _search_collect(endpoint, q, since, until, per_page=30):
 def _sharded_search(endpoint, q, since, until):
     """时间二分分片绕过 search 单查询 1000 上限：某窗口 total>900 则按中点拆两段递归。
     since/until 为 YYYY-MM-DD 或 None。"""
+    tf = "committer-date" if endpoint == "/search/commits" else "created"
     probe_q = q
     if since:
-        probe_q += f" created:>={since}"
+        probe_q += f" {tf}:>={since}"
     if until:
-        probe_q += f" created:<={until}"
+        probe_q += f" {tf}:<={until}"
     probe = api_get(endpoint, {"q": probe_q, "per_page": 1})
     total = (probe or {}).get("total_count", 0) if probe else 0
     if total == 0:
