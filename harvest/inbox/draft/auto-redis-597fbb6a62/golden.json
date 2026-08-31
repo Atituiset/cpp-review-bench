@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/bitops.c",
+      "anchor": "int64_t minincr = min-value;",
+      "line": 6,
+      "function": null,
+      "rationale": "PR 15545 Fix signed overflow in BITFIELD i64 checks :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
