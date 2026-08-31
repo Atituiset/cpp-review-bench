@@ -122,6 +122,7 @@ jobs:
           path: /tmp/all-findings
           pattern: "pr-findings-*"
           merge-multiple: true
+          if-no-files-found: ignore
       - name: 归一化 + vote + pack → inbox/draft
         run: |
           pip install requests pyyaml

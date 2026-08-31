@@ -40,6 +40,12 @@ def main():
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
     findings = []
+    # 没有 findings 产物（如本轮无任何候选 artifact）时优雅降级为空，不崩。
+    if not os.path.isdir(args.in_dir):
+        sys.stderr.write(f"[normalize] in-dir {args.in_dir} missing, output empty\n")
+        with open(args.out, "w") as fh:
+            json.dump([], fh, indent=2, ensure_ascii=False)
+        return
     for fn in os.listdir(args.in_dir):
         p = os.path.join(args.in_dir, fn)
         if fn.endswith(".sarif"):

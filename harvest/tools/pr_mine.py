@@ -21,7 +21,7 @@ import os
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 try:
     import requests
@@ -125,10 +125,17 @@ def _sharded_search(endpoint, q, since, until):
         return _search_collect(endpoint, q, since, until)
     d0 = datetime.strptime(since, "%Y-%m-%d").date()
     d1 = datetime.strptime(until, "%Y-%m-%d").date()
+    # 窗口已细化到单天（或不可逆，d0>=d1）时停止二分，直接 collect，
+    # 否则 since==until 时 mid==d0 会让子窗口 (d0,d0) 永不收敛 -> RecursionError。
+    if d1 <= d0:
+        return _search_collect(endpoint, q, since, until)
     mid = d0 + (d1 - d0) // 2
     mid_s = mid.strftime("%Y-%m-%d")
+    # 右半窗口从 mid 的次日算起，确保窗口严格缩小（d1-d0==1 时拆成两个单天窗口），
+    # 避免 (d0,d1) -> (d0,mid)=(d0,d0) + (mid,d1)=(d0,d1) 同窗口无限递归。
+    mid_next = (mid + timedelta(days=1)).strftime("%Y-%m-%d")
     return (_sharded_search(endpoint, q, since, mid_s)
-            + _sharded_search(endpoint, q, mid_s, until))
+            + _sharded_search(endpoint, q, mid_next, until))
 
 
 def fetch_merged_prs(repo, query, max_prs, since):
