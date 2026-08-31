@@ -54,6 +54,9 @@
    - **fp-mining**：`pr_mining.fp_mining`（默认 false）+ CLI `--fp-mining`，缺陷轮之后第二轮抓「修静态分析误报」PR，产出 track_hint=contract + polarity=must_not_find 候选
    - **blueprint notes**：pack_case.py 的 notes.md 改为移植 blueprint 六段（溯源表/缺陷描述与触发条件/真实修复 diff/移植要点/为什么契约安全/accept 检查清单六项）
    - **四态判定口径修正**：`make_draft_sarif.sh` 从 scenario 数字 grep（必不命中）改为 file+anchor 口径，与 eval.py L1 一致；harvest.yml propose 的 PR body 含 draft 定位说明、轻验证结论（eval_inbox_report.md）、候选溯源总览、accept 检查清单、审核指令
+7. ✅ 少 stub 编译轮（2026-08，策略 1+2）：
+   - **同文件闭包切片**：`pr_mining.closure`（默认 true，CLI `--no-closure`）——拉 base 完整文件，切片引用的同文件定义递归带上 + 按 libc 符号补标准头前导，零 stub 降编译成本
+   - **可编译性打分**：候选新增 `dep_count`（启发式）与 `compile_errors`（gcc syntax-only 实测，权威编译地板）两顶层字段；pack_case 按 compile_errors → dep_count 升序打包，🟢 零依赖以 compile_errors==0 判定；curl 10 PR 实测 4 条 ≤3 错优先移植
 
 ## 5. 工程约定（继承母项目教训）
 
@@ -72,7 +75,7 @@
 - **已并入 cpp-review-bench 单仓**（原 cpp-review-harvest 独立仓设计已改写为仓内子目录版）；管线已实现并在 CI 跑过多轮
 - **定位（2026-08 修正）**：候选线索生产线 + 人审移植流水线——draft = 线索 + 移植 blueprint（notes.md 六段 + 原始切片 src/），不是半成品用例；accept（confirm-tp/contract）= 承诺参照真实案例移植重写一个可编译用例后入 cases/，不再是「确认即入仓」
 - 采集源现状：**pr-mining 是唯一实现的采集源**（爬 GitHub 历史 PR → 切片 → judge 启发式）；sa-scan（SA 扫描源码）为占位未实现
-- 采集开关：场景配额 `pr_mining.max_per_scenario`（默认 5）；fp-mining `pr_mining.fp_mining`（默认 false，CLI `--fp-mining` 显式开启，产出 contract 轨 must_not_find 候选）
+- 采集开关：场景配额 `pr_mining.max_per_scenario`（默认 5）；fp-mining `pr_mining.fp_mining`（默认 false，CLI `--fp-mining` 显式开启，产出 contract 轨 must_not_find 候选）；同文件闭包切片 `pr_mining.closure`（默认 true，CLI `--no-closure` 关）
 - 候选 JSON 契约：`license`/`port`/`track_hint`/`polarity` 四顶层字段；license/port/源 PR 只进 notes.md 溯源表，不进 golden.json（golden schema context 为 additionalProperties:false，冻结不动）
 - matrix 7 仓：curl/sqlite/redis/nginx/vim/postgres/linux；每日 cron（`23 3 * * *`）
 - vote 单源退化：`--min-tools 1`（design 的 ≥2 工具共识待 sa-scan 上线后恢复）

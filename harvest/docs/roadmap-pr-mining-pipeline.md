@@ -207,3 +207,19 @@ vote 暂以 `--min-tools 1` 单源退化运行。
   （SA 命中行源码文本去空白与 golden anchor 互为子串，与 eval.py L1 一致）。
 - **propose PR body**：harvest.yml propose 的 PR body 含 draft 定位说明段、轻验证结论
   （run_eval_inbox 产出的 eval_inbox_report.md）、候选溯源总览、accept 检查清单六项、审核指令。
+
+## §10 少 stub 编译轮（2026-08，策略 1+2：闭包切片 + 可编译性打分）
+
+动机：draft 切片缺仓内类型定义（CURLcode 等），无法编译——若移植全压给人，采集省的钱被人工花回去。
+
+- **策略 1 同文件闭包切片**：`pr_mining.closure`（默认 true，CLI `--no-closure`）。拉 base commit
+  完整 before 文件，切片引用的同文件定义（static 函数/typedef/struct/#define）递归带到不动点；
+  按切片用到的 libc 符号补标准头 include 前导。已知局限：只拉同文件，仓内头文件的类型仍计外部
+  依赖（策略 3「仓内头文件按 include 链补一层」未做，视人审成本再定）。
+- **策略 2 可编译性打分**：候选新增 `dep_count`（启发式外部符号数，含函数/宏/类型）与
+  `compile_errors`（gcc/cc `-fsyntax-only` 实测，权威「编译地板」）；pack_case 按
+  compile_errors → dep_count 升序打包，🟢 零依赖以 compile_errors==0 判定。
+- **实测（curl 10 PR）**：4 条候选 gcc 错误 ≤3（低 stub 成本优先移植），重依赖候选（如
+  conncache.c=57 错）标记「只做 PR/diff 形态评审」。
+- 教训：初版 dep_count 只数函数+宏漏了类型（dep=1 实测 11 编译错误），🟢 标签名不副实——
+  启发式数字必须有实测信号（compile_errors）兜底才敢给人看。

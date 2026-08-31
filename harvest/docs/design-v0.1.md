@@ -114,6 +114,15 @@ jobs:
   （映射不了省略）。
 - **propose PR body**：harvest.yml propose 步骤产出的 PR body 含 draft 定位说明段、轻验证结论
   （run_eval_inbox 产出的 eval_inbox_report.md）、候选溯源总览、accept 检查清单六项、审核指令。
+- **同文件闭包切片（策略 1，少用/不用 stub 即可编译）**：repos.yaml `pr_mining.closure`
+  （默认 true，CLI `--no-closure` 关）。拉 base commit 完整 before 文件，把切片引用的同文件
+  定义（static 函数/typedef/struct/#define）递归带到不动点——同仓真实代码零 stub；
+  另按切片用到的 libc 符号补标准头 include 前导（自然 C 代码，非 stub）。
+  已知局限：只拉同文件，仓内头文件的类型（如 curl 的 CURLcode）仍计外部依赖（策略 3 未做）。
+- **可编译性打分（策略 2）**：候选带 `dep_count`（启发式外部符号数，含函数/宏/类型）与
+  `compile_errors`（gcc/cc `-fsyntax-only` 实测错误数，权威「编译地板」，采集端无编译器时省略）。
+  pack_case 按 compile_errors → dep_count 升序打包，人审优先做低错误候选
+  （curl 10 PR 实测：4 条 ≤3 错，重依赖候选标记「只做 PR/diff 形态评审」）。
 
 ## 4. 候选打包（pack_case.py）
 
@@ -122,7 +131,7 @@ jobs:
 
 ```
 harvest/inbox/<auto-<repo>-<hash>/
-├── src/                  # 缺陷函数 + 最小上下文（enclosing file 原样切片，明示不可直接编译，仅作移植参照）
+├── src/                  # 闭包切片（策略 1：缺陷函数 + 同文件依赖定义 + 标准头前导；仍可能缺仓内头类型，仅作移植参照）
 ├── CMakeLists.txt        # 复用目标仓构建片段或生成 -c 编译目标
 ├── golden.json           # 草稿：defect 候选 must_find {scenario(由规则 ID 映射), file, anchor(自动抓语句), function}；
 │                         # contract 候选写 must_not_find 骨架
@@ -140,12 +149,18 @@ license=unknown / port=rewrite / track_hint=defect / polarity=must_find）：
 - `track_hint`：defect / contract（contract 来自 fp-mining 误报矿）
 - `polarity`：must_find / must_not_find
 
+可编译性信号两字段（策略 2，同样顶层、缺省容错）：
+
+- `dep_count`：启发式外部符号数（函数+宏+类型，减 libc 白名单）
+- `compile_errors`：gcc/cc `-fsyntax-only` 实测错误数（权威「编译地板」，采集端无编译器时省略）
+
 **license/port/源 PR 不进 golden.json**（schema 的 context 是 additionalProperties:false，冻结不动），
 只在 notes.md 溯源表。
 
 notes.md 移植 blueprint 六段（pack_case.py 生成）：
 
-1. **溯源表**：源仓 / 源 PR / 许可证 / 移植策略 / 采集时间 / track 方向
+1. **溯源表**：源仓 / 源 PR / 许可证 / 移植策略 / 采集时间 / track 方向 / 外部依赖数（dep_count） /
+   编译错误数（gcc syntax-only）
 2. **缺陷描述与触发条件**：含「移植者须知：accept 前必须能复述触发条件」
 3. **真实修复 diff**
 4. **移植要点**：外部符号启发式列表；明示 src/ 是原始切片不可直接编译；`// <<< BUG ANCHOR` 标记
