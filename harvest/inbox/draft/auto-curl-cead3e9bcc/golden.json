@@ -1,0 +1,10 @@
+{
+  "expected": {
+    "must_find": [],
+    "must_not_find": [
+      {
+        "note": "误报抑制契约，待移植者补 contract.yaml"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/curl_hmac.h",
+        "anchor": "typedef CURLcode (* HMAC_hinit_func)(void *context);",
+        "line": 2,
+        "function": null,
+        "rationale": "PR 15289 lib: fix function pointers to please UndefinedBehaviorSanitizer :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "medium"
+      }
+    ],
+    "must_not_find": []
+  }
+}
