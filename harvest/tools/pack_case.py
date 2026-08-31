@@ -101,23 +101,31 @@ def pack(finding, inbox_root):
         golden = {"expected": {"must_find": [], "must_not_find": [mnf]}}
     else:
         # defect 候选：anchor + 相对行号（来自修复 diff 反推，有依据）
+        # severity 归一到 golden schema 枚举（critical/important/minor），映射不了省略
+        sev_map = {"blocker": "critical", "critical": "critical", "error": "critical",
+                   "major": "critical", "high": "critical",
+                   "warning": "important", "medium": "important", "important": "important",
+                   "info": "minor", "minor": "minor", "style": "minor", "note": "minor"}
+        sev = sev_map.get(str(finding.get("severity") or "").lower())
+        mf = {
+            "scenario": finding.get("scenario"),
+            "file": f"src/{base}",
+            "anchor": anchor,
+            "line": rel_line,
+            "function": finding.get("function"),
+            "rationale": finding.get("message"),
+        }
+        if sev:
+            mf["severity"] = sev
         golden = {
             "expected": {
-                "must_find": [{
-                    "scenario": finding.get("scenario"),
-                    "file": f"src/{base}",
-                    "anchor": anchor,
-                    "line": rel_line,
-                    "function": finding.get("function"),
-                    "rationale": finding.get("message"),
-                    "severity": finding.get("severity"),
-                }],
+                "must_find": [mf],
                 "must_not_find": [],
             },
         }
     with open(os.path.join(d, "golden.json"), "w") as fh:
         json.dump(golden, fh, indent=2, ensure_ascii=False)
-    # contract.yaml 空（confirm-fp 时填）
+    # contract.yaml 空（/case contract 时填）
     with open(os.path.join(d, "contract.yaml"), "w") as fh:
         fh.write("# 人审判 FP 时填写：该 FP 因何契约成立（exemption_pattern）\n")
     # notes：移植 blueprint（溯源表 + 缺陷描述 + 真实修复 diff + 移植要点 + accept 清单）
