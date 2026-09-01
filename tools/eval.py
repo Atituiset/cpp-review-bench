@@ -52,6 +52,14 @@ def scenario_family_match(golden_s: str, finding_s) -> bool:
     return bool(g_parts & f_parts)
 
 
+def function_conflict(g: dict, f: dict) -> bool:
+    """golden 与 finding 都给出 function 且不同名 → 明确不是同一点位。
+    任一方未给出时按「不能排除」处理（保守，仍计匹配）。"""
+    gfunc = g.get("function")
+    ffunc = f.get("function")
+    return bool(gfunc and ffunc and gfunc != ffunc)
+
+
 def load_json(p: Path):
     return json.loads(p.read_text(encoding="utf-8"))
 
@@ -132,6 +140,8 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool,
         ganchor = norm(g.get("anchor", ""))
         violated = False
         for f in by_file.get(gf, []):
+            if function_conflict(g, f):
+                continue   # 锚点形同但函数不同名，非同一违反点（如 r04 受界/未界 twin）
             if not ganchor:
                 # 无 anchor 的 must_not_find：file 内任意 finding 即视为违反
                 violated = True
@@ -163,6 +173,8 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool,
         gf = g.get("file"); ganchor = norm(g.get("anchor", ""))
         for fi, f in enumerate(by_file.get(gf, [])):
             if (gf, fi) in absorbed:
+                continue
+            if function_conflict(g, f):
                 continue
             fanchor = norm(f.get("anchor", ""))
             if (not ganchor) or (fanchor and (ganchor in fanchor or fanchor in ganchor)):
