@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/curl_multibyte.c",
+        "anchor": "int result = -1;",
+        "line": 6,
+        "function": null,
+        "rationale": "PR 13522 curl_multibyte: support Windows paths longer than MAX_PATH :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

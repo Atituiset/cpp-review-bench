@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/varlena.c",
+        "anchor": "n = -n;",
+        "line": 2,
+        "function": null,
+        "rationale": "COMMIT a63df2664225d06d5bee5dd9195f6d10e7fa1502 Handle PG_INT32_MIN negation overflow in right() :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
