@@ -147,7 +147,7 @@ def merge_to_sarif(docs, src_root: str = "", uri_prefix: str = "") -> dict:
             "tool": {
                 "driver": {
                     "name": "cpp-review-bench",
-                    "informationUri": "https://github.com/Atituiset/cpp-review-bench",
+                    "informationUri": "https://github.com/<org>/cpp-review-bench",
                     "rules": list(all_rules.values()),
                 }
             },

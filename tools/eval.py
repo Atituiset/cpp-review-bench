@@ -38,10 +38,18 @@ def norm(s: str) -> str:
 
 
 def scenario_family_match(golden_s: str, finding_s) -> bool:
-    """scenario 家族等价：golden 用 cwe-XXX；finding 为 null 时视为不强制匹配。"""
+    """scenario 家族匹配：golden 用 cwe-XXX；finding 为 null 时视为不强制匹配。
+
+    支持组合场景（schema 允许 `cwe-A+cwe-B`）：golden 与 finding 任一成员分量相交即命中，
+    避免 `cwe-190+cwe-787` 与工具报的单个 `cwe-190`/`cwe-787` 永远无法匹配（恒 FN）。
+    """
     if finding_s is None:
         return True
-    return golden_s == finding_s
+    if golden_s == finding_s:
+        return True
+    g_parts = set(str(golden_s).split("+"))
+    f_parts = set(str(finding_s).split("+"))
+    return bool(g_parts & f_parts)
 
 
 def load_json(p: Path):
@@ -215,7 +223,7 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool,
     }
 
 
-def eval_all(track_filter=None) -> list:
+def eval_all(track_filter=None, contract_injected=True) -> list:
     results = []
     for gj in sorted(ROOT.glob("cases/*/*/golden.json")):
         case_dir = gj.parent
@@ -229,8 +237,8 @@ def eval_all(track_filter=None) -> list:
         fpath = case_dir / "findings.json"
         if fpath.is_file():
             fdoc = load_json(fpath)
-        # contract 轨是否注入契约：golden.context.contract 存在即视为已注入
-        contract_injected = bool(golden.get("context", {}).get("contract"))
+        # contract 轨是否注入契约：由评测方通过 --no-contract 显式控制（默认已注入）。
+        # 区分「裸跑 FP」与「注入契约后仍报（契约违反）」，见 design §4 附加维度。
         results.append(eval_case(golden, fdoc, contract_injected, case_dir))
     return results
 
@@ -270,7 +278,7 @@ def summarize(results: list) -> dict:
 
 
 def cmd_eval(args):
-    results = eval_all(args.track)
+    results = eval_all(args.track, contract_injected=args.contract)
     summ = summarize(results)
     print(json.dumps({"summary": summ, "cases": results},
                      ensure_ascii=False, indent=2))
@@ -292,7 +300,7 @@ def cmd_run(args):
             print(f"[WARN] 无 golden: {doc['track']}/{doc['case_id']}", file=sys.stderr)
             continue
         golden = load_json(gj)
-        contract_injected = bool(golden.get("context", {}).get("contract"))
+        contract_injected = args.contract
         results.append(eval_case(golden, doc, contract_injected, gj.parent))
     print(json.dumps({"summary": summarize(results), "cases": results},
                      ensure_ascii=False, indent=2))
@@ -385,9 +393,13 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     e = sub.add_parser("eval", help="评测仓内全部 cases（读取各 case findings.json）")
     e.add_argument("--track", choices=["contract", "defect"], default=None)
+    e.add_argument("--no-contract", dest="contract", action="store_false", default=True,
+                   help="contract 轨按「未注入契约」口径评测（must_not_find 命中记为裸 FP 而非契约违反）")
     e.set_defaults(func=cmd_eval)
     r = sub.add_parser("run", help="评测外部 findings（文件或目录）")
     r.add_argument("findings")
+    r.add_argument("--no-contract", dest="contract", action="store_false", default=True,
+                   help="contract 轨按「未注入契约」口径评测（must_not_find 命中记为裸 FP 而非契约违反）")
     r.set_defaults(func=cmd_run)
     s = sub.add_parser("selftest", help="构造 findings 自检（1FP+1FN+1契约违反）")
     s.set_defaults(func=cmd_selftest)

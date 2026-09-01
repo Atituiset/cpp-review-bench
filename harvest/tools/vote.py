@@ -50,6 +50,29 @@ def _load_vote_rules(path):
         return {}
 
 
+def _cluster_positions(fs, tol):
+    """同一 (file, scenario) 下按 line 做 ±tol 连通聚类：line 差 ≤tol 的 finding 归同一位置簇。
+
+    无 line 的 finding 各自单独成簇（保守，不与任何有位置者合并）。
+    返回 list[list[finding]]。
+    """
+    def has_line(f):
+        return isinstance(f.get("line"), int)
+    scored = sorted((f for f in fs if has_line(f)), key=lambda f: f["line"])
+    noline = [f for f in fs if not has_line(f)]
+    clusters = [[f] for f in noline]
+    for f in scored:
+        placed = False
+        for c in clusters:
+            if any(has_line(x) and abs(x["line"] - f["line"]) <= tol for x in c):
+                c.append(f)
+                placed = True
+                break
+        if not placed:
+            clusters.append([f])
+    return clusters
+
+
 def main():
     _ensure_utf8_streams()
     ap = argparse.ArgumentParser()
@@ -74,12 +97,18 @@ def main():
         candidates = [f for f in findings if f.get("tool") == "pr-mining"]
         sys.stderr.write(f"[vote] single-source {sources}, fallback to pr-mining candidates: {len(candidates)}\n")
     else:
-        # 真实共识：按 (file, scenario) 聚类，line 在 ±tol 内计同位置
+        # 真实共识：按 (file, scenario) 聚类，line 在 ±tol 内计同位置；
+        # 同一位置簇内去重工具数 ≥ min_tools 才算共识（避免两工具对不同行报同一场景误判）。
         by_key = {}
         for f in findings:
             key = (f.get("file"), f.get("scenario"))
             by_key.setdefault(key, []).append(f)
-        candidates = [fs[0] for fs in by_key.values() if len({x.get("tool") for x in fs}) >= args.min_tools]
+        candidates = []
+        for fs in by_key.values():
+            for cluster in _cluster_positions(fs, args.line_tol):
+                if len({x.get("tool") for x in cluster}) >= args.min_tools:
+                    candidates.append(cluster[0])
+                    break
         sys.stderr.write(f"[vote] multi-source consensus candidates: {len(candidates)}\n")
 
     with open(args.out, "w") as fh:
