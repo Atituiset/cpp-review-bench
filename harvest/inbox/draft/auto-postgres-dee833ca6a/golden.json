@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/int.c",
+        "anchor": "if (unlikely(arg == PG_INT32_MIN))",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 8e483af5515ec4ee90d17a3864f5bb764e4e9c47 Use pg_neg_s{32,64}_overflow() for some overflow checks :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

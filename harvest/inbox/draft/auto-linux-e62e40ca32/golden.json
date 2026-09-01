@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/igen6_edac.c",
+        "anchor": "if (!pvt)",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 68c90773f40f91f48a557e9fa65e2a72cebc58df Merge remote-tracking branches 'ras/edac-misc', 'ras/edac-drivers' and 'ras/edac-amd-atl' into edac-updates :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/select.c",
+        "anchor": "if( pRight->fg.isTabFunc && joinType==EP_OuterON && pRight->u1.pFuncArg ){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT a5ae4bd098c4d727c6b237fd0994e949c7aa1d15 Return an error if the arguments of a table-valued function that is on the left of a RIGHT JOIN depend on tables to the  :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
