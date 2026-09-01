@@ -52,39 +52,40 @@ jobs:
         if: always()   # 部分例评审失败也要对已有 findings 出分
         run: |
           python3 tools/eval.py run /tmp/llm-findings > /tmp/eval-result.json
-          python3 -c "
+          python3 - <<'PYEOF'
           import json
           d = json.load(open('/tmp/eval-result.json'))
           print('=== per-case 四态 ===')
           for c in d['cases']:
-              print(f\"{c['state']:>6}  {c['track']}/{c['case_id']}  "
-                    f\"hit={c['must_find_hit']}/{c['must_find_total']} "
-                    f\"viol={c['must_not_violated']} extra={c['extra']}\")
+              print(f"{c['state']:>6}  {c['track']}/{c['case_id']}  "
+                    f"hit={c['must_find_hit']}/{c['must_find_total']} "
+                    f"viol={c['must_not_violated']} extra={c['extra']}")
           print()
           print(json.dumps(d['summary'], ensure_ascii=False, indent=2))
-          "
+          PYEOF
 
       - name: 汇总入 Step Summary
         if: always()
         run: |
-          python3 -c "
-          import json
+          python3 - "$GITHUB_STEP_SUMMARY" "${{ inputs.model }}" "${{ inputs.base_url }}" "${{ inputs.cases }}" <<'PYEOF' || echo "summary 生成失败（不阻塞）"
+          import json, sys
+          summary_file, model, base_url, cases = sys.argv[1:5]
           d = json.load(open('/tmp/eval-result.json'))
           rows = ['# LLM 评审评测（llm-eval）', '',
-                  '- 模型：\`${{ inputs.model }}\`（\`${{ inputs.base_url }}\`）',
-                  '- 用例：${{ inputs.cases }}', '',
-                  '| 用例 | 轨 | 四态 | must_find 命中 | 契约违反 | EXTRA |',
+                  f'- 模型：`{model}`（`{base_url}`）',
+                  f'- 用例：{cases}', '',
+                  '| 用例 | 轨 | 四态 | must_find 命中 | must_not 违反 | EXTRA |',
                   '|---|---|---|---|---|---|']
           for c in d['cases']:
-              rows.append(f\"| {c['case_id']} | {c['track']} | **{c['state']}** | \"
-                          f\"{c['must_find_hit']}/{c['must_find_total']} | \"
-                          f\"{c['contract_violations'] or c['must_not_violated']} | {c['extra']} |\")
+              rows.append(f"| {c['case_id']} | {c['track']} | **{c['state']}** | "
+                          f"{c['must_find_hit']}/{c['must_find_total']} | "
+                          f"{c['must_not_violated']} | {c['extra']} |")
           for track, s in d['summary'].items():
-              rows += ['', f\"**{track} 轨**：{s['cases']} 例，pass {s['pass']}，\"
-                           f\"recall {s['recall']:.0%}，契约违反 {s['contract_violations']}，\"
-                           f\"裸 FP {s['bare_fp']}，severity 正确率 {s['severity_accuracy']:.0%}\"]
-          open('$GITHUB_STEP_SUMMARY', 'a').write('\n'.join(rows) + '\n')
-          " || echo "summary 生成失败（不阻塞）"
+              rows += ['', f"**{track} 轨**：{s['cases']} 例，pass {s['pass']}，"
+                           f"recall {s['recall']:.0%}，契约违反 {s['contract_violations']}，"
+                           f"裸 FP {s['bare_fp']}，severity 正确率 {s['severity_accuracy']:.0%}"]
+          open(summary_file, 'a').write('\n'.join(rows) + '\n')
+          PYEOF
 
       - name: 归档 findings 与评测结果
         if: always()
