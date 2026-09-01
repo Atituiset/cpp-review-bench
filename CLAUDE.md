@@ -66,6 +66,7 @@
 - **cases/ 30 例已铺满**（contract 16 + defect 14），五文件齐备、全量编译通过、golden 全过 schema 校验
 - **9 工具基线已跑**（CSA singletu/CTU、CppCheck、clang-tidy、Infer、CodeQL、CodeChecker、KLEE、Joern、Cooddy），报告见 `reports/baseline-v1.md` / `baseline-v2.md` / `analysis-report.md`；注意 KLEE/Joern 的 adapter 存在 golden 自证问题（修复中），其 recall 数字待重跑
 - **harvest 采集管线已并入本仓**（`harvest/` 子目录，单仓开发）：pr-mining 采集源已实现并跑过多轮（matrix 7 仓：curl/sqlite/redis/nginx/vim/postgres/linux，每日 cron）；sa-scan 源为占位未实现；workflow 在仓根 `.github/workflows/`（harvest.yml / harvest-package.yml / harvest-review.yml / harvest-pr-sarif.yml（if:false 禁用中）/ build-cooddy-image.yml）。2026-08 定位修正：harvest 是「候选线索生产线 + 人审移植流水线」——draft = 线索 + 移植 blueprint（非半成品用例），accept = 承诺移植重写一个可编译用例后入 cases/；新增 license/port 策略与场景配额，fp-mining（contract 轨误报矿）可选开启
-- 待办：`consumers/` 消费入口未建、`cases/calibration/` 为规划项、标注审计未做、KLEE/Joern 基线待 adapter 修复后重跑
+- 待办：`consumers/` 通用消费入口未建（llm-eval.yml 已先承担 LLM/Agent 消费：tools/llm_review.py 单发评审→归一化 findings→eval.py，workflow_dispatch 自选 cases/model/base_url）、`cases/calibration/` 为规划项、标注审计未做、KLEE/Joern 基线待 adapter 修复后重跑
 - 12 个场景种子分支在 AetherStack（与本仓 S 级用例有重叠，已移植对齐）
+- **LLM 基线首跑**（2026-09-01，DeepSeek deepseek-chat 单发，30 例全量）：recall 83.3%（contract 75% / defect 92.9%）、0 误报、severity 正确率 19%，报告 `reports/baseline-llm-deepseek-chat.md`；同次修复 `eval.py` must_not_find 判定的 function 冲突排除 bug（commit 5a65323，r04 类同文锚点 twin 此前不可能 PASS）
 - 格式上输出 Martian 兼容报表（便于与既有 PR 级评测交叉对照）仍为 v1.1 规划项
