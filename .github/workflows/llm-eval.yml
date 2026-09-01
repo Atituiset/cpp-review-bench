@@ -1,0 +1,98 @@
+# LLM/Agent 评审评测（design-v0.4 消费形态之一：Agent+LLM 评审）
+# 流程：选例 → tools/llm_review.py 逐例评审（contract 轨注入 contract.yaml）→
+#       归一化 findings（schema/findings.schema.json）→ tools/eval.py run 评分 →
+#       汇总进 Step Summary + artifact 归档（findings + eval 结果 + 模型版本）
+# API key 经仓库 secret AI_REVIEW_API_KEY 注入；base-url/model 可在 dispatch 时改，
+# 兼容任意 OpenAI 兼容端点（DeepSeek/Kimi/OpenRouter/...）。
+
+name: llm-eval
+
+on:
+  workflow_dispatch:
+    inputs:
+      cases:
+        description: 逗号分隔 case id（冒烟默认 c01/c08 contract + r04/r10 defect）
+        required: true
+        default: c01-upstream-nullguard,c08-protocol-offset-parse,r04-oob-write-stack,r10-odd-length-bcd
+      model:
+        description: 被测模型名
+        required: true
+        default: deepseek-chat
+      base_url:
+        description: OpenAI 兼容端点
+        required: true
+        default: https://api.deepseek.com
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: LLM 逐例评审 → 归一化 findings
+        env:
+          AI_REVIEW_API_KEY: ${{ secrets.AI_REVIEW_API_KEY }}
+          AI_REVIEW_BASE_URL: ${{ inputs.base_url }}
+          AI_REVIEW_MODEL: ${{ inputs.model }}
+        run: |
+          mkdir -p /tmp/llm-findings
+          python3 tools/llm_review.py \
+            --cases "${{ inputs.cases }}" \
+            --out /tmp/llm-findings 2>&1 | tee /tmp/review.log
+
+      - name: eval.py 评分
+        if: always()   # 部分例评审失败也要对已有 findings 出分
+        run: |
+          python3 tools/eval.py run /tmp/llm-findings > /tmp/eval-result.json
+          python3 -c "
+          import json
+          d = json.load(open('/tmp/eval-result.json'))
+          print('=== per-case 四态 ===')
+          for c in d['cases']:
+              print(f\"{c['state']:>6}  {c['track']}/{c['case_id']}  "
+                    f\"hit={c['must_find_hit']}/{c['must_find_total']} "
+                    f\"viol={c['must_not_violated']} extra={c['extra']}\")
+          print()
+          print(json.dumps(d['summary'], ensure_ascii=False, indent=2))
+          "
+
+      - name: 汇总入 Step Summary
+        if: always()
+        run: |
+          python3 -c "
+          import json
+          d = json.load(open('/tmp/eval-result.json'))
+          rows = ['# LLM 评审评测（llm-eval）', '',
+                  '- 模型：\`${{ inputs.model }}\`（\`${{ inputs.base_url }}\`）',
+                  '- 用例：${{ inputs.cases }}', '',
+                  '| 用例 | 轨 | 四态 | must_find 命中 | 契约违反 | EXTRA |',
+                  '|---|---|---|---|---|---|']
+          for c in d['cases']:
+              rows.append(f\"| {c['case_id']} | {c['track']} | **{c['state']}** | \"
+                          f\"{c['must_find_hit']}/{c['must_find_total']} | \"
+                          f\"{c['contract_violations'] or c['must_not_violated']} | {c['extra']} |\")
+          for track, s in d['summary'].items():
+              rows += ['', f\"**{track} 轨**：{s['cases']} 例，pass {s['pass']}，\"
+                           f\"recall {s['recall']:.0%}，契约违反 {s['contract_violations']}，\"
+                           f\"裸 FP {s['bare_fp']}，severity 正确率 {s['severity_accuracy']:.0%}\"]
+          open('$GITHUB_STEP_SUMMARY', 'a').write('\n'.join(rows) + '\n')
+          " || echo "summary 生成失败（不阻塞）"
+
+      - name: 归档 findings 与评测结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-eval-${{ github.run_id }}
+          path: |
+            /tmp/llm-findings/
+            /tmp/eval-result.json
+            /tmp/review.log
+          if-no-files-found: ignore
