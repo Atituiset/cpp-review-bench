@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/varlena.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 978772cf5dd642b093382e9ff4b3a353e8a5d1a2 pgindent fix for a63df2664225d06d5be :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
