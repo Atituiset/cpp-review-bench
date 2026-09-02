@@ -52,7 +52,9 @@ off-by-one、长度/索引来自不可信输入导致的越界。
    问题才 **minor**。不要因缺陷「听起来严重」就升格 critical。{contract_section}
 
 输出格式：只输出一个 JSON 对象，不要任何 markdown 围栏或其他文字：
-{{"findings":[{{"file":"src/xxx.c","line":12,"anchor":"代码行原文","function":"函数名","scenario":"cwe-xxx 或 null","severity":"critical|important|minor","reason":"一句话理由"}}]}}
+{{"findings":[{{"file":"src/xxx.c","line":12,"anchor":"代码行原文","function":"函数名","scenario":"cwe-xxx 或 null","severity":"critical|important|minor","reason":"一句话理由","flow":[{{"file":"src/xxx.c","line":3,"message":"来源点：数据从哪来/在哪分配/在哪赋值"}},{{"file":"src/xxx.c","line":7,"message":"中间传播步骤"}},{{"file":"src/xxx.c","line":12,"message":"缺陷触发点（与本 finding 的 anchor 同处）"}}]}}]}}
+flow 为有序证据链（2-6 步）：从来源（入参/分配/读取）到缺陷触发点，逐步给出 file+line+一句话；
+跨函数/跨文件时务必逐跳列出。无把握给全链时可省略 flow 键。
 若无缺陷，输出 {{"findings":[]}}。
 
 ========== 被评审源码 ==========
@@ -217,7 +219,7 @@ def review_case(root: Path, case_id: str, base_url: str, api_key: str,
                   f"上一次输出：\n{content[:4000]}")
         content = call_llm(base_url, api_key, model, repair)
         raw = extract_json(content)  # 修复仍失败则抛出
-    return normalize(case_id, track, case_dir, raw, model)
+    return normalize(case_id, track, case_dir, raw, model), raw
 
 
 def main():
@@ -241,12 +243,16 @@ def main():
     ok = 0
     for cid in [c.strip() for c in args.cases.split(",") if c.strip()]:
         try:
-            doc = review_case(ROOT, cid, args.base_url, api_key, args.model)
+            doc, raw = review_case(ROOT, cid, args.base_url, api_key, args.model)
         except Exception as e:
             print(f"[FAIL] {cid}: {e}", file=sys.stderr)
             continue
         (out_dir / f"{cid}.json").write_text(
             json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
+        # 旁车文件：模型原始输出（含 flow 证据链/reason），不得喂 eval，
+        # 仅供 findings_to_sarif 富集 codeFlows（冻结的归一化 schema 不含这些字段）
+        (out_dir / f"{cid}.raw.json").write_text(
+            json.dumps(raw, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"[ok] {cid}: {len(doc['findings'])} findings")
         ok += 1
     print(f"完成 {ok} 例 → {out_dir}")

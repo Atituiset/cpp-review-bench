@@ -302,6 +302,8 @@ def cmd_run(args):
     docs = []
     if fpath.is_dir():
         for p in sorted(fpath.glob("*.json")):
+            if p.name.endswith(".raw.json"):
+                continue  # llm_review 的模型原始输出旁车（含 flow/reason），不是归一化 findings
             docs.append(load_json(p))
     else:
         docs.append(load_json(fpath))

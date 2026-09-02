@@ -113,7 +113,7 @@ def convert_doc(doc: dict, src_root: str = "", uri_prefix: str = "") -> dict:
                 },
             }
         }
-        results.append({
+        res = {
             "ruleId": scen,
             "level": level,
             "message": message,
@@ -129,7 +129,11 @@ def convert_doc(doc: dict, src_root: str = "", uri_prefix: str = "") -> dict:
                 "severity": sev,
                 "confidence": f.get("confidence", "n/a"),
             },
-        })
+        }
+        cflows = _flow_to_codeflows(f.get("flow") or [], uri_prefix)
+        if cflows:
+            res["codeFlows"] = cflows   # Code scanning / SARIF Viewer 的 show paths
+        results.append(res)
     return {"rules": rules, "results": results, "tool": tool, "case_id": case_id}
 
 
@@ -162,6 +166,62 @@ def merge_to_sarif(docs, src_root: str = "", uri_prefix: str = "") -> dict:
 
 def load_findings_doc(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _norm_ws(s: str) -> str:
+    return "".join(str(s).split())
+
+
+def _enrich_from_raw(doc: dict, raw_path: Path) -> None:
+    """用 <cid>.raw.json（llm_review 的模型原始输出，含 flow/reason）富集归一化 findings。
+    decode 配对键 = (file, anchor 去空白)；归一化过程中丢弃的条目自动跳过。
+    flow/reason 不写入归一化 findings（schema 冻结），仅作 SARIF 展示层字段。"""
+    if not raw_path.is_file():
+        return
+    try:
+        raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    pool = {}
+    for rf in raw.get("findings") or []:
+        if isinstance(rf, dict):
+            pool.setdefault((str(rf.get("file") or ""), _norm_ws(rf.get("anchor") or "")),
+                            []).append(rf)
+    for f in doc.get("findings", []):
+        cands = pool.get((str(f.get("file") or ""), _norm_ws(f.get("anchor") or "")))
+        if not cands:
+            continue
+        rf = cands.pop(0)
+        if isinstance(rf.get("flow"), list) and rf["flow"]:
+            f["flow"] = rf["flow"]
+        if rf.get("reason"):
+            f["reasoning"] = rf["reason"]
+
+
+def _flow_to_codeflows(flow: list, uri_prefix: str) -> list:
+    """flow 证据链 → SARIF codeFlows（threadFlows）。非法步骤剔除后不足 2 步则不产出。
+    注：flow 步的 file 与 finding 同口径（相对 case 根），这里统一套 uri_prefix。"""
+    locs = []
+    for step in flow:
+        if not isinstance(step, dict):
+            continue
+        file = str(step.get("file") or "").strip()
+        line = step.get("line")
+        if not file or not isinstance(line, int) or line < 1:
+            continue
+        uri = (uri_prefix.rstrip("/") + "/" + file) if uri_prefix else file
+        locs.append({
+            "location": {
+                "physicalLocation": {
+                    "artifactLocation": {"uri": uri},
+                    "region": {"startLine": line},
+                },
+                "message": {"text": str(step.get("message") or "")},
+            }
+        })
+    if len(locs) < 2:
+        return []
+    return [{"threadFlows": [{"locations": locs}]}]
 
 
 def main():
@@ -198,7 +258,11 @@ def main():
     elif args.dir:
         d = Path(args.dir)
         for p in sorted(d.glob("*.json")):
-            docs.append(load_findings_doc(p))
+            if p.name.endswith(".raw.json"):
+                continue  # LLM 原始输出旁车（llm_review 产出），不是归一化 findings
+            doc = load_findings_doc(p)
+            _enrich_from_raw(doc, p.with_name(p.name[:-5] + ".raw.json"))
+            docs.append(doc)
     elif args.findings:
         docs.append(load_findings_doc(Path(args.findings)))
     else:
