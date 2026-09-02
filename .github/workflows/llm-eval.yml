@@ -110,4 +110,5 @@ jobs:
             /tmp/llm-findings/
             /tmp/eval-result.json
             /tmp/review.log
+            /tmp/llm-eval.sarif
           if-no-files-found: ignore
