@@ -47,7 +47,9 @@ off-by-one、长度/索引来自不可信输入导致的越界。
    声明行、循环头或函数签名上——评审锚点按「缺陷语句」判定。
 3. 同一形态在受保护与未受保护两处都出现时，只报未受保护处（按所在函数区分）。
 3. scenario 用 CWE 编号标注（如 cwe-787、cwe-476、cwe-190、format）；不确定就填 null。
-4. severity 三档：critical（可直接利用/数据损坏）、important（真实缺陷但触发有条件）、minor（轻微）。{contract_section}
+4. severity 三档的选取纪律：默认 **important**（真实缺陷，触发有条件或影响受限）；
+   仅当无前置条件即可直接利用/必然数据损坏时才 **critical**；仅影响面微小的边角
+   问题才 **minor**。不要因缺陷「听起来严重」就升格 critical。{contract_section}
 
 输出格式：只输出一个 JSON 对象，不要任何 markdown 围栏或其他文字：
 {{"findings":[{{"file":"src/xxx.c","line":12,"anchor":"代码行原文","function":"函数名","scenario":"cwe-xxx 或 null","severity":"critical|important|minor","reason":"一句话理由"}}]}}
@@ -88,6 +90,7 @@ def call_llm(base_url: str, api_key: str, model: str, prompt: str,
         "temperature": temperature,
         "max_tokens": 4096,
         "response_format": {"type": "json_object"},
+        "seed": 42,   # 尽量冻结服务端采样（部分厂商忽略，忽略亦无副作用）
     }
     last_err = None
     for attempt in range(retries + 1):
@@ -124,6 +127,22 @@ def anchor_from_line(case_dir: Path, file: str, line: int) -> str:
     return ""
 
 
+def locate_anchor_line(case_dir: Path, file: str, anchor: str) -> int | None:
+    """anchor（去空白）在源文件中首个匹配行行号；找不到返回 None。
+    用于校正模型行号幻觉：anchor 逐字照抄可信，line 以本地定位为准。"""
+    p = case_dir / file
+    if not p.is_file():
+        return None
+    needle = "".join(anchor.split())
+    if not needle:
+        return None
+    for i, l in enumerate(
+            p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+        if needle in "".join(l.split()):
+            return i
+    return None
+
+
 def normalize(case_id: str, track: str, case_dir: Path, raw: dict,
               model: str) -> dict:
     """把模型输出清洗成 schema/findings.schema.json 合规文档。"""
@@ -142,7 +161,11 @@ def normalize(case_id: str, track: str, case_dir: Path, raw: dict,
             item["anchor"] = anchor
         else:
             continue  # schema 要求 file+anchor；两者皆缺则丢弃
-        if isinstance(f.get("line"), int) and f["line"] >= 1:
+        # 行号以本地定位为准（修正模型行号幻觉，eval 的 line±tolerance 兜底才有效）
+        loc = locate_anchor_line(case_dir, file, anchor)
+        if loc:
+            item["line"] = loc
+        elif isinstance(f.get("line"), int) and f["line"] >= 1:
             item["line"] = f["line"]
         if f.get("function"):
             item["function"] = str(f["function"])
@@ -184,8 +207,16 @@ def review_case(root: Path, case_id: str, base_url: str, api_key: str,
 
     prompt = PROMPT_TMPL.format(contract_section=contract_section,
                                 sources=collect_sources(case_dir))
+    # 解析失败重试一轮：带错误输出让模型自我修复（c21 曾输出非 JSON）
     content = call_llm(base_url, api_key, model, prompt)
-    raw = extract_json(content)
+    try:
+        raw = extract_json(content)
+    except (ValueError, json.JSONDecodeError) as e:
+        repair = ("你上一次的输出无法解析为 JSON（"
+                  f"{e}）。请只输出一个合法 JSON 对象，无 markdown 围栏、无解释文字。\n"
+                  f"上一次输出：\n{content[:4000]}")
+        content = call_llm(base_url, api_key, model, repair)
+        raw = extract_json(content)  # 修复仍失败则抛出
     return normalize(case_id, track, case_dir, raw, model)
 
 
