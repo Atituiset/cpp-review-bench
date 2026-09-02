@@ -69,6 +69,9 @@ def convert_doc(doc: dict, src_root: str = "", uri_prefix: str = "") -> dict:
     tool = doc.get("tool", "unknown")
     case_id = doc.get("case_id", "unknown")
     track = doc.get("track", "defect")
+    # 未显式给 --uri-prefix 时：bench 用例的 findings.file 是相对 case 根的路径
+    # （如 src/recv.c），SARIF 标注需映射到仓内真实路径 cases/<track>/<case_id>/
+    uri_prefix = uri_prefix or f"cases/{track}/{case_id}"
     rules = build_rules(findings)
     results = []
     for i, f in enumerate(findings):
