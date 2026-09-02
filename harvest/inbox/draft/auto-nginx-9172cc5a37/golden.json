@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/ngx_http_script.c",
+        "anchor": "if (r->ncaptures && (r->quoted_uri || r->plus_in_uri)) {",
+        "line": 4,
+        "function": null,
+        "rationale": "PR 1395 Rewrite: fix buffer overflow with overlapping captures :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
