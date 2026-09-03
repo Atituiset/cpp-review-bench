@@ -1,8 +1,8 @@
 #include "util.h"
 
 /*
- * validate：契约入口，判空 + len 边界检查。
- * 契约保证：通过 validate 的 Pkt* 后续解引用恒安全。
+ * validate：报文入口校验，判空 + len 边界检查。
+ * 返回 0 表示校验通过，负值为对应错误码。
  */
 int validate(Pkt *p)
 {

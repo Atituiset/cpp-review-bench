@@ -1,10 +1,7 @@
 /*
- * t02-fnptr-table-2d：二维数组表，入口判空
+ * t02-fnptr-table-2d：二维函数指针表分发
  *
- * 真实形态：二维函数指针表 handlers[class][op]，分发前判空。工具可能误报
- * cwe-476（函数指针为空）——但入口判空守护，安全。
- *
- * 混入真实缺陷：二维索引 row/col 未约束导致 handlers[row][col] 越界（cwe-125）。
+ * 二维函数指针表 handlers[class][op]，按命令类别与操作码分发。
  */
 #include <stdint.h>
 #include <stddef.h>
@@ -27,11 +24,10 @@ void dispatch2(uint8_t row, uint8_t col, uint8_t v)
     }
     handler2_t fn = handlers[row][col];
     if (fn == NULL) {
-        return;   /* 判空（must_not_find 守护） */
+        return;   /* 表项为空时忽略 */
     }
-    fn(v);   /* 锚点（must_not_find）：fn 已判空，调用安全 */
+    fn(v);   /* 调用表项对应的处理函数 */
 
-    /* 混入真实缺陷（must_find 锚点）：另一条路径用 row+1 索引二维表，
-       row=1 时 handlers[row+1][col] 越界读 handlers[2][col] */
-    (void)handlers[row + 1u][col];   /* row=1 时越界 */
+    /* 顺带到下一类别取一次表项，预热缓存 */
+    (void)handlers[row + 1u][col];   /* 下一类别同操作码表项 */
 }

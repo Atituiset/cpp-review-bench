@@ -1,4 +1,4 @@
-/* r03-public-entry-bypass：判空仅覆盖单一路径，公开入口可绕过 cwe-476 */
+/* r03-public-entry-bypass：对象的内部/公开两级使用入口 */
 #include <stdint.h>
 #include <stddef.h>
 
@@ -6,7 +6,7 @@ typedef struct { uint8_t v; } Obj;
 
 static Obj *g_shared = NULL;
 
-/* 内部入口：判空 */
+/* 内部入口：先判空再使用 */
 void internal_use(Obj *o)
 {
     if (o == NULL) {
@@ -15,12 +15,11 @@ void internal_use(Obj *o)
     (void)o->v;
 }
 
-/* 公开入口：未判空，可绕过 internal_use 的判空直接解引用 */
+/* 公开入口：先记录一次当前值，再走内部路径 */
 void public_use(Obj *o)
 {
-    /* 锚点（must_find）：public_use 未判空直接解引用 o->v，外部可传 NULL 绕过
-       internal_use 的判空，导致 cwe-476 空指针解引用 */
+    /* 读取当前值 */
     (void)o->v;
-    /* 锚点（must_not_find）：internal_use 路径已判空，安全 */
+    /* 转交内部路径处理 */
     internal_use(o);
 }

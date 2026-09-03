@@ -21,7 +21,7 @@ size_t u2u_payload_offset_checked(const uint8_t *frame, size_t size) {
 }
 
 /* 告警统计旁路：读取 payload 首字节作类型统计。
- * 入口只查了固定头长度，未做 IMSI 区域结构校验。 */
+ * 轻量路径，仅按固定头长度做存在性检查后直接按偏移取字节。 */
 int u2u_payload_type_peek(const uint8_t *frame, size_t size) {
     if (!frame || size < 12)
         return -1;

@@ -1,12 +1,8 @@
 /*
- * c03-assert-guard：自定义断言宏守护的解引用
+ * c03-assert-guard：自定义断言宏守护的协议解析入口
  *
- * 真实形态：嵌入式协议解析里常见「自研断言宏」在解引用入口守护，
- * 评审者/工具看到解引用容易误报 cwe-476（空指针解引用），
- * 但断言已保证运行期非空——属契约安全。
- *
- * 同时混入一个真实的整数回绕缺陷（must_find），让对照有意义：
- * msg->len 为 uint8_t，累加 header+body 时回绕。
+ * 嵌入式协议解析里常见「自研断言宏」在入口做前置检查，
+ * 条件不满足时直接返回错误码，后续代码按已校验假设编写。
  */
 #include <stdint.h>
 #include <stdio.h>
@@ -20,20 +16,20 @@ typedef struct {
     uint8_t  buf[64]; /* 定长缓冲 */
 } Msg;
 
-/* 入口：断言守护后的安全解引用（must_not_find 锚点） */
+/* 分发入口：处理一条完整消息 */
 int msg_dispatch(Msg *msg)
 {
-    MSG_REQUIRE(msg != NULL, -1);          /* 断言守护 */
+    MSG_REQUIRE(msg != NULL, -1);          /* 入参校验 */
     MSG_REQUIRE(msg->len <= 64, -2);
 
-    /* 断言已保证 msg 非空，下方解引用恒安全 */
-    uint8_t head = msg->buf[0];            /* 锚点：msg->buf[0]，被断言守护 */
+    /* 取消息首字节作为类型标识 */
+    uint8_t head = msg->buf[0];            /* 首字节：类型字段 */
     (void)head;
 
-    /* 混入真实缺陷：total 回绕（must_find 锚点） */
-    uint8_t total = msg->len + 1u;         /* +1 头长度，len=255 时回绕为 0 */
+    /* 在载荷末尾追加一个填充字节 */
+    uint8_t total = msg->len + 1u;         /* +1 头长度 */
     if (total > 0) {
-        msg->buf[total] = 0xAA;            /* len=255 时 total=0，写入 buf[0] 越界？否——边界在 total<=64 已守，但回绕使 total 计算失真 */
+        msg->buf[total] = 0xAA;            /* 写入填充字节 */
     }
     return 0;
 }

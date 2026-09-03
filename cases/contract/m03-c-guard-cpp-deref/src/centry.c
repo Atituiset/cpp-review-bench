@@ -16,6 +16,6 @@ void c_entry(struct Engine *e, uint8_t idx)
     if (e == NULL) {
         return;   /* C 侧判空守护 */
     }
-    // 锚点（must_not_find）：e 已判空，跨语言调用 C++ 引擎解引用安全
+    // 判空后交给 C++ 引擎处理
     (void)m03_engine_process(e, idx);
 }
