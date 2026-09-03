@@ -14,6 +14,12 @@ CLANG_BIN="${CLANG_BIN:-clang}"
 EXTDEF_BIN="${EXTDEF_BIN:-clang-extdef-mapping}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
+# 工具缺失属硬失败（区别于「跑通但零 findings」的合法 exit 0）
+if ! command -v "$CLANG_BIN" >/dev/null 2>&1; then
+  echo "[ERROR] 找不到 clang：$CLANG_BIN（工具缺失，CI 应变红）" >&2
+  exit 127
+fi
+
 # 系统头：以 clang 自带 resource-dir 为主（可移植，内含 stddef/stdarg/limits 等内建头，
 # 足以覆盖原硬编码 gcc include 目录的作用）；/usr/include 与 multiarch 目录为平台头补充，
 # 不存在则跳过（原先硬编码 /usr/lib/gcc/x86_64-linux-gnu/13/include 是 Debian/Ubuntu
@@ -27,6 +33,19 @@ done
 
 TOOL_VER="$("$CLANG_BIN" --version | head -1)"
 mkdir -p "$OUT"
+rm -f "$OUT/DEGRADED"   # 清掉上一次运行可能留下的退化标记
+FAIL=0                  # 累计 clang --analyze 硬失败；脚本末尾据此非零退出
+
+# CTU 退化处理：打醒目 [WARN] 并在产物目录落 DEGRADED 标记文件（CI 检测后转 ::warning::）
+degrade_to_singletu() {
+  local reason="$1"
+  echo "[WARN] ============================================================" >&2
+  echo "[WARN] CSA CTU 退化为单 TU：$reason" >&2
+  echo "[WARN] 本次结果等同 singletu，已在 $OUT 落 DEGRADED 标记文件" >&2
+  echo "[WARN] ============================================================" >&2
+  printf '%s\n' "$reason" > "$OUT/DEGRADED"
+  MODE="singletu"
+}
 
 # 统一编译数据库（CTU 需要它生成 externalDefMap）
 BUILD="$ROOT/build"
@@ -57,20 +76,21 @@ for e in db:
 PY
 )
     # 方式一：clang-extdef-mapping gen <compdb>（部分版本支持）
-    if ! "$EXTDEF_BIN" gen "$COMDB" > "$CTU_DIR/externalDefMap.txt" 2>/tmp/extdef_err.txt; then
+    EXTDEF_ERR="$(mktemp)"   # 固定 /tmp 路径有并发/多用户冲突风险，改 mktemp
+    if ! "$EXTDEF_BIN" gen "$COMDB" > "$CTU_DIR/externalDefMap.txt" 2>"$EXTDEF_ERR"; then
       # 方式二：clang-extdef-mapping -p <build> <sources...>（Ubuntu 包常用）
-      if ! "$EXTDEF_BIN" -p "$BUILD" "${SRC_LIST[@]}" > "$CTU_DIR/externalDefMap.txt" 2>/tmp/extdef_err.txt; then
-        echo "[warn] clang-extdef-mapping 生成失败，CTU 退化为单 TU：" >&2
-        sed 's/^/    /' /tmp/extdef_err.txt >&2
-        MODE="singletu"
+      if ! "$EXTDEF_BIN" -p "$BUILD" "${SRC_LIST[@]}" > "$CTU_DIR/externalDefMap.txt" 2>"$EXTDEF_ERR"; then
+        sed 's/^/    /' "$EXTDEF_ERR" >&2
+        rm -f "$EXTDEF_ERR"
+        degrade_to_singletu "clang-extdef-mapping 生成 externalDefMap 失败（详见上方 stderr）"
       fi
     fi
+    rm -f "$EXTDEF_ERR"
     if [ -s "$CTU_DIR/externalDefMap.txt" ]; then
       echo "[ok] externalDefMap 生成: $(wc -l < "$CTU_DIR/externalDefMap.txt") 行"
     fi
   else
-    echo "[warn] 未找到 $EXTDEF_BIN，CTU 退化为单 TU" >&2
-    MODE="singletu"
+    degrade_to_singletu "未找到 $EXTDEF_BIN"
   fi
 fi
 
@@ -90,7 +110,14 @@ for gj in "$ROOT"/cases/*/*/golden.json; do
             -Xanalyzer -analyzer-config -Xanalyzer experimental-enable-naive-ctu=true \
             "${args[@]}")
     fi
-    "$CLANG_BIN" --analyze "${args[@]}" >/dev/null 2>&1 || true
+    # clang --analyze 非零 = 编译/分析硬失败（用例保证可编译，失败即工具或环境问题），
+    # 打 [ERROR] 并累计，脚本末尾统一非零退出；「跑通但 plist 零诊断」是合法结果。
+    if ! "$CLANG_BIN" --analyze "${args[@]}" >"$plist_dir/${base}.log" 2>&1; then
+      echo "[ERROR] $cid/$base: clang --analyze 执行失败：" >&2
+      sed 's/^/    /' "$plist_dir/${base}.log" >&2
+      FAIL=1
+      continue
+    fi
   done
   TOOL_NAME="csa-$MODE"
   [ "$MODE" = "ctu" ] && TOOL_NAME="csa-ctu"
@@ -99,6 +126,11 @@ for gj in "$ROOT"/cases/*/*/golden.json; do
   rm -rf "$plist_dir"
   echo "[ok] $cid -> $OUT/${cid}.json"
 done
+
+if [ "$FAIL" -ne 0 ]; then
+  echo "[ERROR] 存在 clang --analyze 硬失败（见上方 [ERROR]），以非零退出" >&2
+  exit 1
+fi
 
 echo "=== 评测汇总 ==="
 python3 "$ROOT/tools/eval.py" run "$OUT"

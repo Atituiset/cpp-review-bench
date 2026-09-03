@@ -19,8 +19,8 @@
 
 | 消费方 | 形态 | 入口 |
 |---|---|---|
-| SA / 分析器（本地直跑） | 全量扫描 | `cmake -S . -B build && <your-analyzer> build/compile_commands.json`，或用例级 `cases/<track>/<id>/src/` 直接指给分析器 |
-| SA / 分析器（CI 跑） | GitHub Actions | 本仓 `.github/workflows/ci.yml`：build-and-eval（全量构建 + check_cases + eval selftest + CSA singletu/CTU + CppCheck + clang-tidy，产物传 artifact）→ infer / codeql / klee / codechecker / joern（各带 eval 评分）→ cooddy-verify（r04 smoke） |
+| SA / 分析器（本地直跑） | 全量扫描 | `consumers/local/run.sh` 一键入口（已有归一化 findings 直接评分；只认 compdb 的分析器由脚本幂等备 `build/compile_commands.json` 并执行包装命令），或手工 `cmake -S . -B build && <your-analyzer> build/compile_commands.json`、用例级 `cases/<track>/<id>/src/` 直接指给分析器 |
+| SA / 分析器（CI 跑） | GitHub Actions | `consumers/github-action/bench.yml`：workflow_call 可复用消费 workflow（checkout 本仓 pinned ref → compdb → 跑你的分析器 → 归一化 → eval.py 评分 → artifact），接入说明见 `consumers/README.md`；本仓自身基线仍由 `.github/workflows/ci.yml` 承担（build-and-eval + infer / codeql / klee / codechecker / joern / cooddy-verify） |
 | Agent+LLM 评审 | diff/PR | 用例 src 可物化为 `diff.patch`（空 base → 新增），或直接以源码树消费 |
 | 索引/提取工具 | 编译数据库 | 一键 compdb（`context.navmap_expect` 提供提取判定锚点） |
 
@@ -49,6 +49,11 @@ python3 tools/eval.py run /tmp/csa_singletu
 cases/        contract/(16 例) + defect/(14 例)（calibration/ 校准子集为规划项，未建）
 schema/       golden.schema.json(v2) + findings.schema.json
 cmake/        AllCases.cmake 一键全量构建 + 统一 compdb
+consumers/    工具团队消费入口（三路径，详见 consumers/README.md）：
+              local/             run.sh 本地一键（路径 a：--findings-dir 直接评分已有归一化 findings；
+                                 路径 b：幂等 compdb + 执行分析器包装命令后自动评分）
+              github-action/     bench.yml 可复用消费 workflow（workflow_call：checkout 本仓 pinned ref →
+                                 compdb → 分析器 → 归一化 → eval.py 评分 → artifact；fail-open 语义）
 tools/        eval.py(评分器) + check_cases.py(自检) + 其余 *_to_findings.py 已归入 sa/adapters
 sa/           静态分析工程化归一目录：
               adapters/   各工具 findings 归一化（*_to_findings.py）

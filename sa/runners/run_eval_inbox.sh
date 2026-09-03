@@ -18,7 +18,7 @@
 # 输出：
 #   $3/eval_inbox_report.json  每候选的 {case_id, scenario, csa_hits, cppcheck_hits, verdict}
 #   $3/eval_inbox_report.md    人审用摘要（附 PR body）
-set -u
+set -euo pipefail
 # 强制 UTF-8 流编码：CI runner 默认 LANG=C，Python 往 stderr/stdout 写中文会触发
 # UnicodeEncodeError -> runner 流处理放大成 RecursionError 使步骤崩溃。
 export PYTHONIOENCODING=utf-8
@@ -28,6 +28,14 @@ REPO_ROOT="${1:?用法: $0 <repo_root> <inbox_root> <out_dir>}"
 INBOX="${2:?}"
 OUT="${3:?}"
 mkdir -p "$OUT"
+
+# 工具缺失属硬失败（区别于「跑通但零命中」的合法 sa-silent 结果）
+for bin in clang cppcheck; do
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    echo "[ERROR] 找不到 $bin（工具缺失，CI 应变红）" >&2
+    exit 127
+  fi
+done
 
 # 输出 "行号<TAB>checker名" 每行一条；plist 用 python plistlib（标准库）解析
 csa_hit() {
@@ -71,17 +79,19 @@ rows_jsonl="$OUT/_rows.jsonl"
 find "$INBOX/draft" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | while read -r casedir; do
   cid="$(basename "$casedir")"
   # golden schema：must_find 嵌套在 expected 下；旧草稿曾写顶层，用 .get 链 + 顶层兜底容错
+  # （|| true：候选草稿 golden 可能残缺，属数据问题非硬失败，降级为 unknown 继续）
   golden_info="$(python3 -c "
 import json
 g = json.load(open('$casedir/golden.json'))
 mf = (g.get('expected') or {}).get('must_find') or g.get('must_find') or [{}]
 print(mf[0].get('scenario') or 'unknown')
 print((mf[0].get('anchor') or '').replace(chr(10), ' '))
-" 2>/dev/null)"
+" 2>/dev/null || true)"
   scen="$(printf '%s\n' "$golden_info" | sed -n 1p)"
   ganchor="$(printf '%s\n' "$golden_info" | sed -n 2p)"
   [ -z "$scen" ] && scen=unknown
-  srcf="$(find "$casedir/src" \( -name '*.c' -o -name '*.cpp' -o -name '*.cc' \) 2>/dev/null | head -1)"
+  # （|| true：src 目录缺失时 find 非零，属「无源文件」情形，srcf 置空走下方 sa-silent 分支）
+  srcf="$(find "$casedir/src" \( -name '*.c' -o -name '*.cpp' -o -name '*.cc' \) 2>/dev/null | head -1 || true)"
   csa="" cpp=""
   if [ -n "$srcf" ]; then
     csa="$(csa_hit "$srcf")"

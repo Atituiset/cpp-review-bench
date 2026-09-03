@@ -9,23 +9,26 @@ findings 只来自 KLEE 真实报告的 error（不再接受 golden 反写，也
 “无 error 也记一条命中”的自证）。scenario 由错误类型推断
 （overflow→cwe-787/125, null→cwe-476, leak→cwe-401, free→cwe-415 等）。
 file 归一为相对 case 根的 src/...（优先 --case-dir，缺省从路径里的
-cases/<track>/<cid>/ 锚点推断）；anchor 取源文件对应行内容 strip，
-行号越界/文件读不到时省略该条并在 stderr 记 warning。
+cases/<track>/<cid>/ 锚点推断）；anchor 按 _common.synth_anchor 合成
+（源文件行内容回读为主），合成失败时省略该条并在 stderr 记 warning
+（不产出无 anchor 的不合规 finding）。
 
 用法：
   klee_to_findings.py <track> <case_id> <klee-out-dir> [--case-dir <dir>] [--out <json>]
 """
 import argparse
 import json
-import os
 import re
 import sys
 from pathlib import Path
 
+from _common import (guess_case_dir, locate_src, make_doc, normalize_file,
+                     synth_anchor)
+
 # KLEE 错误类型 → CWE scenario + severity（值已是 schema enum）
 KLEE_ERR_MAP = {
     'overflow': ('cwe-787', 'important'),       # 包括 out-of-bounds write
-    'out of bounds': ('cwe-125', 'important'),
+    'out of bound': ('cwe-125', 'important'),   # KLEE 原文 "out of bound pointer"（无 s）
     'oob': ('cwe-125', 'important'),
     'null pointer': ('cwe-476', 'important'),
     'null deref': ('cwe-476', 'important'),
@@ -44,51 +47,6 @@ def map_err(msg: str):
         if key in m:
             return scen, sev
     return None, 'important'
-
-
-def guess_case_dir(raw_path):
-    """从 file 路径里的 cases/<track>/<cid>/ 锚点推断 case 根目录。"""
-    parts = os.path.normpath(str(raw_path)).split('/')
-    for i, part in enumerate(parts):
-        if part == 'cases' and i + 2 < len(parts):
-            return '/'.join(parts[:i + 3])
-    return None
-
-
-def normalize_file(raw_path, case_dir=None):
-    """归一 file 为相对 case 根的 src/... 形式。"""
-    p = os.path.normpath(str(raw_path))
-    if case_dir:
-        ap = p if os.path.isabs(p) else os.path.join(str(case_dir), p)
-        rel = os.path.relpath(ap, str(case_dir))
-        if not rel.startswith('..'):
-            return rel.replace(os.sep, '/')
-    parts = p.split('/')
-    for i, part in enumerate(parts):
-        if part == 'cases' and i + 3 < len(parts):
-            return '/'.join(parts[i + 3:])
-    if 'src' in parts:
-        return '/'.join(parts[parts.index('src'):])
-    return os.path.basename(p)
-
-
-def line_anchor(case_dir, rel_file, line):
-    """读 case 源文件第 line 行，strip 后作 anchor；读不到/越界/空行返回 None。"""
-    try:
-        lines = (Path(case_dir) / rel_file).read_text(
-            encoding='utf-8', errors='replace').splitlines()
-    except OSError:
-        return None
-    if 1 <= line <= len(lines):
-        return lines[line - 1].strip() or None
-    return None
-
-
-def make_doc(tool, track, case_id, version, findings):
-    doc = {'tool': tool, 'track': track, 'case_id': case_id, 'findings': findings}
-    if version and version != 'unknown':
-        doc['version'] = version
-    return doc
 
 
 def extract_errors(klee_dir: Path):
@@ -120,9 +78,10 @@ def convert(track, case_id, klee_dir, tool='klee', version=None, out=None,
         scen, sev = map_err(msg)
         cdir = case_dir or guess_case_dir(fpath)
         rel = normalize_file(fpath, cdir)
-        anchor = line_anchor(cdir, rel, line) if cdir else None
+        rel, src = locate_src(cdir, rel)
+        anchor = synth_anchor({'message': msg, 'line': line}, src)
         if anchor is None:
-            print(f'[warn] {case_id}: 取不到 anchor（{rel}:{line}），省略该条',
+            print(f'[warn] {case_id}: 合成不出 anchor（{rel}:{line}），省略该条',
                   file=sys.stderr)
             continue
         f = {'file': rel, 'anchor': anchor, 'message': msg, 'severity': sev}

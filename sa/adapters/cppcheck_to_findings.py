@@ -10,6 +10,7 @@
   - cppcheck 的 error id 不直接带 CWE 编号；本适配器把 scenario 置 null，
     anchor 取源文件对应行源码（去空白），eval.py 的 L1 按 file+anchor 匹配。
   - 仅收集落在 case_src_dir 内的 location（忽略系统头/外部文件）。
+  - 源文件同时收集 *.c 与 *.cpp（m01/m03 等混合用例的 .cpp 不再被跳过）。
 """
 import argparse
 import json
@@ -20,49 +21,18 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from _common import line_anchor, make_doc, map_severity
+
 
 def norm(s: str) -> str:
     return re.sub(r"\s+", "", s)
 
 
-# 工具原始严重度 -> schema enum；不在表内的视为无法判断（省略 severity 字段）
-SEVERITY_MAP = {
-    "error": "critical", "blocker": "critical", "critical": "critical",
-    "major": "critical", "high": "critical",
-    "warning": "important", "medium": "important",
-    "info": "minor", "style": "minor", "performance": "minor",
-    "portability": "minor", "minor": "minor", "note": "minor",
-}
-
-
-def map_severity(raw: str) -> str | None:
-    if not raw:
-        return None
-    return SEVERITY_MAP.get(str(raw).strip().lower())
-
-
-def line_anchor(src_file: Path, line: int) -> str | None:
-    try:
-        lines = src_file.read_text(encoding="utf-8", errors="replace").splitlines()
-    except FileNotFoundError:
-        return None
-    if 1 <= line <= len(lines):
-        return lines[line - 1].strip()
-    return None
-
-
-def make_doc(tool: str, track: str, case_id: str, version: str | None,
-             findings: list) -> dict:
-    doc = {"tool": tool, "track": track, "case_id": case_id, "findings": findings}
-    if version and version not in ("unknown", "missing"):
-        doc["version"] = version
-    return doc
-
-
 def convert(track: str, case_id: str, src_dir: Path,
             cppcheck_bin: str, tool: str, version: str,
             include_dirs: list[str] | None = None) -> dict:
-    sources = sorted(str(p) for p in src_dir.glob("*.c"))
+    sources = sorted(str(p) for p in src_dir.glob("*.c")) + \
+        sorted(str(p) for p in src_dir.glob("*.cpp"))
     if not sources:
         return make_doc(tool, track, case_id, version, [])
     cmd = [cppcheck_bin, "--enable=warning,style,performance,portability,information",

@@ -1,0 +1,159 @@
+# cpp-review-bench 可复用消费 workflow（workflow_call）。
+#
+# 工具团队「三行接入」：你的 CI 里 uses 本 workflow，只填 tool_command 一行，
+# 拿回一份四态评测报告 artifact。内部步骤：checkout 本仓（pinned ref 输入）→
+# cmake 全量构建 + 统一 compdb → 自检门禁 → 执行 tool_command →（可选 SARIF 归一化）→
+# tools/eval.py 评分 → 上传 artifact。
+#
+# 接入示例（你的仓 .github/workflows/bench.yml）：
+#   jobs:
+#     bench:
+#       # 注意：GitHub 要求被 uses 的 reusable workflow 物理位于
+#       # <仓>/.github/workflows/ 下；本文件是本仓发布的源文件，发布镜像位置见
+#       # consumers/README.md。占位 <org> 替换为实际组织名。
+#       uses: <org>/cpp-review-bench/.github/workflows/bench.yml@v1
+#       with:
+#         tool_command: '<tool> analyze --compdb "$COMPDB" --out "$FINDINGS_DIR"'
+#
+# fail-open 语义：
+#   - 评测零发现（全 FN）/ 全 PASS 都只是分数，eval.py 退出码恒 0，job 不红——
+#     benchmark 分数是数据不是门禁；
+#   - 脚手架失败要红：checkout / cmake 构建 / check_cases / eval selftest 任一失败，
+#     或归一化 findings 不合 schema/findings.schema.json（eval 默认校验门禁），job 红。
+name: cpp-review-bench-consumer
+
+on:
+  workflow_call:
+    inputs:
+      tool_command:
+        description: >-
+          分析器运行命令（必填，在本仓根目录下执行）。可用环境变量：
+          $COMPDB（统一 compile_commands.json）、$CASES_DIR（用例源码树）、
+          $FINDINGS_DIR（归一化 findings 落盘目录，每例一个 <case_id>.json，
+          格式见 schema/findings.schema.json）。
+        required: true
+        type: string
+      tool_image:
+        description: >-
+          分析器容器镜像（可选，如 ghcr.io/<org>/<tool>:1.2.3）。
+          填写后 tool_command 在该镜像内以 bash -lc 执行，仓根挂载到 /workspace。
+        required: false
+        type: string
+        default: ''
+      sarif_file:
+        description: >-
+          分析器产出的 SARIF 文件路径（可选，相对仓根）。填写后跳过「工具自己产
+          findings」的约定，由 sa/adapters/sarif_to_findings.py 统一归一化到
+          $FINDINGS_DIR 再评分（CodeQL 等 SARIF 系工具的最省接入）。
+        required: false
+        type: string
+        default: ''
+      tool_name:
+        description: 工具名（写入 SARIF 归一化 findings 的 tool 字段与 artifact 名）。
+        required: false
+        type: string
+        default: external-tool
+      bench_repo:
+        description: bench 仓坐标（占位 <org> 请在 fork/发布时替换为实际组织名）。
+        required: false
+        type: string
+        default: <org>/cpp-review-bench
+      bench_ref:
+        description: >-
+          checkout bench 仓的 ref。默认 main（跟随最新用例，适合冒烟）；
+          正式跑分请钉到 tag 或 commit（可复现性，design §4.1 教训①，
+          跑分报告需注明该 ref）。
+        required: false
+        type: string
+        default: main
+
+# 权限最小化：只读代码即可跑完构建/分析/评分；评测不写回任何仓。
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    # CI runner 默认 LANG=C，Python 往 stdout/stderr 写中文会 UnicodeEncodeError
+    # （本仓 ci.yml 已踩过），统一钉 UTF-8。
+    env:
+      PYTHONIOENCODING: utf-8
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+      FINDINGS_DIR: findings-out
+    steps:
+      - name: checkout bench 仓（pinned ref）
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.bench_repo }}
+          ref: ${{ inputs.bench_ref }}
+          path: bench
+
+      - name: 全量构建 + 统一 compile_commands.json（脚手架，失败即红）
+        working-directory: bench
+        run: |
+          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          python3 -c "import json;print('compdb entries:', len(json.load(open('build/compile_commands.json'))))"
+
+      - name: 自检门禁：用例 schema + 评测器四态（脚手架，失败即红）
+        working-directory: bench
+        run: |
+          python3 tools/check_cases.py
+          python3 tools/eval.py selftest
+
+      - name: 导出消费环境变量
+        working-directory: bench
+        run: |
+          echo "COMPDB=$PWD/build/compile_commands.json" >> "$GITHUB_ENV"
+          echo "CASES_DIR=$PWD/cases" >> "$GITHUB_ENV"
+          echo "BENCH_ROOT=$PWD" >> "$GITHUB_ENV"
+          mkdir -p "$FINDINGS_DIR"
+
+      - name: 运行分析器（tool_command）
+        working-directory: bench
+        env:
+          TOOL_COMMAND: ${{ inputs.tool_command }}
+          TOOL_IMAGE: ${{ inputs.tool_image }}
+        run: |
+          set -euo pipefail
+          if [ -n "$TOOL_IMAGE" ]; then
+            # 镜像模式：仓根挂 /workspace，环境变量透传为容器内路径
+            docker run --rm -v "$PWD":/workspace -w /workspace \
+              -e COMPDB=/workspace/build/compile_commands.json \
+              -e CASES_DIR=/workspace/cases \
+              -e BENCH_ROOT=/workspace \
+              -e FINDINGS_DIR=/workspace/"$FINDINGS_DIR" \
+              "$TOOL_IMAGE" bash -lc "$TOOL_COMMAND"
+          else
+            bash -lc "$TOOL_COMMAND"
+          fi
+
+      - name: SARIF → 归一化 findings（可选路径）
+        if: ${{ inputs.sarif_file != '' }}
+        working-directory: bench
+        env:
+          SARIF_FILE: ${{ inputs.sarif_file }}
+          TOOL_NAME: ${{ inputs.tool_name }}
+        run: |
+          set -euo pipefail
+          [ -f "$SARIF_FILE" ] || { echo "[FAIL] SARIF 文件不存在: $SARIF_FILE"; exit 1; }
+          python3 sa/adapters/sarif_to_findings.py "$SARIF_FILE" "$FINDINGS_DIR" \
+            --tool "$TOOL_NAME" --repo-root "$PWD"
+
+      - name: eval.py 四态评分（fail-open：零发现/全 FN 不红；findings 不合 schema 红）
+        working-directory: bench
+        run: |
+          # 评分结果落盘供 artifact；eval 对目录默认做 schema 校验门禁
+          python3 tools/eval.py run "$FINDINGS_DIR" | tee bench-report.json
+          echo "=== 汇总（fail-open：以上分数不影响 job 成败）==="
+          python3 -c "import json;print(json.dumps(json.load(open('bench-report.json'))['summary'],ensure_ascii=False,indent=2))"
+
+      - name: 上传评测产物（findings + 报告）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-report-${{ inputs.tool_name }}
+          path: |
+            bench/bench-report.json
+            bench/findings-out/*.json
+          if-no-files-found: warn

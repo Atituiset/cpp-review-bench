@@ -43,9 +43,14 @@ jobs:
           echo "clang-tidy-21: $(command -v clang-tidy-21 || echo MISSING)"
 
       - name: 安装 cppcheck（第二个对照工具，apt 直装）
+        # 版本说明（2026-09-03 查证）：apt 无法钉具体版本（ubuntu 源只留当前版），
+        # 版本随 ubuntu-latest（当前 24.04，cppcheck 2.13.x）漂移；
+        # 故显式把 runner 系统版本与 cppcheck 版本落日志，保证 findings.version 可追溯。
         run: |
           sudo apt-get install -y cppcheck
           echo "CPPCHECK_BIN=cppcheck" >> "$GITHUB_ENV"
+          lsb_release -a 2>/dev/null | grep -E 'Description|Release'
+          dpkg -l cppcheck | tail -1
           cppcheck --version
 
       - name: 全量编译 + 统一 compile_commands.json
@@ -68,15 +73,19 @@ jobs:
       - name: CSA 原生 CTU（跨文件分析）
         run: ./sa/runners/run_csa.sh ctu /tmp/csa_ctu
 
+      - name: 检查 CSA CTU 退化标记（runner 落 DEGRADED 即转 GitHub warning 明示）
+        run: |
+          if [ -f /tmp/csa_ctu/DEGRADED ]; then
+            echo "::warning title=CSA CTU 退化::CTU 已退化为单 TU：$(cat /tmp/csa_ctu/DEGRADED)"
+          fi
+
       - name: CppCheck（跨工具对照）
-        run: chmod +x sa/runners/run_cppcheck.sh && ./sa/runners/run_cppcheck.sh /tmp/cppcheck
+        run: ./sa/runners/run_cppcheck.sh /tmp/cppcheck
 
       - name: clang-tidy（编译期检查，clang-21 自带，第三个对照工具）
         env:
           CLANG_TIDY_BIN: clang-tidy-21
-        run: |
-          chmod +x sa/runners/run_clang_tidy.sh
-          ./sa/runners/run_clang_tidy.sh /tmp/clang-tidy
+        run: ./sa/runners/run_clang_tidy.sh /tmp/clang-tidy
 
       - name: 汇总全部工具 findings 上传 artifact
         uses: actions/upload-artifact@v4
@@ -103,7 +112,6 @@ jobs:
 
       - name: 逐 case 跑 Infer（抽象解释）+ 归一化
         run: |
-          chmod +x sa/runners/run_infer.sh
           ./sa/runners/run_infer.sh "$PWD/cases" "$PWD/infer-findings" "$PWD"
           echo "=== 各例 Infer findings 数 ==="
           for f in infer-findings/*.json; do echo "$(basename $f): $(python3 -c "import json;print(len(json.load(open('$f'))['findings']))" 2>/dev/null)"; done
@@ -160,7 +168,10 @@ jobs:
   klee:
     runs-on: ubuntu-latest
     container:
-      image: klee/klee:latest
+      # 版本钉死（2026-09-03 查证 Docker Hub klee/klee tags）：
+      # v3.2 为最新 release tag（2025-12-23 发布，当前 latest 与 v3.2 同镜像），
+      # 不再用浮动的 latest。tag 列表：https://hub.docker.com/v2/repositories/klee/klee/tags
+      image: klee/klee:v3.2
       options: --user root
     steps:
       - uses: actions/checkout@v4
@@ -168,12 +179,13 @@ jobs:
         run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
       - name: 逐 case 跑 KLEE（符号执行）+ 归一化
         run: |
-          chmod +x sa/runners/run_klee.sh
           ./sa/runners/run_klee.sh "$PWD/cases" "$PWD/klee-findings" "$PWD"
           echo "=== 各例 KLEE findings 数 ==="
           for f in klee-findings/*.json; do [ -f "$f" ] && echo "$(basename $f): $(python3 -c "import json;print(len(json.load(open('$f'))['findings']))" 2>/dev/null)"; done
+      # eval.py run 仅在 findings 不合 schema / 评测器自身崩溃时非零；
+      # FN/FP 等评测结果差仍是 exit 0，故不再 || 兜底——工具坏了要让 job 变红
       - name: KLEE 四态评测（vs golden）
-        run: python3 tools/eval.py run klee-findings 2>&1 | tail -30 || echo "[warn] klee 四态评测跳过"
+        run: python3 tools/eval.py run klee-findings 2>&1 | tail -30
       - name: 汇总 KLEE 产物上传 artifact
         uses: actions/upload-artifact@v4
         with:
@@ -188,21 +200,25 @@ jobs:
       - name: 安装 clang + CodeChecker（pip，含 clang SA 与 clang-tidy）
         run: |
           sudo apt-get update && sudo apt-get install -y --no-install-recommends clang clang-tidy
-          pip3 install --no-cache-dir codechecker
+          # 版本钉死（2026-09-03 查证）：PyPI 最新 codechecker 6.28.3
+          # （https://pypi.org/project/codechecker/ ，对应 GitHub release v6.28.3）
+          pip3 install --no-cache-dir codechecker==6.28.3
           echo "CodeChecker: $(CodeChecker --version 2>/dev/null | head -1)"
       - name: 全量编译 + 统一 compile_commands.json
         run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON
       - name: CodeChecker analyze（clang SA + clang-tidy，CTU）
+        # analyze 失败（工具坏）不再 || true 吞掉，让步骤变红；
+        # parse/导出无结果属「该例就是没有输出」的合法容忍，保留 warn 兜底
         run: |
-          CodeChecker analyze build/compile_commands.json --ctu --output cc_reports 2>&1 | tail -5 || true
-          CodeChecker parse cc_reports -e json > cc_export.json 2>/dev/null || echo "[warn] parse 无结果"
+          CodeChecker analyze build/compile_commands.json --ctu --output cc_reports 2>&1 | tail -5
+          CodeChecker parse cc_reports -e json > cc_export.json 2>/dev/null || echo "[warn] parse 无结果（零 findings 属合法）"
           echo "=== cc_export.json reports 数 ==="
           python3 -c "import json;d=json.load(open('cc_export.json'));print('reports:',len(d.get('reports',[])))" 2>/dev/null || echo "0"
       - name: 归一化 + 四态评测
         run: |
           if [ -f cc_export.json ]; then
             python3 sa/adapters/codechecker_to_findings.py cc_export.json "$PWD/cases" --out-dir cc-findings --version "$(CodeChecker --version 2>/dev/null | head -1)" 2>&1 | tail -20
-            python3 tools/eval.py run cc-findings 2>&1 | tail -30 || echo "[warn] codechecker 四态评测跳过"
+            python3 tools/eval.py run cc-findings 2>&1 | tail -30
           else
             echo "[warn] cc_export.json 不存在，跳过归一化"
           fi
@@ -217,18 +233,23 @@ jobs:
   joern:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/joernio/joern:master
+      # 版本钉死（2026-09-03 查证）：GHCR 上 joern 只有 master/nightly 两个滚动 tag，
+      # 无版本 tag（https://ghcr.io/v2/joernio/joern/tags/list），故按 digest 钉死。
+      # 该 digest 镜像构建于 2026-09-02，对应 release v4.0.616
+      # （https://github.com/joernio/joern/releases）；升级需人工更新 digest。
+      image: ghcr.io/joernio/joern:master@sha256:6ba92a353007650d1dc768d8a4d29653739093bdb679ac07d82dec33b4cdc0f8
       options: --user root
     steps:
       - uses: actions/checkout@v4
       - name: 逐 case 跑 Joern（CPG 通用查询：危险调用枚举，不读 golden）+ 归一化
         run: |
-          chmod +x sa/runners/run_joern.sh
           ./sa/runners/run_joern.sh "$PWD/cases" "$PWD/joern-findings" "$PWD"
           echo "=== 各例 Joern findings 数 ==="
           for f in joern-findings/*.json; do [ -f "$f" ] && echo "$(basename $f): $(python3 -c "import json;d=json.load(open('$f'));print(len(d.get('findings',[])))" 2>/dev/null)"; done
+      # eval.py run 仅在 findings 不合 schema / 评测器自身崩溃时非零；
+      # FN/FP 等评测结果差仍是 exit 0，故不再 || 兜底——工具坏了要让 job 变红
       - name: Joern 四态评测（vs golden）
-        run: python3 tools/eval.py run joern-findings 2>&1 | tail -30 || echo "[warn] joern 四态评测跳过"
+        run: python3 tools/eval.py run joern-findings 2>&1 | tail -30
       - name: 汇总 Joern 产物上传 artifact
         uses: actions/upload-artifact@v4
         with:

@@ -11,8 +11,10 @@
   - severity 由 level 映射到 schema enum（error→critical，warning→important，
     note→minor），无法判断则省略。
   - file 归一为相对 case 根的 src/...（从 cases/<track>/<cid>/ 锚点截断）；
-    anchor 取源文件对应行内容 strip（源文件按 --repo-root 定位），
-    行号越界/文件读不到时省略该条并在 stderr 记 warning。
+    anchor 优先取 SARIF region.snippet.text（工具原始输出内嵌的代码片段），
+    缺失时按 _common.synth_anchor 回读源文件对应行内容（源文件按 --repo-root
+    定位）；都失败时省略该条并在 stderr 记 warning
+    （不产出无 anchor 的不合规 finding）。
   - version 优先取 SARIF 里 tool.driver.version，其次 --version 参数。
 """
 import argparse
@@ -21,14 +23,7 @@ import re
 import sys
 from pathlib import Path
 
-# 工具原始严重度 -> schema enum；不在表内的视为无法判断（省略 severity 字段）
-SEVERITY_MAP = {
-    'error': 'critical', 'blocker': 'critical', 'critical': 'critical',
-    'major': 'critical', 'high': 'critical',
-    'warning': 'important', 'medium': 'important',
-    'info': 'minor', 'style': 'minor', 'performance': 'minor',
-    'portability': 'minor', 'minor': 'minor', 'note': 'minor',
-}
+from _common import make_doc, map_severity, synth_anchor
 
 CWE_RE = re.compile(r'cwe-(\d+)', re.IGNORECASE)
 
@@ -46,12 +41,6 @@ CODEQL_CWE_MAP = {
 }
 
 
-def map_severity(raw):
-    if not raw:
-        return None
-    return SEVERITY_MAP.get(str(raw).strip().lower())
-
-
 def scenario_from_rule(rule_id: str):
     if not rule_id:
         return None
@@ -61,17 +50,6 @@ def scenario_from_rule(rule_id: str):
     if rule_id.lower() in CODEQL_CWE_MAP:
         return CODEQL_CWE_MAP[rule_id.lower()]
     # 未映射的 ruleId 不符合 scenario 的 schema 模式（cwe-N|build|logic），省略
-    return None
-
-
-def line_anchor(src_file: Path, line: int):
-    """读源文件第 line 行，strip 后作 anchor；读不到/越界/空行返回 None。"""
-    try:
-        lines = src_file.read_text(encoding='utf-8', errors='replace').splitlines()
-    except OSError:
-        return None
-    if 1 <= line <= len(lines):
-        return lines[line - 1].strip() or None
     return None
 
 
@@ -112,9 +90,14 @@ def convert(sarif_path, out_dir, tool='codeql', version=None, repo_root='.'):
             if track not in ('contract', 'defect', 'calibration'):
                 print(f'[warn] {art}: track={track} 非法，省略该条', file=sys.stderr)
                 continue
-            anchor = line_anchor(repo_root / 'cases' / track / cid / rel, line)
+            # anchor 优先取工具原始输出内嵌的代码片段（region.snippet.text），
+            # 缺失时回读源文件该行（_common.synth_anchor，与 normalize_evidence 同口径）
+            snippet = (phys.get('region', {}).get('snippet') or {}).get('text') or ''
+            anchor = snippet.strip() or synth_anchor(
+                {'message': msg, 'line': line},
+                repo_root / 'cases' / track / cid / rel)
             if anchor is None:
-                print(f'[warn] {cid}: 取不到 anchor（{rel}:{line}），省略该条',
+                print(f'[warn] {cid}: 合成不出 anchor（{rel}:{line}），省略该条',
                       file=sys.stderr)
                 continue
             f = {'file': rel, 'anchor': anchor, 'message': msg}
@@ -130,10 +113,7 @@ def convert(sarif_path, out_dir, tool='codeql', version=None, repo_root='.'):
             by_case[cid]['finds'].append(f)
 
     for cid, info in by_case.items():
-        doc = {'tool': tool, 'track': info['track'], 'case_id': cid,
-               'findings': info['finds']}
-        if version and version != 'unknown':
-            doc['version'] = version
+        doc = make_doc(tool, info['track'], cid, version, info['finds'])
         with open(out_dir / f"{cid}.json", 'w', encoding='utf-8') as fh:
             json.dump(doc, fh, ensure_ascii=False, indent=2)
         print(f'[ok] {cid}: {len(info["finds"])} findings -> {out_dir}/{cid}.json')

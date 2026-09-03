@@ -14,70 +14,18 @@ clang-tidy 纯文本诊断格式（解析 stderr）：
 """
 import argparse
 import json
-import os
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+from _common import line_anchor, make_doc, map_severity, normalize_file
 
 DIAG_RE = re.compile(
     r'^(?P<file>[^:]+):(?P<line>\d+):(?P<col>\d+):'
     r'\s*(?P<level>warning|error|note|remark):\s*(?P<msg>.*?)'
     r'(?:\s*\[(?P<check>[^\]]+)\])?\s*$'
 )
-
-# 工具原始严重度 -> schema enum；不在表内的视为无法判断（省略 severity 字段）
-SEVERITY_MAP = {
-    'error': 'critical', 'blocker': 'critical', 'critical': 'critical',
-    'major': 'critical', 'high': 'critical',
-    'warning': 'important', 'medium': 'important',
-    'info': 'minor', 'style': 'minor', 'performance': 'minor',
-    'portability': 'minor', 'minor': 'minor', 'note': 'minor',
-    'remark': 'minor',
-}
-
-
-def map_severity(raw):
-    if not raw:
-        return None
-    return SEVERITY_MAP.get(str(raw).strip().lower())
-
-
-def normalize_file(raw_path, case_dir=None):
-    """归一 file 为相对 case 根的 src/... 形式：优先相对 case_dir，
-    缺省时从路径里的 cases/<track>/<cid>/ 锚点截断，再退化取 src/ 起。"""
-    p = os.path.normpath(str(raw_path))
-    if case_dir:
-        ap = p if os.path.isabs(p) else os.path.join(str(case_dir), p)
-        rel = os.path.relpath(ap, str(case_dir))
-        if not rel.startswith('..'):
-            return rel.replace(os.sep, '/')
-    parts = p.split('/')
-    for i, part in enumerate(parts):
-        if part == 'cases' and i + 3 < len(parts):
-            return '/'.join(parts[i + 3:])   # cases/<track>/<cid>/ 之后
-    if 'src' in parts:
-        return '/'.join(parts[parts.index('src'):])
-    return os.path.basename(p)
-
-
-def line_anchor(case_dir, rel_file, line):
-    """读 case 源文件第 line 行，strip 后作 anchor；读不到/越界/空行返回 None。"""
-    try:
-        lines = (Path(case_dir) / rel_file).read_text(
-            encoding='utf-8', errors='replace').splitlines()
-    except OSError:
-        return None
-    if 1 <= line <= len(lines):
-        return lines[line - 1].strip() or None
-    return None
-
-
-def make_doc(tool, track, case_id, version, findings):
-    doc = {'tool': tool, 'track': track, 'case_id': case_id, 'findings': findings}
-    if version and version != 'unknown':
-        doc['version'] = version
-    return doc
 
 
 def convert(track, case_id, src_dir, clang_tidy_bin, tool, version,
@@ -101,7 +49,7 @@ def convert(track, case_id, src_dir, clang_tidy_bin, tool, version,
             continue   # 只收 error/warning，note 不计入四态
         rel = normalize_file(m.group('file'), case_dir)
         lineno = int(m.group('line'))
-        anchor = line_anchor(case_dir, rel, lineno)
+        anchor = line_anchor(Path(case_dir) / rel, lineno)
         if anchor is None:
             print(f'[warn] {case_id}: 取不到 anchor（{rel}:{lineno}），省略该条',
                   file=sys.stderr)
