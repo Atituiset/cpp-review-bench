@@ -8,28 +8,28 @@
   "expected": {
     "must_find": [
       {
-        "scenario": "cwe-190",
+        "scenario": "cwe-125",
         "severity": "important",
         "file": "src/rlc.c",
-        "anchor": "uint8_t delta = (uint8_t)(t->tx_next - t->ack);",
+        "anchor": "return t->win[resume];",
         "function": "resume_point",
         "line_tolerance": 3,
-        "rationale": "tx_next/ack 为 uint8_t，跨回绕边界时 (tx_next - ack) 回绕为巨大正数，恢复点 resume 错乱，导致漏发/越界索引 win[resume]，真实 cwe-190 缺陷"
+        "rationale": "resume 是模 256 序号空间的原始序号（0..255），win 仅有 WIN_SIZE=64 项，未按窗口尺寸取模就直接索引；resume >= 64 时越界读，真实 cwe-125 缺陷"
       }
     ],
     "must_not_find": [
       {
         "scenario": "cwe-125",
-        "note": "rlc_fill 的 win[sn] 写入前已 `if (sn < AMAP_MOD)` 受界，属安全点；工具若报越界属误报",
+        "note": "rlc_fill 以 sn % WIN_SIZE 取模索引 win，索引恒在 0..63 界内，属安全点；工具若报越界属误报",
         "file": "src/rlc.c",
-        "anchor": "t->win[sn] = v;",
+        "anchor": "t->win[sn % WIN_SIZE] = v;",
         "function": "rlc_fill"
       }
     ]
   },
   "context": {
     "contract": "wrap_resume",
-    "callchain_hint": "resume_point 用 (tx_next-ack) 回绕算恢复点 → win[resume] 错乱"
+    "callchain_hint": "resume_point 用模 256 序号直接索引 64 项窗口缓冲 → win[resume] 越界读"
   },
   "difficulty": "hard",
   "split": "dev"
