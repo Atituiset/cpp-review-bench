@@ -82,3 +82,7 @@
   - consumers/ 通用消费入口已建成：`consumers/local/run.sh` + `consumers/github-action/bench.yml` + 中文 README（README 消费形态表已指向）
   - **golden 内审 30 例 + 14 例修复**（记录 `reports/audit-internal-2026-09-03.md`）：伪缺陷 3 例重写（c12 环改 64 项标 cwe-125、r07 清零循环改 size_t 域、r09 删错误路径置 NULL）；场景标错 6 例纠正（c01b/c03/t01/r02/r05 改 cwe-787；r12 改 cwe-125 并按 gcc 实测纠正审计方案——16u 会造伪缺陷，源码未动，机理重写为缺下界检查，目录名 r12-signed-unsigned-compare 与新机理不符但未改）；存疑 5 例修复（c15 改 _Atomic+acquire/release、dequeue 取模；c21 GBUF_N 改 128+豁免锚点避开缺陷行；r08 补 join happens-before 契约；r11 活动树加 r11_get_ok 作 FP 探针；r13 EV_A/B 填真实 handler 仅 EV_C 缺失）。全部经 ASan/pthread 构造性验证，30 例 check_cases/selftest/全量构建通过
   - 待办更新：上述 14 例 scenario/机理口径变化涉及的既有工具基线数字全部待重跑（与 18:00 基线重跑合并进行）
+- **基线重跑一轮**（2026-09-03 晚，去泄漏+14 例修复后首个有效基线）：
+  - LLM（deepseek-chat 单发，run 33742222998，本地对 artifact 重算评分）：**recall 66.7%（contract 62.5%/defect 71.4%）、0 误报、severity 80%**——旧轮 83.3% 系开卷口径仅存档。FN 归因关键发现：10 个 FN 中 5 例定位完全正确但把 cwe-125（读）报成 cwe-787（写）——去泄漏后暴露模型「定位强、CWE 方向分类弱」；读/写方向是否计入 scenario 家族匹配属 design 冻结项修订议题，需主会话讨论。报告 `reports/baseline-llm-deepseek-chat.md` 已按轮次重写；llm-eval.yml 补 jsonschema 依赖（该 run CI 评分步骤曾因此失败）
+  - 工具（ci.yml run 33737452405 全绿，新 fail-open+钉版首跑）：CSA singletu/CTU、clang-tidy、Infer recall 仍 0（与老基线一致）；CppCheck 16 findings 全 EXTRA（.cpp 收录后 +2）；CodeQL 3 例产出（1 裸 FP）；Joern adapter 修复后见效——defect recall 1/14（r05）+ 4 裸 FP（r04/r09/r14 twin 受保护点全报）；CodeChecker 4 例产出（r07 anchor 正确、r09 报在豁免点属契约违反倾向）；**KLEE v3.2 下 11 例全零 findings 且每例 <1s，系静默失败非真实零发现，runner 诊断修复中**
+  - 待办：KLEE runner 修复后重跑该 job；工具报告 v3 整理；第三方标注审计（内审已完成）

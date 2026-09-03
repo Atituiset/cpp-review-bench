@@ -16,6 +16,7 @@ for bin in clang llvm-link klee; do
   fi
 done
 FAIL=0   # 累计工具硬失败，脚本末尾统一非零退出
+SEEN=0   # 实际跑过 harness 的用例数；为 0 说明 REPO_ROOT/harness 布局错了，属硬失败
 
 for gj in "$CASES_ROOT"/*/*/golden.json; do
   case_dir="$(dirname "$gj")"
@@ -25,6 +26,7 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
   [ -d "$src_dir" ] || continue
   harness="$REPO_ROOT/sa/harnesses/$cid/klee_harness.c"
   [ -f "$harness" ] || { echo "[skip] $cid: 无 klee_harness.c"; continue; }
+  SEEN=$((SEEN + 1))
 
   bc="$OUT_ROOT/$cid.bc"
   # 逐个编译该 case 的真实源 src/*.c 与 harness 为独立 .bc，再 llvm-link 合并，
@@ -59,6 +61,14 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
     echo "[ERROR] $cid klee 退出非 0（见 $OUT_ROOT/$cid.klee.log；klee-last 可能有部分产出）" >&2
     FAIL=1
   fi
+  # klee exit 0 但连 info 文件都没落盘 = 未真正执行（输出目录参数被吞、
+  # 目录结构变化等），同样属硬失败，不允许当「合法零发现」
+  if [ ! -f "$klee_out/info" ]; then
+    echo "[ERROR] $cid klee 未真正执行（$klee_out 下无 info 文件，见 $OUT_ROOT/$cid.klee.log）" >&2
+    FAIL=1
+    continue
+  fi
+  n_err="$(find "$klee_out" -maxdepth 1 -name '*.err' | wc -l)"
 
   if ! python3 "$REPO_ROOT/sa/adapters/klee_to_findings.py" "$track" "$cid" "$klee_out" \
     --tool klee --version "$(klee --version 2>/dev/null | head -1)" \
@@ -68,7 +78,16 @@ for gj in "$CASES_ROOT"/*/*/golden.json; do
     FAIL=1
     continue
   fi
-  echo "[done] $cid -> $OUT_ROOT/$cid.json"
+  # adapter 的降级 warning（如 anchor 合成失败省略 finding）必须浮出水面：
+  # 历史上「klee 检出 N 个错误但 findings 全被静默省略」就是这样被当成合法零发现的
+  if [ -s "$OUT_ROOT/$cid.normalize.err" ]; then
+    sed 's/^/[warn] /' "$OUT_ROOT/$cid.normalize.err" >&2
+  fi
+  n_findings="$(python3 -c "import json;print(len(json.load(open('$OUT_ROOT/$cid.json'))['findings']))" 2>/dev/null || echo 0)"
+  if [ "$n_err" -gt 0 ] && [ "$n_findings" -eq 0 ]; then
+    echo "[warn] $cid: klee 产出 $n_err 个 .err 但归一化后 findings=0（检出被全部省略，查 $OUT_ROOT/$cid.normalize.err）" >&2
+  fi
+  echo "[done] $cid -> $OUT_ROOT/$cid.json（err=$n_err findings=$n_findings）"
 done
 echo "=== 各例 KLEE findings 数 ==="
 shopt -s nullglob
@@ -76,6 +95,10 @@ for f in "$OUT_ROOT"/*.json; do
   [ -f "$f" ] && echo "$(basename "$f"): $(python3 -c "import json;print(len(json.load(open('$f'))['findings']))" 2>/dev/null || echo '?')"
 done
 shopt -u nullglob
+if [ "$SEEN" -eq 0 ]; then
+  echo "[ERROR] 未跑任何 harness（全部 [skip]）：REPO_ROOT=$REPO_ROOT 下 sa/harnesses 布局错误或路径指错，不允许当合法零发现" >&2
+  exit 1
+fi
 if [ "$FAIL" -ne 0 ]; then
   echo "[ERROR] 存在 klee 硬失败（见上方 [ERROR]），以非零退出" >&2
   exit 1

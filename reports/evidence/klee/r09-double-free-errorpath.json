@@ -1,0 +1,17 @@
+{
+  "tool": "klee",
+  "track": "defect",
+  "case_id": "r09-double-free-errorpath",
+  "findings": [
+    {
+      "file": "src/ctx.c",
+      "anchor": "free(c->buf);           /* 统一在出口释放 */",
+      "message": "memory error: double free",
+      "severity": "important",
+      "line": 19,
+      "function": "r09_open",
+      "scenario": "cwe-415"
+    }
+  ],
+  "version": "KLEE 3.2 (https://klee-se.org/)"
+}

@@ -1,15 +1,16 @@
 {
   "tool": "klee",
-  "case_id": "r02-offby-one-guard",
   "track": "defect",
+  "case_id": "r02-offby-one-guard",
   "findings": [
     {
-      "scenario": "cwe-125",
-      "severity": "important",
       "file": "src/parse.c",
+      "anchor": "dst[i] = src[i];",
+      "message": "memory error: out of bound pointer",
+      "severity": "important",
       "line": 15,
-      "message": "memory error: out of bound pointer [check: klee]",
-      "anchor": "dst[i] = src[i];"
+      "function": "r02_copy",
+      "scenario": "cwe-787+cwe-125"
     }
   ],
   "version": "KLEE 3.2 (https://klee-se.org/)"

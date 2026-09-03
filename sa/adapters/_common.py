@@ -62,18 +62,20 @@ def guess_case_dir(raw_path):
 
 
 def normalize_file(raw_path, case_dir=None):
-    """归一 file 为相对 case 根的 src/... 形式：优先相对 case_dir，
-    缺省时从路径里的 cases/<track>/<cid>/ 锚点截断，再退化取 src/ 起。"""
+    """归一 file 为相对 case 根的 src/... 形式：优先按路径里的
+    cases/<track>/<cid>/ 锚点截断（KLEE 等工具上报的是相对仓根的
+    cases/... 路径，对其做 case_dir 相对化只会原样返回，必须锚点优先），
+    其次相对 case_dir，再退化取 src/ 起。"""
     p = os.path.normpath(str(raw_path))
+    parts = p.split('/')
+    for i, part in enumerate(parts):
+        if part == 'cases' and i + 3 < len(parts):
+            return '/'.join(parts[i + 3:])   # cases/<track>/<cid>/ 之后
     if case_dir:
         ap = p if os.path.isabs(p) else os.path.join(str(case_dir), p)
         rel = os.path.relpath(ap, str(case_dir))
         if not rel.startswith('..'):
             return rel.replace(os.sep, '/')
-    parts = p.split('/')
-    for i, part in enumerate(parts):
-        if part == 'cases' and i + 3 < len(parts):
-            return '/'.join(parts[i + 3:])   # cases/<track>/<cid>/ 之后
     if 'src' in parts:
         return '/'.join(parts[parts.index('src'):])
     return os.path.basename(p)

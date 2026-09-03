@@ -1,15 +1,15 @@
 {
   "tool": "klee",
   "track": "defect",
-  "case_id": "r04-oob-write-stack",
+  "case_id": "r10-odd-length-bcd",
   "findings": [
     {
-      "file": "src/recv.c",
-      "anchor": "memcpy(buf, payload, len);",
+      "file": "src/imsi_bcd.c",
+      "anchor": "uint8_t hi = (uint8_t)(digits[i] - '0');",
       "message": "memory error: out of bound pointer",
       "severity": "important",
-      "line": 12,
-      "function": "r04_recv",
+      "line": 10,
+      "function": "imsi_bcd_encode",
       "scenario": "cwe-787+cwe-125"
     }
   ],

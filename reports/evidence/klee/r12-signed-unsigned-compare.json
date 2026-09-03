@@ -1,15 +1,15 @@
 {
   "tool": "klee",
   "track": "defect",
-  "case_id": "r04-oob-write-stack",
+  "case_id": "r12-signed-unsigned-compare",
   "findings": [
     {
-      "file": "src/recv.c",
-      "anchor": "memcpy(buf, payload, len);",
+      "file": "src/cmp.c",
+      "anchor": "(void)buf[len];   /* 取第 len 字节 */",
       "message": "memory error: out of bound pointer",
       "severity": "important",
-      "line": 12,
-      "function": "r04_recv",
+      "line": 11,
+      "function": "r12_use",
       "scenario": "cwe-787+cwe-125"
     }
   ],

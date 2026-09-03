@@ -1,15 +1,15 @@
 {
   "tool": "klee",
   "track": "defect",
-  "case_id": "r04-oob-write-stack",
+  "case_id": "r11-partial-stage-artifact",
   "findings": [
     {
-      "file": "src/recv.c",
-      "anchor": "memcpy(buf, payload, len);",
+      "file": "src/stage.c",
+      "anchor": "return arr[idx];",
       "message": "memory error: out of bound pointer",
       "severity": "important",
-      "line": 12,
-      "function": "r04_recv",
+      "line": 14,
+      "function": "r11_get",
       "scenario": "cwe-787+cwe-125"
     }
   ],

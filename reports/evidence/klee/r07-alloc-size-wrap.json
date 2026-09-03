@@ -1,0 +1,26 @@
+{
+  "tool": "klee",
+  "track": "defect",
+  "case_id": "r07-alloc-size-wrap",
+  "findings": [
+    {
+      "file": "src/alloc.c",
+      "anchor": "uint8_t *p = (uint8_t *)malloc(total);",
+      "message": "concretized symbolic size",
+      "severity": "important",
+      "line": 11,
+      "function": "r07_alloc",
+      "scenario": "cwe-190"
+    },
+    {
+      "file": "src/alloc.c",
+      "anchor": "p[i] = 0;",
+      "message": "memory error: out of bound pointer",
+      "severity": "important",
+      "line": 16,
+      "function": "r07_alloc",
+      "scenario": "cwe-787+cwe-125"
+    }
+  ],
+  "version": "KLEE 3.2 (https://klee-se.org/)"
+}

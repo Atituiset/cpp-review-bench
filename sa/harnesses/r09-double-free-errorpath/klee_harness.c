@@ -1,5 +1,6 @@
-/* KLEE 符号执行入口：符号化 sz，驱动 r09_open 错误路径释放后落入末尾再次释放（双重释放）。
- * 真实缺陷：sz>65535 时错误路径 free 后未 return，末尾再次 free → 双重释放（cwe-415）。
+/* KLEE 符号执行入口：驱动 r09_open 错误路径释放后落入末尾再次释放（双重释放）。
+ * sz 取大于 65535 的具体值：符号化 sz 会让 KLEE 在 malloc 处报
+ * concretized symbolic size 提前终止，触达不了 double-free 路径。
  */
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,9 +13,7 @@ int r09_open(Ctx *c, uint32_t sz);
 int main(void)
 {
     Ctx c;
-    uint32_t sz;
     c.buf = NULL;
-    klee_make_symbolic(&sz, sizeof(sz), "sz");
-    r09_open(&c, sz);
+    r09_open(&c, 70000u);
     return 0;
 }

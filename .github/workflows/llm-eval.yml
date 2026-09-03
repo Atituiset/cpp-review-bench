@@ -38,6 +38,10 @@ jobs:
         with:
           python-version: "3.11"
 
+      # eval.py run 的 findings schema 校验依赖 jsonschema
+      - name: 安装 python 依赖
+        run: pip install jsonschema
+
       - name: LLM 逐例评审 → 归一化 findings
         env:
           AI_REVIEW_API_KEY: ${{ secrets.AI_REVIEW_API_KEY }}
