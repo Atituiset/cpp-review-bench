@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_event_quic.h",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #751 QUIC: disabled OpenSSL 3.5 QUIC API support by default. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

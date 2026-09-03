@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/bitops.c",
+      "anchor": "updateKeysizesHist(c->db, getKeySlot(c->argv[1]->ptr), OBJ_STRING,",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #14877 KEYSIZES/ASM: simplify histograms, fix background trim, and refactor debug assertions :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_proxy_module.c",
+      "anchor": "loc_len = (r->valid_location && ctx->vars.uri.len) ? plcf->location.len : 0;",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #1004 Proxy: fixed segfault in URI change (issue #983). :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

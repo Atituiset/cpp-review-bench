@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/CurlTests.c",
+      "anchor": "char buffer[1024]; /* big enough to play with */",
+      "line": 6,
+      "function": null,
+      "rationale": "PR #2443 cmake: fix strerror_r tests for cross-compiling :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

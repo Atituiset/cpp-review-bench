@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_mail_handler.c",
+      "anchor": "if (s->login.data == NULL) {",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #842 smtp module fixes :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/debug.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #14968 keymeta: add DEBUG flag for runtime keymeta class registration :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

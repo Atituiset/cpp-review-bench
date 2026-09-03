@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/config-riscos.h",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #7795 Remove WinSock v1 checks again :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

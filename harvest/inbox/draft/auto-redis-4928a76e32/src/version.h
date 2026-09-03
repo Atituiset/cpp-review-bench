@@ -1,0 +1,3 @@
+// AUTO-DRAFT from redis/redis PR #15657
+#define REDIS_VERSION "6.2.23"
+#define REDIS_VERSION_NUM 0x00060217

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/rdb.h",
+      "anchor": "robj *rdbLoadCheckModuleValue(rio *rdb, char *modulename);",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #15034 Fix decrRefCount on NULL robj on corrupt KEY_META payload :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

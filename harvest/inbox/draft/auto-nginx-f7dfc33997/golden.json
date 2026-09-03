@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_http_upstream_ip_hash_module.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #1167 Upstream: added sticky sessions support for upstreams. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

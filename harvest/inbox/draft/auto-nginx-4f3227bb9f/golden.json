@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_dav_module.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #1307 Dav: improved path validation for COPY and MOVE operations :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

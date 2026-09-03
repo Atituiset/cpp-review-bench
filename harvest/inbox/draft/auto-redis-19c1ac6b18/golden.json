@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/memory_prefetch.c",
+      "anchor": "if (!batch) return;",
+      "line": 10,
+      "function": null,
+      "rationale": "PR #14848 Skip memory prefetch during loading to avoid crash in dictEmpty callback :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

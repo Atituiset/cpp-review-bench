@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/moduleconfigs.c",
+      "anchor": "REDISMODULE_NOT_USED(name);",
+      "line": 9,
+      "function": null,
+      "rationale": "PR #14816 Fix setModuleEnumConfig() to pass unprefixed name to callbacks :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

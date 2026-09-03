@@ -1,0 +1,6 @@
+// AUTO-DRAFT from nginx/nginx PR #751
+#ifdef OSSL_RECORD_PROTECTION_LEVEL_NONE
+#define NGX_QUIC_OPENSSL_API                 1
+
+#elif (defined SSL_R_MISSING_QUIC_TRANSPORT_PARAMETERS_EXTENSION)
+#define NGX_QUIC_QUICTLS_API                 1

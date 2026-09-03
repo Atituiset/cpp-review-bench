@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/errors.h",
+      "anchor": "INIT(= N_(\"E1509: Error occured when reading or writing extended attribute\"));",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #13354 Fix more typos :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

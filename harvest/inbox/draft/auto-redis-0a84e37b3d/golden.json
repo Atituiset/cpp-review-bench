@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/module.c",
+      "anchor": "if (job->free_pd) job->free_pd(job->pd);",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #15242 [RED-197766] - allow modules to register PostNotificationJobsPerKey :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
