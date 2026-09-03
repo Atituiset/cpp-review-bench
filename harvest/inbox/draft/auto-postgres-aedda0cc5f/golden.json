@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/parse_graphtable.c",
+        "anchor": "gep->whereClause = transformExpr(pstate, gep->whereClause, EXPR_KIND_WHERE);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 792094a5ce89f9953d913c835e4530e56b63026a Coerce GRAPH_TABLE pattern WHERE clauses to boolean :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
