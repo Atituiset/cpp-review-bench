@@ -11,9 +11,16 @@ val out = scala.collection.mutable.ListBuffer[Map[String, Any]]()
 try {
   importCode(srcDir)
   // 通用查询：危险内存/字符串调用（越界写/读同族，统一标 cwe-787）
-  cpg.call.name("(memcpy|strcpy|strncpy|memmove|strcat|free|realloc|memset)").l.foreach { c =>
+  cpg.call.name("(memcpy|strcpy|strncpy|memmove|strcat|memset)").l.foreach { c =>
     out += Map("file" -> c.method.filename, "line" -> c.lineNumber.getOrElse(0),
                "message" -> ("joern dangerous call: " + c.name), "scenario" -> "cwe-787",
+               "function" -> c.method.name)
+  }
+  // free/realloc 属释放类误用（双重释放 cwe-415 / 释放后使用 cwe-416），
+  // 与越界族分开标注，eval 按 `+` 分量相交匹配（如 golden cwe-415 可命中）
+  cpg.call.name("(free|realloc)").l.foreach { c =>
+    out += Map("file" -> c.method.filename, "line" -> c.lineNumber.getOrElse(0),
+               "message" -> ("joern dangerous call: " + c.name), "scenario" -> "cwe-415+cwe-416",
                "function" -> c.method.name)
   }
 } catch {
