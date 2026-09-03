@@ -43,10 +43,12 @@ jobs:
           AI_REVIEW_API_KEY: ${{ secrets.AI_REVIEW_API_KEY }}
           AI_REVIEW_BASE_URL: ${{ inputs.base_url }}
           AI_REVIEW_MODEL: ${{ inputs.model }}
+          # dispatch 输入经 env 传入，绝不 ${{ }} 插值进 run（防 shell 注入）
+          CASES: ${{ inputs.cases }}
         run: |
           mkdir -p /tmp/llm-findings
           python3 tools/llm_review.py \
-            --cases "${{ inputs.cases }}" \
+            --cases "$CASES" \
             --out /tmp/llm-findings 2>&1 | tee /tmp/review.log
 
       - name: eval.py 评分
@@ -67,8 +69,12 @@ jobs:
 
       - name: 汇总入 Step Summary
         if: always()
+        env:
+          IN_MODEL: ${{ inputs.model }}
+          IN_BASE_URL: ${{ inputs.base_url }}
+          IN_CASES: ${{ inputs.cases }}
         run: |
-          python3 - "$GITHUB_STEP_SUMMARY" "${{ inputs.model }}" "${{ inputs.base_url }}" "${{ inputs.cases }}" <<'PYEOF' || echo "summary 生成失败（不阻塞）"
+          python3 - "$GITHUB_STEP_SUMMARY" "$IN_MODEL" "$IN_BASE_URL" "$IN_CASES" <<'PYEOF' || echo "summary 生成失败（不阻塞）"
           import json, sys
           summary_file, model, base_url, cases = sys.argv[1:5]
           d = json.load(open('/tmp/eval-result.json'))

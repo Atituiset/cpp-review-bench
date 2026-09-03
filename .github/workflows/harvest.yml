@@ -83,21 +83,33 @@ jobs:
           # pr-mining 的 search API（含 search/commits）需个人 PAT：GITHUB_TOKEN（Actions 自动令牌）
           # 对 search/commits 返回 total_count=0（scope/限额限制），HARVEST_TOKEN（classic PAT）才有完整搜索权限。
           GITHUB_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
+          # dispatch 输入一律经 env 传入，绝不 ${{ }} 插值进 run（防 shell 注入）
+          IN_SINCE: ${{ github.event.inputs.since }}
+          IN_MAX_PRS: ${{ github.event.inputs.max_prs }}
+          IN_MAX_PER_PR: ${{ github.event.inputs.max_per_pr }}
+          IN_MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          IN_MAX_PER_SCENARIO: ${{ github.event.inputs.max_per_scenario }}
+          IN_FP_MINING: ${{ github.event.inputs.fp_mining }}
         run: |
           # 增量默认=昨天；历史批扫用 dispatch --since 覆盖
-          SINCE="${{ github.event.inputs.since }}"
+          SINCE="$IN_SINCE"
           [ -z "$SINCE" ] && SINCE="$(date -d yesterday +%Y-%m-%d)"
-          MAXPRS="${{ github.event.inputs.max_prs }}"
+          MAXPRS="$IN_MAX_PRS"
           [ -z "$MAXPRS" ] && MAXPRS="50"
-          MAXPERPR="${{ github.event.inputs.max_per_pr }}"
+          MAXPERPR="$IN_MAX_PER_PR"
           [ -z "$MAXPERPR" ] && MAXPERPR="3"
-          MAXCAND="${{ github.event.inputs.max_candidates }}"
+          MAXCAND="$IN_MAX_CANDIDATES"
           [ -z "$MAXCAND" ] && MAXCAND="0"
-          MAXPSC="${{ github.event.inputs.max_per_scenario }}"
+          MAXPSC="$IN_MAX_PER_SCENARIO"
           [ -z "$MAXPSC" ] && MAXPSC="5"
+          # 白名单校验：since 为日期、其余为非负整数，不匹配直接报错退出
+          [[ "$SINCE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || { echo "::error::since 须为 YYYY-MM-DD：$SINCE"; exit 1; }
+          for v in "$MAXPRS" "$MAXPERPR" "$MAXCAND" "$MAXPSC"; do
+            [[ "$v" =~ ^[0-9]+$ ]] || { echo "::error::数值参数须为非负整数：$v"; exit 1; }
+          done
           # fp-mining 仅 dispatch 显式开启（schedule 时 inputs 为空 → 关闭）
           FPFLAG=""
-          [ "${{ github.event.inputs.fp_mining }}" = "true" ] && FPFLAG="--fp-mining"
+          [ "$IN_FP_MINING" = "true" ] && FPFLAG="--fp-mining"
           python3 harvest/tools/pr_mine.py \
             --config harvest/config/repos.yaml \
             --repo-name "${{ matrix.repo }}" \

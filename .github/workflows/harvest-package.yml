@@ -38,8 +38,12 @@ jobs:
         if: inputs.action == 'confirm-tp'
         env:
           GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
+          # dispatch 输入经 env 传入，绝不 ${{ }} 插值进 run（防 shell 注入）
+          CASE_IDS: ${{ inputs.case_ids }}
         run: |
-          for cid in ${{ inputs.case_ids }}; do
+          for cid in $CASE_IDS; do
+            # id 用于路径拼接前校验字符集（防路径穿越）
+            [[ "$cid" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || { echo "::error::非法候选 id：$cid"; exit 1; }
             SRC="harvest/inbox/draft/$cid"
             [ -d "$SRC" ] || { echo "SKIP 无 $SRC"; continue; }
             mkdir -p "cases/defect/$cid"
@@ -47,13 +51,15 @@ jobs:
             echo "已转 cases/defect/$cid"
           done
           git -c user.name='harvest-bot' -c user.email='harvest@users.noreply.github.com' \
-            commit -m "feat(defect): confirm-tp ${{ inputs.case_ids }}（harvest 自动入库）" || echo "无改动"
+            commit -m "feat(defect): confirm-tp $CASE_IDS（harvest 自动入库）" || echo "无改动"
       - name: contract → cases/contract/
         if: inputs.action == 'contract'
         env:
           GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
+          CASE_IDS: ${{ inputs.case_ids }}
         run: |
-          for cid in ${{ inputs.case_ids }}; do
+          for cid in $CASE_IDS; do
+            [[ "$cid" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || { echo "::error::非法候选 id：$cid"; exit 1; }
             SRC="harvest/inbox/draft/$cid"
             [ -d "$SRC" ] || { echo "SKIP 无 $SRC"; continue; }
             [ -s "$SRC/contract.yaml" ] || { echo "ERROR: $cid contract.yaml 必填（FP 因何契约成立）"; exit 1; }
@@ -62,19 +68,22 @@ jobs:
             echo "已转 cases/contract/$cid"
           done
           git -c user.name='harvest-bot' -c user.email='harvest@users.noreply.github.com' \
-            commit -m "feat(contract): contract ${{ inputs.case_ids }}（真实 FP 契约入库）" || echo "无改动"
+            commit -m "feat(contract): contract $CASE_IDS（真实 FP 契约入库）" || echo "无改动"
       - name: reject → inbox/rejected/
         if: inputs.action == 'reject'
         env:
           GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
+          CASE_IDS: ${{ inputs.case_ids }}
+          REASON: ${{ inputs.reason }}
         run: |
-          for cid in ${{ inputs.case_ids }}; do
+          for cid in $CASE_IDS; do
+            [[ "$cid" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || { echo "::error::非法候选 id：$cid"; exit 1; }
             SRC="harvest/inbox/draft/$cid"
             [ -d "$SRC" ] || { echo "SKIP 无 $SRC"; continue; }
             mkdir -p "harvest/inbox/rejected/$cid"
             git mv "$SRC"/* "harvest/inbox/rejected/$cid/"
-            echo "${{ inputs.reason }}" > "harvest/inbox/rejected/$cid/REJECT_REASON.md"
+            printf '%s\n' "$REASON" > "harvest/inbox/rejected/$cid/REJECT_REASON.md"
             echo "已驳回 → harvest/inbox/rejected/$cid"
           done
           git -c user.name='harvest-bot' -c user.email='harvest@users.noreply.github.com' \
-            commit -m "chore(reject): ${{ inputs.case_ids }} —— ${{ inputs.reason }}" || echo "无改动"
+            commit -m "chore(reject): $CASE_IDS —— $REASON" || echo "无改动"

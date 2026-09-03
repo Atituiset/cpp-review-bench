@@ -35,8 +35,9 @@ jobs:
       - name: 切到 PR 头分支（issue_comment 事件 payload 不含 head.ref，需 API 取）
         env:
           GH_TOKEN: ${{ secrets.HARVEST_TOKEN || secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          HEAD_REF=$(gh pr view "${{ github.event.issue.number }}" --json headRefName --jq '.headRefName')
+          HEAD_REF=$(gh pr view "$ISSUE_NUMBER" --json headRefName --jq '.headRefName')
           echo "PR 头分支: $HEAD_REF"
           git fetch origin "$HEAD_REF"
           git checkout "$HEAD_REF"
@@ -44,9 +45,21 @@ jobs:
           echo "draft 候选数: $(ls -1 harvest/inbox/draft 2>/dev/null | wc -l)"
       - name: 解析指令并流转
         id: go
+        env:
+          # 安全基线：评论原文一律经 env 传入脚本，绝不 ${{ }} 插值进 run（防 shell 注入）。
+          BODY: ${{ github.event.comment.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           set -u
-          BODY="${{ github.event.comment.body }}"
+          # 白名单校验指令格式（一行一条）：
+          #   /case <accept|contract|reject> <id> [id...] [--reason <自由文本>]
+          # id 字符集 [A-Za-z0-9._-] 且首字符须为字母数字（挡 "." / ".." / "-..."），
+          # reason 不允许内嵌换行（防多行污染 id 提取）；不匹配直接报错退出。
+          CMD_RE=$'^/case (accept|contract|reject)( [A-Za-z0-9][A-Za-z0-9._-]*)+( --reason [^\n]+)?[[:space:]]*$'
+          if [[ ! "$BODY" =~ $CMD_RE ]]; then
+            echo "::error::指令格式不合法，期望：/case <accept|contract|reject> <id> [id...] [--reason 原因]"
+            exit 1
+          fi
           # 取动作
           ACTION=$(echo "$BODY" | awk '{print $2}')
           # 取 id 列表（第三字段起，遇到 --reason 止）
@@ -58,6 +71,11 @@ jobs:
           git config user.email "bench-bot@users.noreply.github.com"
           SUMMARY=""
           for cid in $IDS; do
+            # 纵深防御：id 用于路径拼接前逐一再过字符集校验（防路径穿越）
+            if [[ ! "$cid" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+              echo "::error::非法候选 id：$cid"
+              exit 1
+            fi
             SRC="harvest/inbox/draft/$cid"
             if [ ! -d "$SRC" ]; then
               SUMMARY="$SUMMARY\n- SKIP $cid（不在 draft）"
@@ -101,4 +119,4 @@ jobs:
             echo -e "$SUMMARY"
             echo "\`\`\`"
           } > /tmp/harvest_result.md
-          gh pr comment "${{ github.event.issue.number }}" --body-file /tmp/harvest_result.md
+          gh pr comment "$ISSUE_NUMBER" --body-file /tmp/harvest_result.md
