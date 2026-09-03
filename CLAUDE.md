@@ -4,7 +4,7 @@
 
 ## 1. 这是什么
 
-**C/C++（含混合编程）代码评审基准**，双轨：Contract Track（测 FP 抑制）+ Defect Track（测 TP 检出）。军规：**一切用例都是真实可编译的 C/C++ 代码**（不是题目描述）。与任何检视工具（SA/LLM）和上下文工具（navmap/codegraph/clangd/CSA）解耦，消费形态四种（本地直跑 / CI 消费者 workflow / Agent PR 评审 / compdb 提取）。
+**C/C++（含混合编程）代码评审基准**，双轨：Contract Track（测 FP 抑制）+ Defect Track（测 TP 检出）。军规：**一切用例都是真实可编译的 C/C++ 代码**（不是题目描述）。与任何检视工具（SA/LLM）和上下文工具（navmap/codegraph/clangd/CSA）解耦，消费形态四种（本地直跑 / CI 消费者 workflow / Agent PR 评审 / compdb 提取）。入门导读（原理与流程，带 r04 实例）见 `README.md`「原理与流程（入门导读）」。
 
 相关仓（都在 `~/Projects/` 下）：
 
