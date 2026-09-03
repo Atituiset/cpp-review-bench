@@ -88,4 +88,4 @@
   - 待办：KLEE runner 修复后重跑该 job；工具报告 v3 整理；第三方标注审计（内审已完成）
 - **判定语义修订一项**（2026-09-03 晚，主会话批准；design-v0.4 冻结文档未改，以此为准）：eval.py scenario 家族匹配将 **cwe-125（越界读）/cwe-787（越界写）归并同一「内存越界」族**——读写方向误差不再判 FN，仍体现在 severity/scenario 精确度维度。依据：LLM 轮次二 10 个 FN 中 5 例定位完全正确仅方向报错；KLEE 不区分读写。selftest 已加 4 组防过度扩张断言（cwe-190 vs cwe-125 仍不命中）
 - **改造一轮**（2026-09-03 晚）：①上述家族合并；②r11 golden 场景 `build`→`cwe-125`（锚定代码本体越界读，STAGED_TREE 叙事降级为背景）；③codechecker/joern adapter 补 function（joern scan.sc 输出 method.name；codechecker 花括号深度法回推——CodeChecker 6.28.3 JSON 导出确认不含函数上下文），mock 验证 twin 凭 function 翻正 TP。**新口径基线：KLEE 11/11（100%）、LLM 26/30（86.7%）、均 0 误报**；其余工具不变
-- 待办：codechecker/joern 的 function 增强要等下次 CI 重跑才体现到基线（本轮归档 findings 无 function）；scan.sc Scala 改动未经实跑待 CI 确认；第三方标注审计
+- 待办：第三方标注审计（内审已完成）；CodeChecker r09 的 cwe-401 vs golden cwe-415 释放类子类是否并族（语义议题，暂严格）；joern twin 双侧全报的查询粒度优化
