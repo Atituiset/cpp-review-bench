@@ -1,8 +1,7 @@
 {
   "tool": "infer",
-  "tool_version": "Infer version v1.3.0",
   "case_id": "t02-fnptr-table-2d",
   "track": "contract",
-  "generated_by": "infer_to_findings.py",
-  "findings": []
+  "findings": [],
+  "version": "Infer version v1.3.0"
 }

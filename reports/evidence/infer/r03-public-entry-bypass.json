@@ -1,8 +1,7 @@
 {
   "tool": "infer",
-  "tool_version": "Infer version v1.3.0",
   "case_id": "r03-public-entry-bypass",
   "track": "defect",
-  "generated_by": "infer_to_findings.py",
-  "findings": []
+  "findings": [],
+  "version": "Infer version v1.3.0"
 }

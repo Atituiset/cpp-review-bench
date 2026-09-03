@@ -1,20 +1,16 @@
 {
   "tool": "codechecker",
-  "tool_version": "unknown",
   "case_id": "r01-wrap-resume-bug",
   "track": "defect",
-  "generated_by": "codechecker_to_findings.py",
   "findings": [
     {
-      "tool": "codechecker",
-      "tool_version": "unknown",
       "scenario": null,
-      "severity": "info",
+      "severity": "minor",
       "file": "src/rlc.c",
       "line": 34,
-      "column": 12,
-      "message": "result of comparison of constant 256 with expression of type 'uint8_t' (aka 'unsigned char') is always true",
-      "check": "clang-diagnostic-tautological-constant-out-of-range-compare"
+      "message": "result of comparison of constant 256 with expression of type 'uint8_t' (aka 'unsigned char') is always true [check: clang-diagnostic-tautological-constant-out-of-range-compare]",
+      "anchor": "if (sn < AMAP_MOD) {"
     }
-  ]
+  ],
+  "version": "unknown"
 }

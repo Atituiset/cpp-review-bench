@@ -10,8 +10,7 @@
       "anchor": "last = stage_decrypt(c);",
       "message": "Variable 'last' is reassigned a value before the old one has been used.",
       "scenario": null,
-      "severity": "style",
-      "function": null
+      "severity": "minor"
     },
     {
       "file": "dispatch.c",
@@ -19,8 +18,7 @@
       "anchor": "last = stage_auth(c);   /* 不判：错误经 last 统一返回 */",
       "message": "Variable 'last' is reassigned a value before the old one has been used.",
       "scenario": null,
-      "severity": "style",
-      "function": null
+      "severity": "minor"
     },
     {
       "file": "dispatch.c",
@@ -28,8 +26,7 @@
       "anchor": "last = stage_encode(c);",
       "message": "Variable 'last' is reassigned a value before the old one has been used.",
       "scenario": null,
-      "severity": "style",
-      "function": null
+      "severity": "minor"
     },
     {
       "file": "dispatch.c",
@@ -37,8 +34,7 @@
       "anchor": "last = stage_decrypt(c);",
       "message": "Variable 'last' is reassigned a value before the old one has been used.",
       "scenario": null,
-      "severity": "style",
-      "function": null
+      "severity": "minor"
     },
     {
       "file": "dispatch.c",
@@ -46,8 +42,7 @@
       "anchor": "static int stage_auth(Ctx *c) {",
       "message": "Parameter 'c' can be declared as pointer to const",
       "scenario": null,
-      "severity": "style",
-      "function": null
+      "severity": "minor"
     },
     {
       "file": "dispatch.c",
@@ -55,8 +50,7 @@
       "anchor": "static int stage_decrypt(Ctx *c) {",
       "message": "Parameter 'c' can be declared as pointer to const",
       "scenario": null,
-      "severity": "style",
-      "function": null
+      "severity": "minor"
     }
   ]
 }

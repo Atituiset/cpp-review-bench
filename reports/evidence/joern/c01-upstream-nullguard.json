@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "c01-upstream-nullguard",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-190",
       "severity": "important",
       "file": "guti.c",
       "line": 40,
-      "column": 0,
-      "message": "joern CPG anchor match: total += (uint8_t)ie_wire_size(&ies[i]);",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: total += (uint8_t)ie_wire_size(&ies[i]); [check: joern-cpg]",
+      "anchor": "total += (uint8_t)ie_wire_size(&ies[i]);"
     }
-  ]
+  ],
+  "version": "unknown"
 }

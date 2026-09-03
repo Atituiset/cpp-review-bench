@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "i06-ipc-handler-entrypoint",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-125",
       "severity": "important",
       "file": "ipc_h.c",
       "line": 29,
-      "column": 0,
-      "message": "joern CPG anchor match: uint8_t tag = payload[n];   /* 真实 cwe-125 越界读缺陷 */",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: uint8_t tag = payload[n];   /* 真实 cwe-125 越界读缺陷 */ [check: joern-cpg]",
+      "anchor": "uint8_t tag = payload[n];   /* 真实 cwe-125 越界读缺陷 */"
     }
-  ]
+  ],
+  "version": "unknown"
 }

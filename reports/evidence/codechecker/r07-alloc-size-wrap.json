@@ -1,20 +1,16 @@
 {
   "tool": "codechecker",
-  "tool_version": "unknown",
   "case_id": "r07-alloc-size-wrap",
   "track": "defect",
-  "generated_by": "codechecker_to_findings.py",
   "findings": [
     {
-      "tool": "codechecker",
-      "tool_version": "unknown",
       "scenario": "logic",
       "severity": "important",
       "file": "src/alloc.c",
       "line": 11,
-      "column": 20,
-      "message": "either cast from 'uint32_t' (aka 'unsigned int') to 'size_t' (aka 'unsigned long') is ineffective, or there is loss of precision before the conversion",
-      "check": "bugprone-misplaced-widening-cast"
+      "message": "either cast from 'uint32_t' (aka 'unsigned int') to 'size_t' (aka 'unsigned long') is ineffective, or there is loss of precision before the conversion [check: bugprone-misplaced-widening-cast]",
+      "anchor": "uint8_t *p = (uint8_t *)malloc(total);"
     }
-  ]
+  ],
+  "version": "unknown"
 }

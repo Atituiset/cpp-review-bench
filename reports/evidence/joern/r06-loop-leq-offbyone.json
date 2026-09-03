@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "r06-loop-leq-offbyone",
   "track": "defect",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "fill.c",
       "line": 10,
-      "column": 0,
-      "message": "joern CPG anchor match: for (uint8_t i = 0; i <= R06_N; i++) {",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: for (uint8_t i = 0; i <= R06_N; i++) { [check: joern-cpg]",
+      "anchor": "for (uint8_t i = 0; i <= R06_N; i++) {"
     }
-  ]
+  ],
+  "version": "unknown"
 }

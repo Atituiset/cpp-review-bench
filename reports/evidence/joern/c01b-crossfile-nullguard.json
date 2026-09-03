@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "c01b-crossfile-nullguard",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-190",
       "severity": "important",
       "file": "caller.c",
       "line": 17,
-      "column": 0,
-      "message": "joern CPG anchor match: uint8_t sum = (uint8_t)p->len + 1u; /* len=255 时回绕为 0，索引错位 */",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: uint8_t sum = (uint8_t)p->len + 1u; /* len=255 时回绕为 0，索引错位 */ [check: joern-cpg]",
+      "anchor": "uint8_t sum = (uint8_t)p->len + 1u; /* len=255 时回绕为 0，索引错位 */"
     }
-  ]
+  ],
+  "version": "unknown"
 }

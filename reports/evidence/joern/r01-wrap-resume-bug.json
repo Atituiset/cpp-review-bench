@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "r01-wrap-resume-bug",
   "track": "defect",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-190",
       "severity": "important",
       "file": "rlc.c",
       "line": 26,
-      "column": 0,
-      "message": "joern CPG anchor match: uint8_t delta = (uint8_t)(t->tx_next - t->ack);   /* 回绕导致 delta 错误 */",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: uint8_t delta = (uint8_t)(t->tx_next - t->ack);   /* 回绕导致 delta 错误 */ [check: joern-cpg]",
+      "anchor": "uint8_t delta = (uint8_t)(t->tx_next - t->ack);   /* 回绕导致 delta 错误 */"
     }
-  ]
+  ],
+  "version": "unknown"
 }

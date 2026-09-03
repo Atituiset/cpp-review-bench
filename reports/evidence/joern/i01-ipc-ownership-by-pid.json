@@ -1,31 +1,24 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "i01-ipc-ownership-by-pid",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "ipc.c",
       "line": 30,
-      "column": 0,
-      "message": "joern CPG anchor match: ((uint8_t *)p)[v] = 0xFF;   /* v 大时越界写（真实 cwe-787） */",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: ((uint8_t *)p)[v] = 0xFF;   /* v 大时越界写（真实 cwe-787） */ [check: joern-cpg]",
+      "anchor": "((uint8_t *)p)[v] = 0xFF;   /* v 大时越界写（真实 cwe-787） */"
     },
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "ipc.c",
       "line": 17,
-      "column": 0,
-      "message": "joern dangerous call: free",
-      "check": "joern-cpg"
+      "message": "joern dangerous call: free [check: joern-cpg]",
+      "anchor": "free(p);   /* 释放归开辟方，使用方不调 */"
     }
-  ]
+  ],
+  "version": "unknown"
 }

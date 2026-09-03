@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "c08-protocol-offset-parse",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-125",
       "severity": "important",
       "file": "u2u_validate.c",
       "line": 28,
-      "column": 0,
-      "message": "joern CPG anchor match: return frame[u2u_payload_offset(frame)];",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: return frame[u2u_payload_offset(frame)]; [check: joern-cpg]",
+      "anchor": "return frame[u2u_payload_offset(frame)];"
     }
-  ]
+  ],
+  "version": "unknown"
 }

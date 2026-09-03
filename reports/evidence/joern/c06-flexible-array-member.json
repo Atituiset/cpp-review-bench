@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "c06-flexible-array-member",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "msg.c",
       "line": 31,
-      "column": 0,
-      "message": "joern CPG anchor match: for (uint16_t i = 0; i <= n; ++i)",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: for (uint16_t i = 0; i <= n; ++i) [check: joern-cpg]",
+      "anchor": "for (uint16_t i = 0; i <= n; ++i)"
     }
-  ]
+  ],
+  "version": "unknown"
 }

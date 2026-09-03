@@ -1,31 +1,24 @@
 {
   "tool": "codechecker",
-  "tool_version": "unknown",
   "case_id": "c02-central-error-handling",
   "track": "contract",
-  "generated_by": "codechecker_to_findings.py",
   "findings": [
     {
-      "tool": "codechecker",
-      "tool_version": "unknown",
       "scenario": null,
-      "severity": "info",
+      "severity": "minor",
       "file": "src/dispatch.c",
       "line": 38,
-      "column": 5,
-      "message": "Value stored to 'last' is never read",
-      "check": "deadcode.DeadStores"
+      "message": "Value stored to 'last' is never read [check: deadcode.DeadStores]",
+      "anchor": "last = stage_encode(c);"
     },
     {
-      "tool": "codechecker",
-      "tool_version": "unknown",
       "scenario": null,
-      "severity": "info",
+      "severity": "minor",
       "file": "src/dispatch.c",
       "line": 39,
-      "column": 5,
-      "message": "Value stored to 'last' is never read",
-      "check": "deadcode.DeadStores"
+      "message": "Value stored to 'last' is never read [check: deadcode.DeadStores]",
+      "anchor": "return last;            /* 唯一错误出口 */"
     }
-  ]
+  ],
+  "version": "unknown"
 }

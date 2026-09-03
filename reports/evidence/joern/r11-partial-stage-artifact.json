@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "r11-partial-stage-artifact",
   "track": "defect",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "build",
       "severity": "important",
       "file": "stage.c",
       "line": 17,
-      "column": 0,
-      "message": "joern CPG anchor match: return arr[idx];",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: return arr[idx]; [check: joern-cpg]",
+      "anchor": "return arr[idx];"
     }
-  ]
+  ],
+  "version": "unknown"
 }

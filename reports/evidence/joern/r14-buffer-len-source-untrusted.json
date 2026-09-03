@@ -1,42 +1,32 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "r14-buffer-len-source-untrusted",
   "track": "defect",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "ingest.c",
       "line": 14,
-      "column": 0,
-      "message": "joern CPG anchor match: memcpy(buf, payload, hdr_len);",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: memcpy(buf, payload, hdr_len); [check: joern-cpg]",
+      "anchor": "memcpy(buf, payload, hdr_len);"
     },
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "ingest.c",
       "line": 14,
-      "column": 0,
-      "message": "joern dangerous call: memcpy",
-      "check": "joern-cpg"
+      "message": "joern dangerous call: memcpy [check: joern-cpg]",
+      "anchor": "(void)pkt; (void)buf[0];"
     },
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "ingest.c",
       "line": 25,
-      "column": 0,
-      "message": "joern dangerous call: memcpy",
-      "check": "joern-cpg"
+      "message": "joern dangerous call: memcpy [check: joern-cpg]",
+      "anchor": "(void)pkt; (void)buf[0];"
     }
-  ]
+  ],
+  "version": "unknown"
 }

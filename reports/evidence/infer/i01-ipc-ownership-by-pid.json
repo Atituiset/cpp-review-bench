@@ -1,8 +1,7 @@
 {
   "tool": "infer",
-  "tool_version": "Infer version v1.3.0",
   "case_id": "i01-ipc-ownership-by-pid",
   "track": "contract",
-  "generated_by": "infer_to_findings.py",
-  "findings": []
+  "findings": [],
+  "version": "Infer version v1.3.0"
 }

@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "c15-spsc-lockfree-queue",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "spsc.c",
       "line": 28,
-      "column": 0,
-      "message": "joern CPG anchor match: g_q[g_tail] = v;",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: g_q[g_tail] = v; [check: joern-cpg]",
+      "anchor": "g_q[g_tail] = v;"
     }
-  ]
+  ],
+  "version": "unknown"
 }

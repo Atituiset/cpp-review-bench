@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "t02-fnptr-table-2d",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-125",
       "severity": "important",
       "file": "dispatch2.c",
       "line": 36,
-      "column": 0,
-      "message": "joern CPG anchor match: (void)handlers[row + 1u][col];   /* row=1 时越界 */",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: (void)handlers[row + 1u][col];   /* row=1 时越界 */ [check: joern-cpg]",
+      "anchor": "(void)handlers[row + 1u][col];   /* row=1 时越界 */"
     }
-  ]
+  ],
+  "version": "unknown"
 }

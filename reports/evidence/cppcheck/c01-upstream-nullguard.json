@@ -10,8 +10,7 @@
       "anchor": "uint8_t tag;",
       "message": "struct member 'IeField::tag' is never used.",
       "scenario": null,
-      "severity": "style",
-      "function": null
+      "severity": "minor"
     }
   ]
 }

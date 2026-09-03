@@ -1,31 +1,24 @@
 {
   "tool": "infer",
-  "tool_version": "Infer version v1.3.0",
   "case_id": "c02-central-error-handling",
   "track": "contract",
-  "generated_by": "infer_to_findings.py",
   "findings": [
     {
-      "tool": "infer",
-      "tool_version": "Infer version v1.3.0",
       "scenario": null,
-      "severity": "error",
+      "severity": "critical",
       "file": "cases/contract/c02-central-error-handling/src/dispatch.c",
       "line": 38,
-      "column": 5,
-      "message": "DEAD_STORE: The value written to `&last` is never used.",
-      "check": "DEAD_STORE"
+      "message": "DEAD_STORE: The value written to `&last` is never used. [check: DEAD_STORE]",
+      "anchor": "last = stage_encode(c);"
     },
     {
-      "tool": "infer",
-      "tool_version": "Infer version v1.3.0",
       "scenario": null,
-      "severity": "error",
+      "severity": "critical",
       "file": "cases/contract/c02-central-error-handling/src/dispatch.c",
       "line": 39,
-      "column": 5,
-      "message": "DEAD_STORE: The value written to `&last` is never used.",
-      "check": "DEAD_STORE"
+      "message": "DEAD_STORE: The value written to `&last` is never used. [check: DEAD_STORE]",
+      "anchor": "return last;            /* 唯一错误出口 */"
     }
-  ]
+  ],
+  "version": "Infer version v1.3.0"
 }

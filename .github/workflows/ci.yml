@@ -59,6 +59,9 @@ jobs:
       - name: 评测器自检（构造 findings 1FP+1FN+1契约违反）
         run: python3 tools/eval.py selftest
 
+      - name: evidence 归档 findings schema 校验（reports/evidence/**/*.json）
+        run: python3 tools/check_evidence.py
+
       - name: CSA 单 TU 默认配置
         run: ./sa/runners/run_csa.sh singletu /tmp/csa_singletu
 

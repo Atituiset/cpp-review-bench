@@ -1,8 +1,7 @@
 {
   "tool": "infer",
-  "tool_version": "Infer version v1.3.0",
   "case_id": "r04-oob-write-stack",
   "track": "defect",
-  "generated_by": "infer_to_findings.py",
-  "findings": []
+  "findings": [],
+  "version": "Infer version v1.3.0"
 }

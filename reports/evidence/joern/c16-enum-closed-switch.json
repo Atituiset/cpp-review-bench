@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "c16-enum-closed-switch",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-125",
       "severity": "important",
       "file": "evt.c",
       "line": 30,
-      "column": 0,
-      "message": "joern CPG anchor match: res = payload[n];   /* 真实越界读缺陷 */",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: res = payload[n];   /* 真实越界读缺陷 */ [check: joern-cpg]",
+      "anchor": "res = payload[n];   /* 真实越界读缺陷 */"
     }
-  ]
+  ],
+  "version": "unknown"
 }

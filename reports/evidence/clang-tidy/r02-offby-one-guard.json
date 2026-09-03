@@ -1,8 +1,7 @@
 {
   "tool": "clang-tidy",
-  "tool_version": "Ubuntu LLVM version 18.1.3",
   "case_id": "r02-offby-one-guard",
   "track": "defect",
-  "generated_by": "clang_tidy_to_findings.py",
-  "findings": []
+  "findings": [],
+  "version": "Ubuntu LLVM version 18.1.3"
 }

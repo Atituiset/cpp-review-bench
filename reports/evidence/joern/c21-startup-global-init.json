@@ -1,31 +1,24 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "c21-startup-global-init",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-190",
       "severity": "important",
       "file": "global.c",
       "line": 39,
-      "column": 0,
-      "message": "joern CPG anchor match: uint8_t end = off + 1u;          /* off=255 → end=0，边界失真 */",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: uint8_t end = off + 1u;          /* off=255 → end=0，边界失真 */ [check: joern-cpg]",
+      "anchor": "uint8_t end = off + 1u;          /* off=255 → end=0，边界失真 */"
     },
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-787",
       "severity": "important",
       "file": "global.c",
       "line": 27,
-      "column": 0,
-      "message": "joern dangerous call: memset",
-      "check": "joern-cpg"
+      "message": "joern dangerous call: memset [check: joern-cpg]",
+      "anchor": "memset(g_buf, 0, GBUF_N);"
     }
-  ]
+  ],
+  "version": "unknown"
 }

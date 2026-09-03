@@ -1,20 +1,16 @@
 {
   "tool": "codechecker",
-  "tool_version": "unknown",
   "case_id": "r03-public-entry-bypass",
   "track": "defect",
-  "generated_by": "codechecker_to_findings.py",
   "findings": [
     {
-      "tool": "codechecker",
-      "tool_version": "unknown",
       "scenario": null,
-      "severity": "info",
+      "severity": "minor",
       "file": "src/entry.c",
       "line": 7,
-      "column": 13,
-      "message": "unused variable 'g_shared'",
-      "check": "clang-diagnostic-unused-variable"
+      "message": "unused variable 'g_shared' [check: clang-diagnostic-unused-variable]",
+      "anchor": "static Obj *g_shared = NULL;"
     }
-  ]
+  ],
+  "version": "unknown"
 }

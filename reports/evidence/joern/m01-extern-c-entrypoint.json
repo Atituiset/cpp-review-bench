@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "m01-extern-c-entrypoint",
   "track": "contract",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-125",
       "severity": "important",
       "file": "entry.cpp",
       "line": 14,
-      "column": 0,
-      "message": "joern CPG anchor match: uint8_t t = buf[n];   // 真实 cwe-125 越界读缺陷",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: uint8_t t = buf[n];   // 真实 cwe-125 越界读缺陷 [check: joern-cpg]",
+      "anchor": "uint8_t t = buf[n];   // 真实 cwe-125 越界读缺陷"
     }
-  ]
+  ],
+  "version": "unknown"
 }

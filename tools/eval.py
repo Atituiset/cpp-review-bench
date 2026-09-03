@@ -8,9 +8,15 @@ L1 确定性匹配（per finding）:
   - must_find 命中：scenario 家族匹配（finding.scenario 为 null 时不强制）AND
     file 精确 AND (anchor 去空白子串匹配 OR line ∈ [gline±tol]) AND
     function 精确（golden 含 function 时）
+    - finding 无 anchor 时不得走 anchor 分支，只能走 line±tolerance（I1 修复）
+    - twin 点位（must_find 与 must_not_find 同 file+anchor，仅靠 function 区分）上
+      finding 无 function 时不计命中，只计 FP（I2 修复，保守口径）
   - must_not_find 违反（FP）：file 精确 AND anchor 去空白子串匹配（同一语句被报出）
     - contract 轨 + 注入了 contract.yaml 仍报 => 契约违反（权重 > 裸 FP）
     - defect 轨 => 裸 FP
+
+`run` 入口对每个 findings 文件做 schema/findings.schema.json 校验（--no-validate 可关），
+缺 track/case_id 的非 findings 文件（如 _summary.json）跳过并告警。
 
 L2 语义判等（可选，默认关）：rationale vs finding.message 的轻量 judge，此处预留接口。
 
@@ -30,7 +36,30 @@ import re
 import sys
 from pathlib import Path
 
+import jsonschema
+
 ROOT = Path(__file__).resolve().parent.parent
+
+FINDINGS_SCHEMA = None
+
+
+def findings_schema() -> dict:
+    """延迟加载 schema/findings.schema.json（run 入口校验用）。"""
+    global FINDINGS_SCHEMA
+    if FINDINGS_SCHEMA is None:
+        FINDINGS_SCHEMA = load_json(ROOT / "schema/findings.schema.json")
+    return FINDINGS_SCHEMA
+
+
+def validate_findings_doc(doc) -> list:
+    """用 schema/findings.schema.json 校验一份 findings 文档，返回错误列表（空 = 合规）。"""
+    v = jsonschema.Draft202012Validator(findings_schema())
+    return sorted(v.iter_errors(doc), key=lambda e: list(e.absolute_path))
+
+
+def is_findings_doc(doc) -> bool:
+    """是否 findings 文档（缺 track/case_id 的 json 如 _summary.json 汇总产物不算）。"""
+    return isinstance(doc, dict) and "track" in doc and "case_id" in doc
 
 
 def norm(s: str) -> str:
@@ -93,7 +122,9 @@ def finding_hits_must(g: dict, f: dict, gline: int | None) -> bool:
         return False
     ganchor = norm(g.get("anchor", ""))
     fanchor = norm(f.get("anchor", ""))
-    if ganchor and (ganchor in fanchor or fanchor in ganchor):
+    # I1 修复：finding 无 anchor 时不得走 anchor 分支（"" 恒为子串会假命中），
+    # 只能走下面的 line±tolerance 兜底；anchor 与 line 都没有则不得判命中
+    if ganchor and fanchor and (ganchor in fanchor or fanchor in ganchor):
         return True
     # line±tolerance 兜底（仅当调用方解析出 gline 且 finding 带 line）
     if gline is not None and f.get("line"):
@@ -103,6 +134,12 @@ def finding_hits_must(g: dict, f: dict, gline: int | None) -> bool:
         except (TypeError, ValueError):
             return False
     return False
+
+
+def anchors_overlap(a, b) -> bool:
+    """anchor 去空白后互为子串即视为重叠（与 L1 匹配同口径）。"""
+    a, b = norm(a or ""), norm(b or "")
+    return bool(a and b and (a in b or b in a))
 
 
 def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool,
@@ -121,13 +158,28 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool,
     # 预定位每条 must_find 的 golden 行号（line 容差兜底用）
     glines = [locate_gline(case_dir, g) for g in g_must]
 
+    # twin 点位标记：同 file 且 anchor 重叠的 must_not_find 与 must_find 成对存在
+    # （如 r04/r09/r14 的受界/未界 twin），区分只靠 function
+    twin = [any(g2.get("file") == g["file"]
+                and anchors_overlap(g2.get("anchor", ""), g.get("anchor", ""))
+                for g2 in g_not)
+            for g in g_must]
+
+    def hits_must(gi: int, g: dict, f: dict) -> bool:
+        # I2 修复：twin 点位上 finding 无 function 时无法自证命中的是缺陷点还是
+        # 受保护点，保守处理——不计 must_find 命中（仍会按 must_not_find 计 FP）；
+        # finding 带 function 时按 function 精确区分，行为不变
+        if twin[gi] and not f.get("function"):
+            return False
+        return finding_hits_must(g, f, glines[gi])
+
     # must_find 命中判定
     must_hit = []
     for gi, g in enumerate(g_must):
         gf = g["file"]
         hit = False
         for f in by_file.get(gf, []):
-            if finding_hits_must(g, f, glines[gi]):
+            if hits_must(gi, g, f):
                 hit = True
                 break
         must_hit.append({"scenario": g["scenario"], "hit": hit,
@@ -167,7 +219,7 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool,
         for fi, f in enumerate(by_file.get(gf, [])):
             if (gf, fi) in absorbed:
                 continue
-            if finding_hits_must(g, f, glines[gi]):
+            if hits_must(gi, g, f):
                 absorbed.add((gf, fi))
     for g in g_not:
         gf = g.get("file"); ganchor = norm(g.get("anchor", ""))
@@ -209,7 +261,7 @@ def eval_case(golden: dict, findings_doc: dict | None, contract_injected: bool,
             # 找到命中该 g 的 finding 的 severity
             gf = g["file"]
             for f in by_file.get(gf, []):
-                if finding_hits_must(g, f, glines[gi]):
+                if hits_must(gi, g, f):
                     if f.get("severity") == g.get("severity"):
                         sev_ok += 1
                     break
@@ -299,16 +351,41 @@ def cmd_eval(args):
 def cmd_run(args):
     """跑指定工具的一组 findings（目录或单个文件），输出汇总。"""
     fpath = Path(args.findings)
-    docs = []
+    paths = []
     if fpath.is_dir():
         for p in sorted(fpath.glob("*.json")):
             if p.name.endswith(".raw.json"):
                 continue  # llm_review 的模型原始输出旁车（含 flow/reason），不是归一化 findings
-            docs.append(load_json(p))
+            paths.append(p)
     else:
-        docs.append(load_json(fpath))
+        paths.append(fpath)
+    docs = []
+    for p in paths:
+        doc = load_json(p)
+        if not is_findings_doc(doc):
+            # S1 修复：缺 track/case_id 的 json（如 harvest 的 _summary.json）跳过并告警，
+            # 不再 KeyError 崩溃
+            print(f"[WARN] 跳过非 findings 文件（缺 track/case_id 字段）: {p}",
+                  file=sys.stderr)
+            continue
+        docs.append((p, doc))
+    if not args.no_validate:
+        bad = 0
+        for p, doc in docs:
+            errs = validate_findings_doc(doc)
+            if errs:
+                bad += 1
+                print(f"[FAIL] findings 不合 schema/findings.schema.json: {p}",
+                      file=sys.stderr)
+                for e in errs[:10]:
+                    loc = "/".join(str(x) for x in e.absolute_path) or "<root>"
+                    print(f"  - {loc}: {e.message}", file=sys.stderr)
+        if bad:
+            print(f"[FAIL] {bad} 个 findings 文件不合规，评测中止"
+                  f"（--no-validate 可跳过校验）", file=sys.stderr)
+            sys.exit(1)
     results = []
-    for doc in docs:
+    for p, doc in docs:
         gj = ROOT / "cases" / doc["track"] / doc["case_id"] / "golden.json"
         if not gj.is_file():
             print(f"[WARN] 无 golden: {doc['track']}/{doc['case_id']}", file=sys.stderr)
@@ -398,6 +475,104 @@ def cmd_selftest(args):
         ok = False
     else:
         print(f"[ OK ] c01-line: {r1l['state']}（anchor 未命中，line±tolerance 兜底命中）")
+
+    # I1 回归：无 anchor 且无 line 的 finding 不得凭空命中 must_find（"" 恒为子串的缺陷）
+    c01_dir = ROOT / "cases/contract/c01-upstream-nullguard"
+    f_noanchor = {"tool": "synthetic", "track": "contract",
+                  "case_id": "c01-upstream-nullguard",
+                  "findings": [{"file": "src/guti.c", "scenario": "cwe-190",
+                                "severity": "important", "function": "guti_group_size"}]}
+    r1i = eval_case(g1, f_noanchor, contract_injected=True, case_dir=c01_dir)
+    if r1i["must_find_hit"] != 0 or "FN" not in r1i["state"]:
+        print(f"[FAIL] I1 无 anchor/line 的 finding 不得命中, 实际 {r1i['state']} "
+              f"hit={r1i['must_find_hit']}")
+        ok = False
+    else:
+        print(f"[ OK ] I1: 无 anchor/line finding 未命中 must_find（{r1i['state']}）")
+    # I1 对照：无 anchor 但 line 在容差内仍允许经 line±tolerance 命中
+    f_noanchor_line = {"tool": "synthetic", "track": "contract",
+                       "case_id": "c01-upstream-nullguard",
+                       "findings": [{"file": "src/guti.c", "scenario": "cwe-190",
+                                     "severity": "important",
+                                     "function": "guti_group_size", "line": 42}]}
+    r1j = eval_case(g1, f_noanchor_line, contract_injected=True, case_dir=c01_dir)
+    if not (r1j["state"] == "PASS" and r1j["must_find_hit"] == 1):
+        print(f"[FAIL] I1 对照：无 anchor 但 line 容差内应命中, 实际 {r1j['state']} "
+              f"hit={r1j['must_find_hit']}")
+        ok = False
+    else:
+        print(f"[ OK ] I1 对照: 无 anchor + line 容差内 => {r1j['state']}（line 兜底保留）")
+
+    # I2 回归：r04 twin（must_find 与 must_not_find 同 file+anchor，仅靠 function 区分）
+    g4 = load_json(ROOT / "cases/defect/r04-oob-write-stack/golden.json")
+    f_twin_nofunc = {"tool": "synthetic", "track": "defect",
+                     "case_id": "r04-oob-write-stack",
+                     "findings": [{"file": "src/recv.c",
+                                   "anchor": "memcpy(buf, payload, len);",
+                                   "scenario": "cwe-787", "severity": "important"}]}
+    r4a = eval_case(g4, f_twin_nofunc, contract_injected=True)
+    # 状态为 FN+FP：finding 只报了受保护点（FP），缺陷点确实漏报（FN）——关键是 TP 不被虚抬
+    if not (r4a["must_find_hit"] == 0 and r4a["bare_fp"] == 1
+            and r4a["state"] == "FN+FP" and r4a["extra"] == 0):
+        print(f"[FAIL] I2 无 function 的 twin finding 应只计 FP 不计 TP, 实际 "
+              f"{r4a['state']} hit={r4a['must_find_hit']} bare={r4a['bare_fp']} "
+              f"extra={r4a['extra']}")
+        ok = False
+    else:
+        print(f"[ OK ] I2: 无 function twin finding => {r4a['state']} "
+              f"hit={r4a['must_find_hit']} bare_fp={r4a['bare_fp']}（不计 TP）")
+    # I2 对照①：finding 带 function=r04_recv（缺陷点）应正常命中且不算 FP（行为不回归）
+    f_twin_hit = {"tool": "synthetic", "track": "defect",
+                  "case_id": "r04-oob-write-stack",
+                  "findings": [{"file": "src/recv.c",
+                                "anchor": "memcpy(buf, payload, len);",
+                                "scenario": "cwe-787", "severity": "important",
+                                "function": "r04_recv"}]}
+    r4b = eval_case(g4, f_twin_hit, contract_injected=True)
+    if not (r4b["state"] == "PASS" and r4b["must_find_hit"] == 1
+            and r4b["bare_fp"] == 0):
+        print(f"[FAIL] I2 对照：function=r04_recv 应 PASS, 实际 {r4b['state']} "
+              f"hit={r4b['must_find_hit']} bare={r4b['bare_fp']}")
+        ok = False
+    else:
+        print(f"[ OK ] I2 对照①: function=r04_recv => {r4b['state']}（function 精确区分）")
+    # I2 对照②：finding 带 function=r04_recv_ok（受保护点）应只计 FP
+    f_twin_fp = {"tool": "synthetic", "track": "defect",
+                 "case_id": "r04-oob-write-stack",
+                 "findings": [{"file": "src/recv.c",
+                               "anchor": "memcpy(buf, payload, len);",
+                               "scenario": "cwe-787", "severity": "important",
+                               "function": "r04_recv_ok"}]}
+    r4c = eval_case(g4, f_twin_fp, contract_injected=True)
+    if not (r4c["state"] == "FN+FP" and r4c["must_find_hit"] == 0
+            and r4c["bare_fp"] == 1):
+        print(f"[FAIL] I2 对照：function=r04_recv_ok 应 FP, 实际 {r4c['state']} "
+              f"hit={r4c['must_find_hit']} bare={r4c['bare_fp']}")
+        ok = False
+    else:
+        print(f"[ OK ] I2 对照②: function=r04_recv_ok => {r4c['state']}（function 冲突排除命中）")
+
+    # findings schema 校验：合规/不合规各一例 + 非 findings 文档识别
+    doc_ok = {"tool": "synthetic", "track": "defect", "case_id": "r04-oob-write-stack",
+              "findings": [{"file": "src/recv.c", "anchor": "memcpy(buf, payload, len);",
+                            "scenario": "cwe-787", "severity": "important",
+                            "function": "r04_recv", "line": 10,
+                            "message": "m", "verified": True}]}
+    doc_bad = json.loads(json.dumps(doc_ok))
+    doc_bad["findings"][0]["severity"] = "style"   # 非枚举值
+    doc_bad["findings"][0]["column"] = 3           # 多余字段
+    doc_summary = {"summary": {}, "cases": []}     # 汇总产物，非 findings
+    errs_ok = validate_findings_doc(doc_ok)
+    errs_bad = validate_findings_doc(doc_bad)
+    if errs_ok or not errs_bad or is_findings_doc(doc_summary):
+        print(f"[FAIL] schema 校验断言: 合规例错误={len(errs_ok)}（应 0）, "
+              f"不合规例错误={len(errs_bad)}（应 >0）, "
+              f"summary 被误判为 findings={is_findings_doc(doc_summary)}（应 False）")
+        ok = False
+    else:
+        print(f"[ OK ] schema 校验: 合规例通过, 不合规例报 {len(errs_bad)} 错, "
+              f"summary 产物正确识别为非 findings")
+
     print("SELFTEST", "PASS" if ok else "FAIL")
     sys.exit(0 if ok else 1)
 
@@ -414,6 +589,8 @@ def main():
     r.add_argument("findings")
     r.add_argument("--no-contract", dest="contract", action="store_false", default=True,
                    help="contract 轨按「未注入契约」口径评测（must_not_find 命中记为裸 FP 而非契约违反）")
+    r.add_argument("--no-validate", dest="no_validate", action="store_true", default=False,
+                   help="跳过 findings 对 schema/findings.schema.json 的校验（默认校验，不合规即失败）")
     r.set_defaults(func=cmd_run)
     s = sub.add_parser("selftest", help="构造 findings 自检（1FP+1FN+1契约违反）")
     s.set_defaults(func=cmd_selftest)

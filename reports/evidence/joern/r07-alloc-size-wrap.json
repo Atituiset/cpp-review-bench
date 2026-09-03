@@ -1,20 +1,16 @@
 {
   "tool": "joern",
-  "tool_version": "unknown",
   "case_id": "r07-alloc-size-wrap",
   "track": "defect",
-  "generated_by": "joern_to_findings.py",
   "findings": [
     {
-      "tool": "joern",
-      "tool_version": "unknown",
       "scenario": "cwe-190+cwe-787",
       "severity": "important",
       "file": "alloc.c",
       "line": 11,
-      "column": 0,
-      "message": "joern CPG anchor match: size_t total = (size_t)(n * size);   /* 先 uint32 乘再转 size_t，回绕已发生 */",
-      "check": "joern-cpg"
+      "message": "joern CPG anchor match: size_t total = (size_t)(n * size);   /* 先 uint32 乘再转 size_t，回绕已发生 */ [check: joern-cpg]",
+      "anchor": "size_t total = (size_t)(n * size);   /* 先 uint32 乘再转 size_t，回绕已发生 */"
     }
-  ]
+  ],
+  "version": "unknown"
 }
