@@ -12,7 +12,7 @@ void *r07_alloc(uint32_t n, uint32_t size)
     if (p == NULL) {
         return NULL;
     }
-    for (uint32_t i = 0; i < n * size; i++) {   /* 逐字节清零 */
+    for (size_t i = 0; i < (size_t)n * size; i++) {   /* 逐字节清零 */
         p[i] = 0;
     }
     return p;

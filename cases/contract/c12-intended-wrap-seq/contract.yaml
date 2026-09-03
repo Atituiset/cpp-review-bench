@@ -5,7 +5,7 @@ contract:
     - id: g1
       statement: seq_next 的 seq+1 回绕是契约行为（序号 mod 256），非缺陷
     - id: g2
-      statement: ring_get 的 pos 应受 SEQ_MOD 约束，但本例缺模约——属真实缺陷（见 must_find），与上一条"意图回绕"区分
+      statement: ring_get 的读取位置应约束在环形缓冲容量 RING_SIZE 内；序号的模 256 回绕本身不构成对缓冲容量的约束
   assumptions:
     - id: a1
       statement: 序号域为 [0, SEQ_MOD)，回绕点合法

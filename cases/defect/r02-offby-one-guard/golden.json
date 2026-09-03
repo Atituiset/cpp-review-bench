@@ -8,18 +8,18 @@
   "expected": {
     "must_find": [
       {
-        "scenario": "cwe-125",
+        "scenario": "cwe-787",
         "severity": "important",
         "file": "src/parse.c",
         "anchor": "for (uint8_t i = 0; i < len + 1u; i++) {",
         "function": "r02_copy",
         "line_tolerance": 2,
-        "rationale": "循环条件 i < len+1u 比正确守卫多一字节，dst[len] 越界写，报文解析 off-by-one 缺陷（cwe-125）"
+        "rationale": "循环条件 i < len+1u 比正确守卫多一字节，dst[len] 越界写，报文解析 off-by-one 缺陷（cwe-787）"
       }
     ],
     "must_not_find": [
       {
-        "scenario": "cwe-125",
+        "scenario": "cwe-787",
         "note": "r02_copy_ok 的循环 i < len 且 len 已受 MAX_PAYLOAD 界，属安全点；工具若报越界属误报",
         "file": "src/parse.c",
         "anchor": "for (uint8_t i = 0; i < len; i++) {",

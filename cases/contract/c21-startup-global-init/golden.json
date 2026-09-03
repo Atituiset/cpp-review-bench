@@ -9,27 +9,27 @@
     "must_not_find": [
       {
         "scenario": "cwe-476",
-        "note": "g_buf 在 gbuf_init 启动期分配，gbuf_write_at 业务期使用；契约保证 init 先于 use，g_buf 非空。工具若报 cwe-476 属未理解生命周期契约",
+        "note": "g_buf 在 gbuf_init 启动期分配，gbuf_write_at 业务期使用；契约保证 init 先于 use，g_buf 非空；且该行仅在 end < g_len(=128) 时可达，end 恒在界内。工具若报 cwe-476 属未理解生命周期契约",
         "file": "src/global.c",
-        "anchor": "g_buf[off] = val;",
+        "anchor": "g_buf[end] = 0xFF;",
         "function": "gbuf_write_at"
       }
     ],
     "must_find": [
       {
-        "scenario": "cwe-190",
+        "scenario": "cwe-190+cwe-787",
         "severity": "important",
         "file": "src/global.c",
         "anchor": "uint8_t end = off + 1u;",
         "function": "gbuf_write_at",
         "line_tolerance": 3,
-        "rationale": "off 为 uint8_t，off=255 时 +1 回绕为 0，end 计算失真导致边界检查失效，下游 g_buf[end] 索引错位，真实整数回绕缺陷"
+        "rationale": "off 为 uint8_t 而 g_len=128：off=255 时 end=off+1 回绕为 0，end < g_len 检查被回绕骗过，g_buf[255] 越界写（其余 off 值均被检查正确拦下：off∈[128,254] 时 end∈[129,255] 检查失败）；回绕致边界检查失效的真实缺陷"
       }
     ]
   },
   "context": {
     "contract": "startup_global_init",
-    "callchain_hint": "gbuf_init 启动期 malloc → gbuf_write_at 业务期使用 g_buf[off]；同时 off+1u 回绕"
+    "callchain_hint": "gbuf_init 启动期 malloc(128) → gbuf_write_at 业务期写 g_buf；off=255 时 off+1 回绕骗过边界检查"
   },
   "difficulty": "medium",
   "split": "dev"

@@ -14,20 +14,19 @@
         "anchor": "return g_table[s][e];",
         "function": "r13_lookup",
         "line_tolerance": 3,
-        "rationale": "Event 枚举含 EV_C（合法值），但 g_table 各状态均未初始化 EV_C 槽位（NULL handler）；r13_lookup 返回 NULL handler 属状态机缺转换逻辑缺陷（logic）"
+        "rationale": "Event 枚举含合法值 EV_C，但 g_table 三个状态的 EV_C 槽位均未填（隐式零初始化为 NULL）；r13_lookup(ST_*, EV_C) 返回 NULL handler，调用方解引用即崩溃——合法事件无转换，状态机缺转换逻辑缺陷（logic）"
       }
     ],
     "must_not_find": [
       {
         "scenario": "logic",
-        "note": "EV_A/EV_B 在表中有初始化（即便为 0），枚举与表一致点非缺陷；工具若报「未初始化」需区分已显式置 0 与漏填 EV_C",
+        "note": "EV_A/EV_B 槽位均填有真实 handler（h_init_a/h_init_b 等），枚举值与表项一致，非缺转换；工具若对这些已填槽位报「缺失 handler/未初始化」属误报",
         "file": "src/fsm.c",
-        "anchor": "[ST_INIT]  = { [EV_A] = 0, [EV_B] = 0 },",
-        "function": "r13_lookup"
+        "anchor": "[ST_INIT]  = { [EV_A] = h_init_a,  [EV_B] = h_init_b },"
       }
     ]
   },
-  "context": { "contract": "state_missing", "callchain_hint": "事件枚举有 EV_C 但状态表漏填——返回 NULL handler" },
+  "context": { "contract": "state_missing", "callchain_hint": "事件枚举有 EV_C 但状态表漏填——r13_lookup 返回 NULL handler" },
   "difficulty": "hard",
   "split": "dev"
 }

@@ -17,19 +17,19 @@
     ],
     "must_find": [
       {
-        "scenario": "cwe-190",
+        "scenario": "cwe-787",
         "severity": "important",
         "file": "src/caller.c",
         "anchor": "uint8_t sum = (uint8_t)p->len + 1u;",
         "function": "consume",
         "line_tolerance": 3,
-        "rationale": "p->len 为 uint16_t 强转 uint8_t 后 +1u，len>=255 时回绕；下游 payload[sum] 索引错位，真实整数回绕缺陷"
+        "rationale": "validate 已保证 len<=128，强转后 sum=len+1<=129，回绕不可能；但 len>=127 时 sum>=128，p->payload[sum] 越过 payload[128] 末元素越界写，守卫截断后的 off-by-one 越界写缺陷"
       }
     ]
   },
   "context": {
     "contract": "crossfile_nullguard",
-    "callchain_hint": "consume 调 validate(util.c) 判空 → 通过后解引用 p->tag；同时 (uint8_t)p->len+1u 回绕"
+    "callchain_hint": "consume 调 validate(util.c) 判空 → 通过后解引用 p->tag；同时 payload[sum] off-by-one 越界写"
   },
   "difficulty": "medium",
   "split": "dev"

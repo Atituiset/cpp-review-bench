@@ -17,19 +17,19 @@
     ],
     "must_find": [
       {
-        "scenario": "cwe-190",
+        "scenario": "cwe-787",
         "severity": "important",
         "file": "src/parser.c",
         "anchor": "uint8_t total = msg->len + 1u;",
         "function": "msg_dispatch",
         "line_tolerance": 3,
-        "rationale": "msg->len 为 uint8_t，len=255 时 +1 回绕为 0，total 计算失真；下游按回绕后的 total 索引会错位，属真实整数回绕缺陷"
+        "rationale": "MSG_REQUIRE 已保证 len<=64，len+1 最大 65，回绕不可能；但 len>=63 时 total>=64，msg->buf[total] 越过 buf[64] 末元素越界写，守卫截断后的 off-by-one 越界写缺陷"
       }
     ]
   },
   "context": {
     "contract": "assert_guard",
-    "callchain_hint": "MSG_REQUIRE(msg!=NULL) 守护 → msg->buf[0] 解引用；同时 msg->len+1u 回绕"
+    "callchain_hint": "MSG_REQUIRE(msg!=NULL) 守护 → msg->buf[0] 解引用；同时 buf[total] off-by-one 越界写"
   },
   "difficulty": "easy",
   "split": "dev"

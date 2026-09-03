@@ -76,3 +76,9 @@
   - B3 r01 伪缺陷重写：原 r01 声称的「(tx_next-ack) 回绕致恢复点错乱（cwe-190）」在代数上恒不成立（模 256 环上 ack+(tx_next-ack)≡tx_next，且 uint8_t 索引 256 项数组不可能越界），已重写为真缺陷——模 256 序号直接索引 64 项环形窗口未取模，越界读（cwe-125），安全点改为 rlc_fill 的取模索引；涉及 r01 的既有工具基线数字失效，待重跑
   - I1/I2/S1 + findings schema 门禁：修复 I1（finding 无 anchor 时 `""` 恒为子串导致 must_find 假命中，改为只能走 line±tolerance）、I2（twin 点位——must_find/must_not_find 同 file+anchor 仅靠 function 区分，如 r04/r09/r14——finding 无 function 时只计 FP 不计 TP）、S1（`run` 目录扫描遇缺 track/case_id 的 json 由 KeyError 改为跳过告警）；`eval.py run` 入口默认做 schema/findings.schema.json 校验（`--no-validate` 兜底）；新增 `tools/check_evidence.py`（reports/evidence 归档校验，已挂 CI build-and-eval 门禁，summary 产物豁免）与 `tools/normalize_evidence.py`（一次性归档归一化，已执行：114 个 findings 文件 100% 合规；注意 joern/klee/codeql/codechecker/infer adapter 仍可能产出不带 anchor 的 findings，重跑基线前需修 adapter）
   - 整改后新增待办：LLM 基线去泄漏重跑、r01 相关工具基线重跑、上述 5 个 adapter 补 anchor 输出
+- **质量整改二轮**（2026-09-03 下午）：
+  - adapter：5 个 adapter（joern/klee/infer/codechecker/sarif）补 anchor 三级合成，公共逻辑抽 `sa/adapters/_common.py`（SEVERITY_MAP 5 份复制消除）；修 KLEE `out of bound` 文案匹配丢失 scenario 的既有 bug、cppcheck 漏收 .cpp
+  - CI：fail-open 收敛（工具失败=红、零发现不红、CTU 退化落 DEGRADED+::warning::）、版本钉死（klee v3.2、joern 按 digest、codechecker==6.28.3）、run_infer.sh 互斥模式混用修复、runner 卫生（执行位/set -euo pipefail/mktemp）
+  - consumers/ 通用消费入口已建成：`consumers/local/run.sh` + `consumers/github-action/bench.yml` + 中文 README（README 消费形态表已指向）
+  - **golden 内审 30 例 + 14 例修复**（记录 `reports/audit-internal-2026-09-03.md`）：伪缺陷 3 例重写（c12 环改 64 项标 cwe-125、r07 清零循环改 size_t 域、r09 删错误路径置 NULL）；场景标错 6 例纠正（c01b/c03/t01/r02/r05 改 cwe-787；r12 改 cwe-125 并按 gcc 实测纠正审计方案——16u 会造伪缺陷，源码未动，机理重写为缺下界检查，目录名 r12-signed-unsigned-compare 与新机理不符但未改）；存疑 5 例修复（c15 改 _Atomic+acquire/release、dequeue 取模；c21 GBUF_N 改 128+豁免锚点避开缺陷行；r08 补 join happens-before 契约；r11 活动树加 r11_get_ok 作 FP 探针；r13 EV_A/B 填真实 handler 仅 EV_C 缺失）。全部经 ASan/pthread 构造性验证，30 例 check_cases/selftest/全量构建通过
+  - 待办更新：上述 14 例 scenario/机理口径变化涉及的既有工具基线数字全部待重跑（与 18:00 基线重跑合并进行）

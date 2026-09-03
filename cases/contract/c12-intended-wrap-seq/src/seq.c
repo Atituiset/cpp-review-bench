@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #define SEQ_MOD 256u
+#define RING_SIZE 64u
 
 /* 序号推进：按 8 位模 256 回绕 */
 uint8_t seq_next(uint8_t seq)
@@ -14,7 +15,7 @@ uint8_t seq_next(uint8_t seq)
     return (uint8_t)(seq + 1u);
 }
 
-/* 用序号加偏移索引环形缓冲 */
+/* 用序号加偏移索引环形缓冲（容量 RING_SIZE） */
 uint8_t ring_get(uint8_t *ring, uint8_t seq, uint8_t idx)
 {
     /* 基准序号加上窗口内偏移得到读取位置 */

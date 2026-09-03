@@ -8,8 +8,9 @@
 ## 2. 为什么契约安全 / 哪里是真缺陷
 - **安全点**：`consume` 先 `if (validate(p) != 0) return;`，`validate` 已判空且
   校验 `len<=128`，后续 `p->tag` 解引用运行期恒安全——跨文件契约安全。
-- **真缺陷（混入）**：`(uint8_t)p->len + 1u`——len 为 uint16_t 强转 uint8_t 后 +1，
-  len>=255 时回绕，下游 `payload[sum]` 索引错位（cwe-190）。
+- **真缺陷（混入）**：`(uint8_t)p->len + 1u`——validate 已限 `len<=128`，强转后
+  `sum=len+1<=129`，回绕不可能；但 len>=127 时 sum>=128，`payload[sum]` 越过
+  `payload[128]` 末元素越界写（cwe-787）。守卫截断后的 off-by-one。
 
 ## 3. 各工具可能误判方式
 - CSA（单 TU）：看不到 validate 判空，可能误报 cwe-476；CTU 模式应能跨文件看到

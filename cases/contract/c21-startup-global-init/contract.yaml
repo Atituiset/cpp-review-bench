@@ -6,9 +6,9 @@ contract:
       statement: 契约保证 gbuf_init 在任意 gbuf_write_at 之前调用，g_buf 一旦进入业务期恒非空
   assumptions:
     - id: a1
-      statement: 运行期 init 先于心，全局量生命周期跨函数受控
+      statement: 运行期 init 先于 use，全局量生命周期跨函数受控
   exemptions:
     - scenario: cwe-476
       file: src/global.c
-      anchor: "g_buf[off] = val;"
+      anchor: "g_buf[end] = 0xFF;"
       because: 见 g1——init 契约保证非空，非 cwe-476

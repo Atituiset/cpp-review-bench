@@ -13,3 +13,11 @@ uint8_t r11_get(const uint8_t *arr, uint8_t idx)
     /* 取第 idx 个元素 */
     return arr[idx];
 }
+
+/* 带范围钳制的取数入口 */
+uint8_t r11_get_ok(const uint8_t *arr, uint8_t idx)
+{
+    if (idx >= 16u) return 0;        /* 范围钳制 */
+    /* 取第 idx 个元素 */
+    return arr[idx];
+}

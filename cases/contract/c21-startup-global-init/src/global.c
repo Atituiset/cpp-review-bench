@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define GBUF_N 256
+#define GBUF_N 128
 
 /* 启动期分配，业务期复用（契约：init 必须先于 use） */
 static uint8_t *g_buf = NULL;
@@ -25,14 +25,13 @@ int gbuf_init(void)
     return 0;
 }
 
-/* 业务期写入：按约定 gbuf_init 已在启动期完成 */
+/* 业务期写入：按约定 gbuf_init 已在启动期完成；
+ * 写入后在下一格补一个结束标记 */
 void gbuf_write_at(uint8_t off, uint8_t val)
 {
-    g_buf[off] = val;
-
-    /* 在写入位置之后再补一个结束标记 */
     uint8_t end = off + 1u;          /* 结束标记位置 */
     if (end < g_len) {
+        g_buf[off] = val;
         g_buf[end] = 0xFF;
     }
 }

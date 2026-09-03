@@ -15,7 +15,6 @@ int r09_open(Ctx *c, uint32_t sz)
     /* 尺寸超上限时先做一次清理 */
     if (sz > 65535u) {
         free(c->buf);       /* 清理已分配的缓冲 */
-        c->buf = NULL;
     }
     free(c->buf);           /* 统一在出口释放 */
     c->buf = NULL;

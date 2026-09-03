@@ -5,7 +5,7 @@
 `memcpy(dst, src, len+1)`）是高频 off-by-one 缺陷。
 
 ## 2. 真缺陷在哪
-- **真缺陷**：`r02_copy` 的 `i < len + 1u` 多拷一字节，`dst[len]` 越界写（cwe-125）。
+- **真缺陷**：`r02_copy` 的 `i < len + 1u` 多拷一字节，`dst[len]` 越界写（cwe-787）。
 - **安全点**：`r02_copy_ok` 的 `i < len` 正确受界，非缺陷。
 
 ## 3. 各工具误判方式

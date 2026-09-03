@@ -20,14 +20,14 @@
     "must_not_find": [
       {
         "scenario": "cwe-362",
-        "note": "r08_read 单线程读 g_counter，无并发写，无竞争；工具若报 cwe-362 属误报",
+        "note": "契约约定 r08_read 仅在全部工作线程 join 之后由主线程调用；join 与工作线程的退出建立 happens-before，读取时不存在任何并发写，无数据竞争；工具若报 cwe-362 属误报",
         "file": "src/cnt.c",
         "anchor": "return g_counter;",
         "function": "r08_read"
       }
     ]
   },
-  "context": { "contract": "missing_lock", "callchain_hint": "r08_inc 无锁递增竞争；r08_read 单线程安全" },
+  "context": { "contract": "missing_lock", "callchain_hint": "r08_inc 工作线程内无锁递增竞争；r08_read 仅在 join 后调用" },
   "difficulty": "medium",
   "split": "dev"
 }

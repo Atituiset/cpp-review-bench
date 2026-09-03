@@ -19,11 +19,11 @@
     ],
     "must_not_find": [
       {
-        "scenario": "build",
-        "note": "评审版（STAGED_TREE=1）有 `if (idx >= 16u) return 0;` 边界检查，属安全点；工具若报越界属误报（应评审的是提交版）",
+        "scenario": "cwe-125",
+        "note": "r11_get_ok 位于实际编译的活动树中且带边界检查：idx>=16 时直接返回 0，arr[idx] 恒在界内；工具若对其报越界读属误报",
         "file": "src/stage.c",
         "anchor": "if (idx >= 16u) return 0;",
-        "function": "r11_get"
+        "function": "r11_get_ok"
       }
     ]
   },

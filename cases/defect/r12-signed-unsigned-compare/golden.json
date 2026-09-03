@@ -1,33 +1,33 @@
 {
   "id": "r12-signed-unsigned-compare",
   "track": "defect",
-  "title": "有符号/无符号混用致边界检查失效",
+  "title": "长度检查缺下界致负索引越界读",
   "version": 2,
   "languages": ["c"],
-  "tags": ["signed-unsigned", "compare", "integer"],
+  "tags": ["bounds-check", "negative-index", "oob-read"],
   "expected": {
     "must_find": [
       {
-        "scenario": "cwe-190",
+        "scenario": "cwe-125",
         "severity": "important",
         "file": "src/cmp.c",
         "anchor": "if (len < LIM) {",
         "function": "r12_use",
         "line_tolerance": 3,
-        "rationale": "len 为 int，与无符号 LIM 比较时隐式转为 size_t；len<0 时变成巨大正数，检查通过，buf[len] 负索引越界，真实 cwe-190 符号混用缺陷"
+        "rationale": "len 为 int，仅做上界检查 len < LIM（有符号比较），缺下界检查；len<0 时比较成立、检查通过，buf[len] 负索引越界读，真实缺下界检查缺陷"
       }
     ],
     "must_not_find": [
       {
-        "scenario": "cwe-190",
-        "note": "r12_use_ok 先 `if (len >= 0 && len < LIM)` 有符号范围检查在前，避免混用转换，属安全点；工具若报越界属误报",
+        "scenario": "cwe-125",
+        "note": "r12_use_ok 先 `if (len >= 0 && len < LIM)` 补足下界检查，负 len 被挡在界外，属安全点；工具若报越界属误报",
         "file": "src/cmp.c",
         "anchor": "if (len >= 0 && len < LIM) {",
         "function": "r12_use_ok"
       }
     ]
   },
-  "context": { "contract": "sign_unsigned", "callchain_hint": "r12_use 符号混用绕过检查；r12_use_ok 先有符号检查" },
+  "context": { "contract": "missing-lower-bound", "callchain_hint": "r12_use 缺下界检查负索引越界读；r12_use_ok 上下界齐备" },
   "difficulty": "medium",
   "split": "dev"
 }

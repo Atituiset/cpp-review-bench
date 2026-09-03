@@ -17,19 +17,19 @@
     ],
     "must_find": [
       {
-        "scenario": "cwe-787",
+        "scenario": "cwe-125",
         "severity": "important",
         "file": "src/seq.c",
         "anchor": "uint8_t pos = (uint8_t)(seq + idx);",
         "function": "ring_get",
         "line_tolerance": 3,
-        "rationale": "pos 由 seq+idx 回绕得到，未对 SEQ_MOD 约简；idx 较大时 pos 越界 ring[256]，真实越界读缺陷"
+        "rationale": "环形缓冲容量仅 RING_SIZE=64 项，pos 是模 256 序号空间的值（0..255），未按容量取模直接索引；seq+idx 落在 [64,255] 时（如 seq=100、idx=10 → pos=110）越界读，真实 cwe-125 缺陷"
       }
     ]
   },
   "context": {
     "contract": "intended_wrap_seq",
-    "callchain_hint": "seq_next 回绕设计意图；ring_get 缺模约导致 pos 越界"
+    "callchain_hint": "seq_next 回绕设计意图；ring_get 以模 256 序号直索引 64 项环形缓冲，pos 越界读"
   },
   "difficulty": "medium",
   "split": "dev"

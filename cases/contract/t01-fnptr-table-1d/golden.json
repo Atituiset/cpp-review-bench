@@ -17,7 +17,7 @@
     ],
     "must_find": [
       {
-        "scenario": "cwe-125",
+        "scenario": "cwe-787",
         "severity": "important",
         "file": "src/dispatch.c",
         "anchor": "handlers[idx + 1u] = h_a;",

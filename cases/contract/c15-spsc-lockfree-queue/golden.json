@@ -9,9 +9,9 @@
     "must_not_find": [
       {
         "scenario": "cwe-362",
-        "note": "g_head 仅由消费者维护、g_tail 仅由生产者维护，SPSC 语义下无数据竞争；工具报 cwe-362 属未理解 SPSC 无锁正确性",
+        "note": "g_head/g_tail 均为 _Atomic，生产者 release 发布、g_tail 由消费者 acquire 读取（g_head 反向同理），SPSC 语义下共享指针访问已正确同步，无数据竞争；工具报 cwe-362 属未理解无锁同步",
         "file": "src/spsc.c",
-        "anchor": "*out = g_q[g_head];",
+        "anchor": "*out = g_q[head % QSZ];",
         "function": "spsc_dequeue"
       }
     ],
@@ -20,16 +20,16 @@
         "scenario": "cwe-787",
         "severity": "important",
         "file": "src/spsc.c",
-        "anchor": "g_q[g_tail] = v;",
+        "anchor": "g_q[tail] = v;",
         "function": "spsc_enqueue",
         "line_tolerance": 4,
-        "rationale": "enqueue 在写 g_q[g_tail] 前虽然检查 next==g_head，但连续满产时 tail 回绕 + 未约束 g_tail<QSZ 的边界，存在覆盖未消费数据/越界写风险（真实并发模式缺陷）"
+        "rationale": "写指针 tail 按 uint8_t 模 256 推进，而槽位仅 QSZ=16：满判 next==head 只在两指针模 256 恰好差 1 时触发，挡不住 tail 越过 15——连续入队不消费时第 17 次 enqueue 以 tail=16 直索引 g_q，越界写（cwe-787，真实并发模式缺陷）"
       }
     ]
   },
   "context": {
     "contract": "spsc_lockfree_queue",
-    "callchain_hint": "spsc_enqueue 生产者维护 g_tail；spsc_dequeue 消费者维护 g_head（SPSC 无锁安全）"
+    "callchain_hint": "spsc_enqueue 生产者维护 g_tail；spsc_dequeue 消费者维护 g_head（原子量 + acquire/release，SPSC 无锁安全）"
   },
   "difficulty": "hard",
   "split": "dev"

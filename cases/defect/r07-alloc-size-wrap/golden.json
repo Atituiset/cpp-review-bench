@@ -14,7 +14,7 @@
         "anchor": "size_t total = (size_t)(n * size);",
         "function": "r07_alloc",
         "line_tolerance": 3,
-        "rationale": "n*size 先以 uint32_t 相乘回绕为小值，强转 size_t 后 malloc 分配不足；后续按 n*size 写入越界，真实 cwe-190 回绕 + cwe-787 越界写"
+        "rationale": "malloc 尺寸 n*size 在 uint32_t 域相乘回绕为小值（如 n=0x10001、size=0x10000 时 total=65536），但清零循环按 size_t 域的 (size_t)n*size 全量写入 4295032832 字节——分配 65536 字节却写入约 4GiB+64KiB，越界 4294967296 字节，真实 cwe-190 回绕 + cwe-787 越界写"
       }
     ],
     "must_not_find": [
@@ -27,7 +27,7 @@
       }
     ]
   },
-  "context": { "contract": "alloc_wrap", "callchain_hint": "r07_alloc 乘法回绕小分配大写入；r07_alloc_ok size_t 乘法安全" },
+  "context": { "contract": "alloc_wrap", "callchain_hint": "r07_alloc 分配尺寸 uint32 回绕、清零按 size_t 全量写入 → 小分配大写入；r07_alloc_ok size_t 乘法安全" },
   "difficulty": "medium",
   "split": "dev"
 }
