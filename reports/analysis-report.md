@@ -1,5 +1,7 @@
 # cpp-review-bench 全面分析报告（已合入 main）
 
+> ⚠️ **历史存档**：本报告数字已被 `baseline-v3-2026-09-03.md` 取代（golden 内审修复 14 例 + eval 口径修订 + adapter 修复后重跑），仅留存沿革，请勿引用其中 recall/FP 数字。
+
 > 生成日期：2026-08-30
 > 状态：**已合入 main**（原实验分支 exp/cooddy-klee，fast-forward 合并，main HEAD 11e36f0）
 > 全部证据来自 GitHub Actions CI 实跑（gh run），非本地推测。

@@ -54,9 +54,11 @@ consumers/    工具团队消费入口（三路径，详见 consumers/README.md�
                                  路径 b：幂等 compdb + 执行分析器包装命令后自动评分）
               github-action/     bench.yml 可复用消费 workflow（workflow_call：checkout 本仓 pinned ref →
                                  compdb → 分析器 → 归一化 → eval.py 评分 → artifact；fail-open 语义）
-tools/        eval.py(评分器) + check_cases.py(自检) + 其余 *_to_findings.py 已归入 sa/adapters
+tools/        eval.py(评分器) + check_cases.py(用例自检) + check_evidence.py(归档 schema 门禁) +
+              llm_review.py(LLM 单发评审) + normalize_evidence.py(归档一次性归一化，留档可复现)
 sa/           静态分析工程化归一目录：
-              adapters/   各工具 findings 归一化（*_to_findings.py）
+              adapters/   各工具 findings 归一化（*_to_findings.py + _common.py 公共层：
+                          anchor 三级合成/severity 映射/scenario 清洗）
               runners/    各工具触发脚本（run_*.sh）
               scripts/    工具专属查询（joern/scan.sc）
               harnesses/  KLEE 符号执行入口（按 case 归置 klee_harness.c）
@@ -78,9 +80,12 @@ reports/      各工具基线报告（持续积累，格式见 reports/README.md
 ## 评分口径（两层匹配，详见 docs/design-v0.4.md §4）
 
 - **L1 规则匹配（确定性）**：`scenario 家族匹配 + file 精确 + (anchor 去空白子串 或 line±tolerance) + function 精确`。
+  - 家族匹配含一项已批准修订（2026-09-03，CLAUDE.md §2.5 登记）：**cwe-125（越界读）/cwe-787（越界写）归并同一「内存越界」族**——读写方向误差不判 FN，体现在 severity/scenario 精确度维度。
+  - twin 点位（must_find/must_not_find 同 file+anchor 仅靠 function 区分）：finding 无 function 时保守只计 FP 不计 TP。
 - **L2 语义判等（可选）**：`rationale` 与工具输出理由做轻量 judge。
 - **四态**：PASS / FN（漏报）/ FP（裸 FP 或契约违反）/ EXTRA（多余 finding）。
 - **附加维度**：`verified`（编译/复现验证）、`severity` 分级正确率、契约违反（注入 contract.yaml 后仍报 must_not_find，权重 > 裸 FP）。
+- **findings 门禁**：`eval.py run` 入口默认按 `schema/findings.schema.json` 校验（`--no-validate` 兜底），不合规即中止评分。
 
 ## 当前状态（建成线 §7.1 进度）
 
@@ -89,7 +94,7 @@ reports/      各工具基线报告（持续积累，格式见 reports/README.md
 - [x] `cmake/AllCases.cmake` 一键全量构建 + 统一 compdb
 - [x] CSA 基线（单 TU 默认 + 原生 CTU）经 CI 跑通
 - [x] 30 例全部铺满（contract 16 + defect 14）
-- [x] 9 工具基线（CSA singletu/CTU、CppCheck、clang-tidy、Infer、CodeQL、CodeChecker、KLEE、Joern、Cooddy，见 reports/；2026-09-03 CI 已按修复后 golden 重跑，报告 v3 整理中）
+- [x] 9 工具基线（CSA singletu/CTU、CppCheck、clang-tidy、Infer、CodeQL、CodeChecker、KLEE、Joern、Cooddy）：**当前权威为 `reports/baseline-v3-2026-09-03.md`**（KLEE 11/11、Joern 4/30、其余 recall=0；v1/v2/analysis-report 为历史存档）
 - [x] LLM 基线（DeepSeek deepseek-chat 单发评审 30 例，`tools/llm_review.py` + `.github/workflows/llm-eval.yml`，见 reports/baseline-llm-deepseek-chat.md：**2026-09-03 去泄漏真实基线 recall 86.7%（cwe-125/787 家族合并口径；严格口径 66.7%）、0 误报**；旧轮 83.3% 为开卷口径仅存档）
 - [ ] 标注审计（第一轮内审已完成：reports/audit-internal-2026-09-03.md，14 例已修复；第三方复核待做）、Martian 兼容报表
 

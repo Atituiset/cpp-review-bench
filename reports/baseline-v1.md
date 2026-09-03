@@ -1,5 +1,7 @@
 # 基线报告 baseline-v1 · Clang Static Analyzer（单 TU 默认 + 原生 CTU）
 
+> ⚠️ **历史存档**：本报告数字已被 `baseline-v3-2026-09-03.md` 取代（golden 内审修复 14 例 + eval 口径修订 + adapter 修复后重跑），仅留存沿革，请勿引用其中 recall/FP 数字。
+
 > 登记日期：2026-08-29
 > 工具：`csa-singletu` / `csa-ctu`（clang 21.1.8，官方 LLVM apt 源 `clang-21` / `clang-tools-21`）
 > 评测器：`tools/eval.py`（design §4 两层匹配协议）

@@ -2,6 +2,13 @@
 
 本目录持续积累各工具的基线跑分。每条报告登记工具、版本、配置、环境，便于第三方复测对照。
 
+## 当前权威报告（2026-09-03）
+
+- **`baseline-v3-2026-09-03.md`**——9 工具 + LLM 总表与运行口径（CI run 33749944654 全绿可复现）。**各工具 recall/FP 数字一律以此为准**
+- **`baseline-llm-deepseek-chat.md`**——LLM 轮次制基线（轮次二为去泄漏真实口径；轮次一开卷口径仅存档）
+- **`audit-internal-2026-09-03.md`**——golden 内审记录（30 例复核、14 例修复），第三方标注审计的输入
+- 历史存档（数字已被 v3 取代，仅留存沿革）：`baseline-v1.md`、`baseline-v2.md`、`analysis-report.md`
+
 ## 报告命名
 
 `baseline-<tool>-<mode>.md`，如 `baseline-v1.md`（CSA 单 TU 默认）、`baseline-csa-ctu.md`（CSA 原生 CTU）。
