@@ -14,11 +14,20 @@ checker_id → CWE scenario 映射（NullDereference→cwe-476 等）。
 file 归一为相对 case 根的 src/...；anchor 按 _common.synth_anchor 合成
 （源文件行内容回读为主），合成失败时省略该条并在 stderr 记 warning
 （不产出无 anchor 的不合规 finding）。
+
+function 提取（供 eval 的 twin 点位按函数区分）：
+  1. 报告自带的 issue_context / function 字段（若导出方提供）；
+  2. 缺失时按 file+line 回读源文件，花括号深度法回推所在函数
+     （CodeChecker 6.28.3 `parse -e json` 导出不含函数上下文——plist 里的
+     issue_context 在 JSON 转换时被丢弃，故以源码回推为主路径）；
+  都拿不到就省略 function 字段（不写 null）。
+
 为每个有 findings 的 case 写出 <cid>.json（schema/findings.schema.json 形态）。
 """
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -47,6 +56,45 @@ CHECKER_MAP = {
 }
 
 # 工具原始严重度映射与 anchor 合成等公共逻辑见 _common.py
+
+# 简单 C 函数头识别：返回类型 + 名称 + 形参表，行尾允许换行大括号（K&R 风格）
+FUNC_DEF_RE = re.compile(r'^[A-Za-z_][\w\s\*]*?\b(\w+)\s*\([^;{}]*\)\s*(?:\{|$)')
+LINE_COMMENT_RE = re.compile(r'//.*')
+STRING_RE = re.compile(r'"(?:\\.|[^"\\])*"')
+
+
+def enclosing_function(src_file, line):
+    """按花括号深度粗扫 C 源，返回 line 所在函数的名字；识别不出返回 None。
+    启发式：未处理块注释/宏内的花括号，对本仓自然风格用例足够。"""
+    try:
+        lines = Path(src_file).read_text(
+            encoding='utf-8', errors='replace').splitlines()
+    except OSError:
+        return None
+    depth = 0
+    current = None   # 当前所在函数体
+    pending = None   # 已见函数头、尚未见到 '{'
+    for i, raw in enumerate(lines, 1):
+        code = STRING_RE.sub('""', LINE_COMMENT_RE.sub('', raw))
+        if i == line:
+            if depth > 0:
+                return current
+            m = FUNC_DEF_RE.match(code.strip())
+            return m.group(1) if m else None
+        if depth == 0:
+            m = FUNC_DEF_RE.match(code.strip())
+            if m:
+                pending = m.group(1)
+        o, c = code.count('{'), code.count('}')
+        if depth == 0 and o and pending:
+            current = pending
+            pending = None
+        depth += o - c
+        if depth <= 0:
+            depth = 0
+            if c:
+                current = None
+    return None
 
 
 def map_checker(checker_id: str):
@@ -120,6 +168,12 @@ def convert(cc_json, cases_root, out_dir=None, version=None):
             f['scenario'] = scen
         if sev:
             f['severity'] = sev
+        # function：优先报告自带字段，缺失时从源码回推所在函数
+        func = (r.get('issue_context') or r.get('function') or '').strip()
+        if not func and src and line >= 1:
+            func = enclosing_function(src, line) or ''
+        if func:
+            f['function'] = func
         by_case.setdefault(cid, {'track': track, 'finds': []})
         by_case[cid]['finds'].append(f)
     if out_dir:

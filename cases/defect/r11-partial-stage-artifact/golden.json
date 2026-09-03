@@ -1,20 +1,20 @@
 {
   "id": "r11-partial-stage-artifact",
   "track": "defect",
-  "title": "评审过的树 ≠ 提交的树（构建/集成类缺陷）",
+  "title": "评审过的树 ≠ 提交的树（活动树越界读）",
   "version": 2,
   "languages": ["c"],
   "tags": ["stage-artifact", "build", "review-gap"],
   "expected": {
     "must_find": [
       {
-        "scenario": "build",
+        "scenario": "cwe-125",
         "severity": "important",
         "file": "src/stage.c",
         "anchor": "return arr[idx];",
         "function": "r11_get",
         "line_tolerance": 4,
-        "rationale": "提交版（STAGED_TREE=0）漏掉边界检查，评审版有检查——实际编译进镜像的树与评审通过的树不一致，属于构建/集成阶段缺陷（build 类），arr[idx] 在 idx>=16 时越界"
+        "rationale": "活动树（STAGED_TREE=0）中的 r11_get 无 idx 上界检查，直接 arr[idx] 取数；idx>=16 时越界读。STAGED_TREE 变体仅是构造背景：评审版分支的检查未进入实际编译的树"
       }
     ],
     "must_not_find": [
@@ -27,7 +27,7 @@
       }
     ]
   },
-  "context": { "contract": "partial_stage", "callchain_hint": "评审版有检查 vs 提交版漏检查——树不一致缺陷" },
+  "context": { "contract": "partial_stage", "callchain_hint": "调用方以任意 idx 调 r11_get 取数；活动树中 r11_get 无 idx 上界检查，idx>=16 时 arr[idx] 越界读" },
   "difficulty": "medium",
   "split": "dev"
 }

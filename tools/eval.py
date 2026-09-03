@@ -8,6 +8,9 @@ L1 确定性匹配（per finding）:
   - must_find 命中：scenario 家族匹配（finding.scenario 为 null 时不强制）AND
     file 精确 AND (anchor 去空白子串匹配 OR line ∈ [gline±tol]) AND
     function 精确（golden 含 function 时）
+    - scenario 家族匹配中 cwe-125（越界读）与 cwe-787（越界写）归并为同一
+      「内存越界」族：读写方向报错不影响检出判定（方向误差由 severity/scenario
+      精确度维度承担），仅此一对归并，其他 CWE 匹配行为不变
     - finding 无 anchor 时不得走 anchor 分支，只能走 line±tolerance（I1 修复）
     - twin 点位（must_find 与 must_not_find 同 file+anchor，仅靠 function 区分）上
       finding 无 function 时不计命中，只计 FP（I2 修复，保守口径）
@@ -66,18 +69,32 @@ def norm(s: str) -> str:
     return re.sub(r"\s+", "", s or "")
 
 
+# 内存越界家族：cwe-125（越界读）与 cwe-787（越界写）仅为读写方向差异；
+# 工具把越界读报成越界写（或反之）不影响检出判定，匹配前归并到家族代表值。
+# 注意：仅此一对归并，其他 CWE 的匹配行为不变；读写方向误差仍体现在
+# severity/scenario 精确度维度（见 design-v0.4 §4，本次归并已获主会话批准）。
+_OOB_READ_WRITE_FAMILY = frozenset({"cwe-125", "cwe-787"})
+
+
+def _family_repr(part: str) -> str:
+    """CWE 分量归一化到家族代表值；目前仅 cwe-125/cwe-787 同族（代表值 cwe-125）。"""
+    return "cwe-125" if part in _OOB_READ_WRITE_FAMILY else part
+
+
 def scenario_family_match(golden_s: str, finding_s) -> bool:
     """scenario 家族匹配：golden 用 cwe-XXX；finding 为 null 时视为不强制匹配。
 
     支持组合场景（schema 允许 `cwe-A+cwe-B`）：golden 与 finding 任一成员分量相交即命中，
     避免 `cwe-190+cwe-787` 与工具报的单个 `cwe-190`/`cwe-787` 永远无法匹配（恒 FN）。
+    分量比较前先做家族归一化（cwe-125/cwe-787 视为同一「内存越界」族），
+    故 `cwe-190+cwe-787` 与 finding 的 `cwe-125` 也因 787∈组合 判族内相交。
     """
     if finding_s is None:
         return True
     if golden_s == finding_s:
         return True
-    g_parts = set(str(golden_s).split("+"))
-    f_parts = set(str(finding_s).split("+"))
+    g_parts = {_family_repr(p) for p in str(golden_s).split("+")}
+    f_parts = {_family_repr(p) for p in str(finding_s).split("+")}
     return bool(g_parts & f_parts)
 
 
@@ -551,6 +568,71 @@ def cmd_selftest(args):
         ok = False
     else:
         print(f"[ OK ] I2 对照②: function=r04_recv_ok => {r4c['state']}（function 冲突排除命中）")
+
+    # 内存越界家族归并（cwe-125 越界读 / cwe-787 越界写 同族，已获主会话批准）：
+    # 读写方向报错不影响检出判定；其余 CWE 匹配行为不变
+    # (a) golden cwe-125 + finding 同点位 cwe-787 => 判命中
+    g10 = load_json(ROOT / "cases/defect/r10-odd-length-bcd/golden.json")
+    f_125_787 = {"tool": "synthetic", "track": "defect",
+                 "case_id": "r10-odd-length-bcd",
+                 "findings": [{"file": "src/imsi_bcd.c",
+                               "anchor": "uint8_t lo = (uint8_t)(digits[i + 1] - '0');",
+                               "scenario": "cwe-787", "severity": "important",
+                               "function": "imsi_bcd_encode"}]}
+    r10a = eval_case(g10, f_125_787, contract_injected=True)
+    if not (r10a["state"] == "PASS" and r10a["must_find_hit"] == 1
+            and r10a["bare_fp"] == 0):
+        print(f"[FAIL] 家族(a): golden cwe-125 + finding cwe-787 同点位应命中, 实际 "
+              f"{r10a['state']} hit={r10a['must_find_hit']} bare={r10a['bare_fp']}")
+        ok = False
+    else:
+        print(f"[ OK ] 家族(a): golden cwe-125 + finding cwe-787 => {r10a['state']}（族内命中）")
+    # (b) golden cwe-787 + finding 同点位 cwe-125 => 判命中（r04 twin 点位，带 function 区分）
+    f_787_125 = {"tool": "synthetic", "track": "defect",
+                 "case_id": "r04-oob-write-stack",
+                 "findings": [{"file": "src/recv.c",
+                               "anchor": "memcpy(buf, payload, len);",
+                               "scenario": "cwe-125", "severity": "important",
+                               "function": "r04_recv"}]}
+    r4d = eval_case(g4, f_787_125, contract_injected=True)
+    if not (r4d["state"] == "PASS" and r4d["must_find_hit"] == 1
+            and r4d["bare_fp"] == 0):
+        print(f"[FAIL] 家族(b): golden cwe-787 + finding cwe-125 同点位应命中, 实际 "
+              f"{r4d['state']} hit={r4d['must_find_hit']} bare={r4d['bare_fp']}")
+        ok = False
+    else:
+        print(f"[ OK ] 家族(b): golden cwe-787 + finding cwe-125 => {r4d['state']}（族内命中）")
+    # (c) golden cwe-190 + finding 同点位 cwe-125 => 仍不命中（防家族过度扩张回归）
+    f_190_125 = {"tool": "synthetic", "track": "contract",
+                 "case_id": "c01-upstream-nullguard",
+                 "findings": [{"file": "src/guti.c",
+                               "anchor": "total += (uint8_t)ie_wire_size(&ies[i]);",
+                               "scenario": "cwe-125", "severity": "important",
+                               "function": "guti_group_size"}]}
+    r1k = eval_case(g1, f_190_125, contract_injected=True)
+    if not (r1k["must_find_hit"] == 0 and "FN" in r1k["state"]):
+        print(f"[FAIL] 家族(c): golden cwe-190 + finding cwe-125 不得命中, 实际 "
+              f"{r1k['state']} hit={r1k['must_find_hit']}")
+        ok = False
+    else:
+        print(f"[ OK ] 家族(c): golden cwe-190 + finding cwe-125 => {r1k['state']}（不误归并）")
+    # (d) 组合场景相交：golden cwe-190+cwe-787 + finding 同点位 cwe-125 => 命中（787∈组合）
+    g7 = load_json(ROOT / "cases/defect/r07-alloc-size-wrap/golden.json")
+    f_combo = {"tool": "synthetic", "track": "defect",
+               "case_id": "r07-alloc-size-wrap",
+               "findings": [{"file": "src/alloc.c",
+                             "anchor": "size_t total = (size_t)(n * size);",
+                             "scenario": "cwe-125", "severity": "important",
+                             "function": "r07_alloc"}]}
+    r7a = eval_case(g7, f_combo, contract_injected=True)
+    if not (r7a["state"] == "PASS" and r7a["must_find_hit"] == 1
+            and r7a["bare_fp"] == 0):
+        print(f"[FAIL] 家族(d): golden cwe-190+cwe-787 + finding cwe-125 应命中, 实际 "
+              f"{r7a['state']} hit={r7a['must_find_hit']} bare={r7a['bare_fp']}")
+        ok = False
+    else:
+        print(f"[ OK ] 家族(d): golden cwe-190+cwe-787 + finding cwe-125 => "
+              f"{r7a['state']}（组合内 787 族内相交）")
 
     # findings schema 校验：合规/不合规各一例 + 非 findings 文档识别
     doc_ok = {"tool": "synthetic", "track": "defect", "case_id": "r04-oob-write-stack",

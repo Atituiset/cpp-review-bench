@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Joern scan.sc 输出 → 归一化 findings（schema/findings.schema.json）。
 
-scan.sc（通用扫描，不依赖 golden）输出 {"findings":[{"file","line","message","scenario"}]}。
+scan.sc（通用扫描，不依赖 golden）输出
+{"findings":[{"file","line","message","scenario","function"}]}
+（function 为 CPG 上调用点所在 method 名，映射到 findings.function，
+供 eval 的 twin 点位按函数区分；旧版 scan.sc 输出无此字段时自动省略）。
 本脚本包装为归一化文档：file 归一为相对 case 根的 src/...
 （优先 --case-dir，缺省从路径里的 cases/<track>/<cid>/ 锚点推断），
 anchor 按 _common.synth_anchor 三级合成（message 内嵌锚点文本 →
@@ -50,6 +53,10 @@ def convert(track, case_id, raw_json, tool='joern', version=None, out=None,
             f['severity'] = 'important'   # 通用危险调用命中，统一记 important
         if scen:
             f['scenario'] = scen
+        func = (r.get('function') or '').strip()
+        # CPG 伪节点名（如 <global>/<module>）不是真实函数，不写
+        if func and not func.startswith('<'):
+            f['function'] = func
         findings.append(f)
     doc = make_doc(tool, track, case_id, version, findings)
     if out:

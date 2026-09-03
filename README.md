@@ -90,7 +90,7 @@ reports/      各工具基线报告（持续积累，格式见 reports/README.md
 - [x] CSA 基线（单 TU 默认 + 原生 CTU）经 CI 跑通
 - [x] 30 例全部铺满（contract 16 + defect 14）
 - [x] 9 工具基线（CSA singletu/CTU、CppCheck、clang-tidy、Infer、CodeQL、CodeChecker、KLEE、Joern、Cooddy，见 reports/；2026-09-03 CI 已按修复后 golden 重跑，报告 v3 整理中）
-- [x] LLM 基线（DeepSeek deepseek-chat 单发评审 30 例，`tools/llm_review.py` + `.github/workflows/llm-eval.yml`，见 reports/baseline-llm-deepseek-chat.md：**2026-09-03 去泄漏+golden 修复后真实基线 recall 66.7%、0 误报**；旧轮 83.3% 为开卷口径仅存档）
+- [x] LLM 基线（DeepSeek deepseek-chat 单发评审 30 例，`tools/llm_review.py` + `.github/workflows/llm-eval.yml`，见 reports/baseline-llm-deepseek-chat.md：**2026-09-03 去泄漏真实基线 recall 86.7%（cwe-125/787 家族合并口径；严格口径 66.7%）、0 误报**；旧轮 83.3% 为开卷口径仅存档）
 - [ ] 标注审计（第一轮内审已完成：reports/audit-internal-2026-09-03.md，14 例已修复；第三方复核待做）、Martian 兼容报表
 
 ## 公信力争议点
