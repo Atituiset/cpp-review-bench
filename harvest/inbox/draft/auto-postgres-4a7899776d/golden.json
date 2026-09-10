@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/clauses.c",
+        "anchor": "if (OidIsValid(ctx->get_eqop(var, ctx->cb_context)) &&",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 264ddc9a678c41fca3435f26d7c581fd2b034cf8 Fix qual pushdown past grouping through simple CASE :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
