@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/cluster_legacy.c",
+        "anchor": "if (n->slot_info_pairs != NULL) {",
+        "line": 8,
+        "function": null,
+        "rationale": "PR 13637 Release 7.4.2 :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

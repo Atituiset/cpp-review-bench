@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/lemon.c",
+        "anchor": "static int compress = 0;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 638e0b1a03f88ed4b08b8e534c374e6f59c1e2f7 In Lemon, remove the option to omit compression of the action table. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

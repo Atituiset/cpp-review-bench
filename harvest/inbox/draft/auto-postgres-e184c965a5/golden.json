@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/formatting.c",
+        "anchor": "orgnum = DatumGetCString(DirectFunctionCall1(int4out,",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 3b120b1e94dd0387ca40e1e356f6b7eb8793d297 Fix integer to_char() overflow with V format :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

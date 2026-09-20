@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/btree.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 99b322eca9244db422f00a0c414185740cf6077f Fix an SQLITE_CORRUPT error that could occur with an incremental vacuum database if many tables were created and dropped :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

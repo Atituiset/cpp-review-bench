@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/where.c",
+        "anchor": "if( pLevel->regBignull ){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT aba9f8ef69eb2f5cbb0dc663b377db8f16d6a858 Fix a bad interaction between the skip-ahead DISTINCT optimization and \"ORDER BY ... NULLS FIRST/LAST\" clauses. Report [ :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
