@@ -61,15 +61,25 @@ PY
 # 输出 "行号<TAB>error-id" 每行一条。
 # 注意：cppcheck --xml 的 XML 报告写到 stderr（官方行为），必须 2>&1 >/dev/null
 # 把 XML 引进管道；直接 2>/dev/null 会把报告丢弃导致恒为空（旧版 bug）。
+# 解析失败类 id（孤立片段缺原仓头文件/宏/类型时的必然产物）不是缺陷信号：
+# 不计入命中，只打一条 __parse_error__ 哨兵，供判定层区分「工具没看懂片段」与「工具静默」。
+# （旧版不过滤：syntaxError 行号若恰与 golden anchor 同行会假判 detected-by-cppcheck。）
 cppcheck_hit() {
   cppcheck --enable=warning,style,performance,portability --xml --xml-version=2 "$1" 2>&1 >/dev/null \
     | python3 -c '
 import re, sys
+NOISE = {"syntaxError", "preprocessorErrorDirective", "toomanyconfigs"}
 xml = sys.stdin.read()
+saw_noise = False
 for m in re.finditer(r"<error\b[^>]*?\bid=\"([^\"]+)\"[^>]*?(?:/>|>(.*?)</error>)", xml, re.S):
     eid, body = m.group(1), m.group(2) or ""
+    if eid in NOISE:
+        saw_noise = True
+        continue
     lm = re.search(r"<location\b[^>]*?\bline=\"(\d+)\"", body)
     print(f"{lm.group(1) if lm else 0}\t{eid}")
+if saw_noise:
+    print("0\t__parse_error__")
 '
 }
 
@@ -115,6 +125,9 @@ def parse_hits(s):
 
 csa = parse_hits(os.environ.get("CSA", ""))
 cpp = parse_hits(os.environ.get("CPP", ""))
+# 解析失败哨兵（cppcheck_hit 对 syntaxError 类噪声打的标）：剥离出命中集，单独记账
+cpp_parse_error = any(c == "__parse_error__" for _, c in cpp)
+cpp = [(ln, c) for ln, c in cpp if c != "__parse_error__"]
 
 lines = []
 if srcf and os.path.isfile(srcf):
@@ -138,6 +151,9 @@ elif anchor_hit(cpp):
     v = "detected-by-cppcheck"
 elif csa or cpp:
     v = "sa-flagged-other"
+elif cpp_parse_error:
+    # 工具没看懂片段（缺原仓头文件/宏），与「跑通但静默」区分开
+    v = "cppcheck-unparseable"
 else:
     v = "sa-silent"
 row = {"case_id": cid, "scenario": scen,
@@ -171,6 +187,8 @@ with open(os.path.join(out, "eval_inbox_report.md"), "w") as f:
     f.write(f"\n**汇总**：{json.dumps(summary['verdicts'], ensure_ascii=False)}\n")
     f.write("\n> 说明：轻量单文件 SA（clang --analyze + cppcheck）仅评估片段自身能否被标出；")
     f.write("命中判定为 file+anchor 口径（对齐 eval.py L1，SA 命中行源码文本与 golden anchor 去空白互为子串）。")
+    f.write("cppcheck 的 syntaxError/preprocessorErrorDirective/toomanyconfigs 是解析失败信号（孤立片段缺原仓头文件/宏），不计命中；")
+    f.write("仅含此类信号的候选记 cppcheck-unparseable（工具没看懂片段，既不算检出也不算静默）。")
     f.write("确认进 cases/ 后走完整 9 工具（仓根 ci.yml）。\n")
 print("报表 →", os.path.join(out, "eval_inbox_report.md"))
 PY
