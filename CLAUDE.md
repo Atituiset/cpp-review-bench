@@ -71,7 +71,7 @@
   - Joern 4/30（twin 双侧全报）；CodeChecker/CodeQL/CppCheck/CSA singletu+CTU/clang-tidy/Infer recall=0
   - 核心命题成立：传统 SA 对「外部约束不可证」型缺陷集体失明，符号执行与生成式评审是唯二有效路线
   - LLM 基线三轮叙事（`reports/baseline-llm-deepseek-chat.md`）：开卷 83.3% → 去泄漏严格 66.7% → 家族合并 86.7%
-- **harvest 采集管线**：pr-mining 源每日 cron 跑 7 仓（curl/sqlite/redis/nginx/vim/postgres/linux）；sa-scan 源未实现；workflow 在仓根 `.github/workflows/`（harvest-pr-sarif.yml if:false 禁用中）。定位：候选线索生产线 + 人审移植流水线（draft=线索+移植 blueprint，accept=承诺移植重写可编译用例后入 cases/）
+- **harvest 采集管线**：pr-mining 源每日 cron 跑 7 仓（curl/sqlite/redis/nginx/vim/postgres/linux）；sa-scan 源未实现；workflow 在仓根 `.github/workflows/`（harvest-pr-sarif.yml if:false 禁用中）。定位：候选线索生产线 + 人审移植流水线（draft=线索+移植 blueprint，accept=承诺移植重写可编译用例后入 cases/）。**故障记录**：2026-09-04~09-27 因 propose job 缺 cppcheck（run_eval_inbox.sh 硬失败检查上线时漏配安装步骤）每日失败、无候选 PR，09-27 已补安装步骤修复。workflow 全景与 GitHub 界面入口见 `docs/github-operations.md`
 - **consumers/ 已建成**：`consumers/local/run.sh` + `consumers/github-action/bench.yml`；LLM 消费由 llm-eval.yml（tools/llm_review.py 单发评审，workflow_dispatch 自选 cases/model/base_url）承担
 - **CI 语义**：工具失败=红、零发现=不红；版本已钉（klee v3.2、joern 按 digest、codechecker 6.28.3）；真门禁=check_cases + eval selftest + check_evidence
 - 12 个场景种子分支在 AetherStack（与本仓 S 级用例有重叠，已移植对齐）

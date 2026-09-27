@@ -106,6 +106,8 @@ consumers/    工具团队消费入口（三路径，详见 consumers/README.md�
                                  compdb → 分析器 → 归一化 → eval.py 评分 → artifact；fail-open 语义）
 tools/        eval.py(评分器) + check_cases.py(用例自检) + check_evidence.py(归档 schema 门禁) +
               llm_review.py(LLM 单发评审) + normalize_evidence.py(归档一次性归一化，留档可复现)
+docs/         design-v0.4.md(权威设计) + github-operations.md(GitHub workflow 全景与界面入口) +
+              sarif-visualization-plan.md(SARIF 呈现与平台限制)
 sa/           静态分析工程化归一目录：
               adapters/   各工具 findings 归一化（*_to_findings.py + _common.py 公共层：
                           anchor 三级合成/severity 映射/scenario 清洗）
