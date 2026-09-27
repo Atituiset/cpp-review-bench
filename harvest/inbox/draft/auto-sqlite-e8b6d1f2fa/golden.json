@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/json.c",
+        "anchor": "if( j>=iEnd ) break;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 2acb2ea9089c604d5786f56ee3e50a0479a268dd Improvements to detection of invalid JSONB in the json_pretty() function. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

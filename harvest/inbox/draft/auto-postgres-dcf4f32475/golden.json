@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/analyze.c",
+        "anchor": "if (fdwroutine->ImportForeignStatistics != NULL &&",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 7d47e41238004b6b8bce076d4bb76d858257b58d Fix privilege handling in postgres_fdw statistics import. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
