@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/rdb.c",
+        "anchor": "if (!field_added) sdsfree(field);",
+        "line": 5,
+        "function": null,
+        "rationale": "PR 15203 Security issues and bugs into unstable :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

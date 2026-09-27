@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/extended_stats_funcs.c",
+        "anchor": "if (!statatt_get_elem_type(typid, typcache->typtype,",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 142fd8ff13dee8ff6665615027386908e9768d43 Fix import of statistics for domains over [multi]range types and tsvector :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
