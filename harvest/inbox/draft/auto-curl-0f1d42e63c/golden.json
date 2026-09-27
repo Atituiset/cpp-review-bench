@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/setopt.c",
+        "anchor": "if(!result && u)",
+        "line": 5,
+        "function": null,
+        "rationale": "PR 16601 setopt: setting PROXYUSERPWD after PROXYUSERNAME/PASSWORD is fine :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

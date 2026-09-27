@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/attribute_stats.c",
+        "anchor": "char\t\tatttyptype;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 142fd8ff13dee8ff6665615027386908e9768d43 Fix import of statistics for domains over [multi]range types and tsvector :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

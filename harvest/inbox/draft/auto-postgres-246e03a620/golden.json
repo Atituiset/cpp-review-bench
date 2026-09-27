@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/postgres_fdw.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT f25c50fd8fcdfdd32548b9140456249eb54a5109 postgres_fdw: Improve comment in fetch_remote_statistics(). :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
