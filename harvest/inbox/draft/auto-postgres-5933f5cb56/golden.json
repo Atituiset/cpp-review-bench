@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/jsonfuncs.c",
+        "anchor": "ColumnIOData columns[FLEXIBLE_ARRAY_MEMBER];",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT a936ebd9f9f64b0efb853195d8dcdb8a0453537d Add pg_attribute_counted_by() :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
