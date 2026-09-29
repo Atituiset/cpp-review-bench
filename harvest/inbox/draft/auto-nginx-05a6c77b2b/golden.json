@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_http_xslt_filter_module.c",
+      "anchor": "n = (size_t) vsnprintf((char *) buf, NGX_MAX_ERROR_STR, msg, args);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR 747 Xslt: fixed handle vsnprintf return value :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

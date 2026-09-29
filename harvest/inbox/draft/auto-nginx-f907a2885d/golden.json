@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_xslt_filter_module.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR 1565 Xslt: xmlCreatePushParserCtxt() error handling :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

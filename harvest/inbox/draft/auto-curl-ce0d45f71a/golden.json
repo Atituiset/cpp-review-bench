@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/imap.c",
+      "anchor": "if(strncasecompare(key, \"AUTH=\", 5))",
+      "line": 4,
+      "function": null,
+      "rationale": "PR 10041 imap: Provide method to disable SASL if it is advertised :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

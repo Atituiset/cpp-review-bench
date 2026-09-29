@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_grpc_module.c",
+      "anchor": "if (!glcf->host_set) {",
+      "line": 2,
+      "function": null,
+      "rationale": "PR 1593 Upstream: special handling of the \"Host\" header in HTTP and gRPC :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
