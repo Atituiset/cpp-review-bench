@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/speedtest1.c",
+        "anchor": "speedtest1_begin_test(130, \"Star query with LEFT JOINs\");",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 1059bc8eace8e82db4cdafade29907f7fccebe83 Fix a duplicate test case identifier label in speedtest1.c. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

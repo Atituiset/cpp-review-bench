@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vacuumparallel.c",
+        "anchor": "if (shared->is_autovacuum)",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT cc053b6e127763e4168f18585ca90a67600c270e Fix crash in parallel autovacuum when no DSM segment can be created. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

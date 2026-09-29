@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/repack.c",
+        "anchor": "CheckRelationOidLockedByMe(OldHeap->rd_rel->reltoastrelid,",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 6dc3fd90f126fa409eac51a4182ee09b9d63c16c Turn \"check\" into assertion :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

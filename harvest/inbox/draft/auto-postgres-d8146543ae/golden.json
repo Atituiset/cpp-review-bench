@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/s_lock.h",
+        "anchor": "extern int s_lock(volatile slock_t *lock, const char *file, int line, const char *func);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT d9b5a63f49d9d372a6609243eb0e9417a0a35e6f Better express platform requirements in s_lock.h. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
