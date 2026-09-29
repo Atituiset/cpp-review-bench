@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/execReplication.c",
+        "anchor": "if (!isIdxSafeToSkipDuplicates)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT ad36e3608c8cb6f0848737ec81e548d4d3a0af3c Fix tuple search during apply after concurrent index DDL. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

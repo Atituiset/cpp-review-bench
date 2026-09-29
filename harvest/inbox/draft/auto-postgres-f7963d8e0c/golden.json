@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/repack.c",
+        "anchor": "LockRelationOid(OldHeap->rd_rel->reltoastrelid, lmode);",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 1813f951cad59ea7f86063831d0222c429989c91 Lock the TOAST table early in REPACK (CONCURRENTLY) :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
