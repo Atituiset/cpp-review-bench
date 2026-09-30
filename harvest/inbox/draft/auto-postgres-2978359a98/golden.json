@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/numeric.c",
+        "anchor": "result = makeNumericAggStateCurrentContext(false);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 6a93535798aa9219d01c01c67161a78780e2af1a Fix incorrect calcSumX2 in numeric deserialize functions :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

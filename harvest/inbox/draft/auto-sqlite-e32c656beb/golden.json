@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/fts3_write.c",
+        "anchor": "if( iPos<0 || iPos>0x7FFFFFFF ){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT a7d4cd04b596542b71865aa0c3eb258042efce97 Fix a harmless compiler warning in fts3ChecksumIndex(). :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

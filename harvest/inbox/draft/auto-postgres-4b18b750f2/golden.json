@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/slot.c",
+        "anchor": "LWLockAcquire(ProcArrayLock, LW_EXCLUSIVE);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 9510a826e4add77280e0a7a65f429563a4c4a2a8 Fix clobbering of proc entry's statusFlags during slot invalidation :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
