@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbe.c",
+        "anchor": "pC->nullRow = 1;",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 34615b9c1f2fa513e02911bed20fe0579a9c51cb Reset the nullRow flag on the pseudo-cursor on each iteration of the loop :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
