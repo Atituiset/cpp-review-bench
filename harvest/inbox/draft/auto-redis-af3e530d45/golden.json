@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/blocked.c",
+      "anchor": "addReply(c, shared.ok); /* No reason lazy-free to fail */",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #14750 Support SFLUSH to flush slots partially :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

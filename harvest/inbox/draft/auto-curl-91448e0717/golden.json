@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ssh-libssh.c",
+      "anchor": "if(statvfs != 0 && !sshc->acceptfail) {",
+      "line": 44,
+      "function": null,
+      "rationale": "PR #2144 libssh: fix issues identified by static analyzers :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

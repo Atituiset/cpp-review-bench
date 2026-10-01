@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/tool_findfile.h",
+      "anchor": "char *homedir(const char *fname);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #8035 curl: modified search for files in \"homedir\" :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

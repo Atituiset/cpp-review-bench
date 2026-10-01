@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_core_module.c",
+      "anchor": "if (c->data == r && r->postponed == NULL) {",
+      "line": 5,
+      "function": null,
+      "rationale": "PR #515 Fixed request counting with subrequests in case of error. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

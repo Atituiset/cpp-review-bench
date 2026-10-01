@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/t_list.c",
+      "anchor": "int listTypeReplaceAtIndex(robj *o, int index, robj *value) {",
+      "line": 1,
+      "function": null,
+      "rationale": "PR #15407 Fix LSET out-of-range 64-bit index truncation :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

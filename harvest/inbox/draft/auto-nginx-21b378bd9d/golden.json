@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_http_parse.c",
+      "anchor": "if (r->port >= 6553 && (r->port > 6553 || (ch - '0') > 5)) {",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #966 Validate host :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

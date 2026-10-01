@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/util.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #1379 tests/server/util: remove in6addr_any for recent MinGW :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

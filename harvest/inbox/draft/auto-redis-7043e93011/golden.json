@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/cluster.c",
+      "anchor": "if (!skip_checksum) {",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #15466 Avoid duplicate KeyMeta restoration in RESTORE-based AOF rewrites :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

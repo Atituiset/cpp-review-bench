@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/tool_metalink.c",
+      "anchor": "rv = metalink_parse_update(outs->metalink_parser, buffer, sz *nmemb);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #1802 metalink: adjust source code style :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

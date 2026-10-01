@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/redismodule.h",
+      "anchor": "REDISMODULE_API RedisModuleString *(*RedisModule_GetUserUsername)(const RedisModuleUser *user) REDISMODULE_ATTR;",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #15042 Pass context to RM_GetUserUsername() to support auto memory management :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

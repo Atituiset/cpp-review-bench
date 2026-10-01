@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_event_quic_tokens.c",
+      "anchor": "tmp.data = secret;",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #1159 QUIC: worker-bound stateless reset tokens. :: PR 修复动作推断：修复前缓冲区溢出（加长度约束）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

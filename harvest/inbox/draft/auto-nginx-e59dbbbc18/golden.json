@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_http_secure_link_module.c",
+      "anchor": "u_char                       *p, *last;",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #1433 Secure link: ﻿﻿Compare hashes in constant time :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

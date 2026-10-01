@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_event_openssl.c",
+      "anchor": "static void ngx_ssl_connection_error(ngx_connection_t *c, int sslerr,",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #646 QUIC: using QUIC API introduced in OpenSSL 3.5. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

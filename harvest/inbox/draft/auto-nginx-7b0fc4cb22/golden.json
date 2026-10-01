@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_event_quic_ssl.c",
+      "anchor": "if (qc->error) {",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #889 QUIC: fixed ssl_reject_handshake error handling. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

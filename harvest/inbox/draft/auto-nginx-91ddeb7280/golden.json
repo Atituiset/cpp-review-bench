@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http.h",
+      "anchor": "ngx_int_t ngx_http_process_request_header(ngx_http_request_t *r);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #803 HTTP/2 fixes for \":authority\" vs \"Host\" :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

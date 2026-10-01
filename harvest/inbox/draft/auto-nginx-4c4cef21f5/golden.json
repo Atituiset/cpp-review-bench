@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_upstream_keepalive_module.c",
+      "anchor": "if (cached == NULL) {",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #1080 Upstream keepalive: enabled keepalive module by default. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

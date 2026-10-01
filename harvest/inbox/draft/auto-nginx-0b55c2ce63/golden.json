@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/ngx_event_openssl.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #1471 SSL: fixed memory leak in ngx_ssl_get_ech_outer_server_name(). :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

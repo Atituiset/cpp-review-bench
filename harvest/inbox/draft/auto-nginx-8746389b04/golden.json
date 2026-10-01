@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_http.h",
+      "anchor": "ngx_int_t ngx_http_validate_host(ngx_str_t *host, ngx_pool_t *pool,",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #966 Validate host :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

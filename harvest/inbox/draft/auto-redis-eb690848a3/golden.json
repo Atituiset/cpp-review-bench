@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/memory_prefetch.h",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #15133 Batched MGET/MSET dict prefetch with dictType-driven payload hints :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

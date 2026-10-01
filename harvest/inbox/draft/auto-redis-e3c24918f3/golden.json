@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/lazyfree.c",
+      "anchor": "db->stream_idmp_keys = dictCreate(&objectKeyPointerValueDictType);",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #14987 Use no_value dict type for stream_idmp_keys to explicitly mark it as a key-only set :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

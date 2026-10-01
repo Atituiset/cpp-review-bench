@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/cluster_asm.c",
+      "anchor": "if (asmManager == NULL || node == NULL) return 0;",
+      "line": 6,
+      "function": null,
+      "rationale": "PR #15197 Move common topology change handling into the cluster layer :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

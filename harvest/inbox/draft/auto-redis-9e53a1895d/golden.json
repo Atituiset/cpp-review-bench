@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/monotonic.h",
+      "anchor": "const char *monotonicInit(void);",
+      "line": 5,
+      "function": null,
+      "rationale": "PR #15710 Route monotonic clock fallback diagnostics through serverLog instead of stderr :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

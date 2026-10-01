@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/tool_operate.c",
+      "anchor": "curl_free(file);",
+      "line": 8,
+      "function": null,
+      "rationale": "PR #8035 curl: modified search for files in \"homedir\" :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

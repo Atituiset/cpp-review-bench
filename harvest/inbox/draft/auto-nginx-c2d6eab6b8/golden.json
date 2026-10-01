@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_http_proxy_module.h",
+      "anchor": "ngx_uint_t                     host_set;",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #1593 Upstream: special handling of the \"Host\" header in HTTP and gRPC :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

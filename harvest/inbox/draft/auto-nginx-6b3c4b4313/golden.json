@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_event_quic_output.c",
+      "anchor": "iov.iov_base = buf;",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #479 QUIC: added missing casts in iov_base assignments. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

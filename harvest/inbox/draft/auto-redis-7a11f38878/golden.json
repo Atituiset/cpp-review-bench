@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/script_lua.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #15658 Redis 7.2.16 :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_event_quic_protection.c",
+      "anchor": "static const uint8_t salt[20] =",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #631 Fixed -Wunterminated-string-initialization with gcc15. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

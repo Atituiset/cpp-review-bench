@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_http_upstream_round_robin.c",
+      "anchor": "ngx_memcpy(buf, peer->ssl_session, len);",
+      "line": 6,
+      "function": null,
+      "rationale": "PR #536 SSL: workaround for saving big sessions from upstream servers :: PR 修复动作推断：修复前缓冲区溢出（加长度约束）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

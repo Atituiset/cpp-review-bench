@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/acl.c",
+      "anchor": "if (c->flags & CLIENT_MASTER)",
+      "line": 5,
+      "function": null,
+      "rationale": "PR #15356 Fix NULL deref in ACL LOAD with internal (user-less) connections :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

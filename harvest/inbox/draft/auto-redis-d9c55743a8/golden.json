@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/object.c",
+      "anchor": "size_t asize = zmalloc_size(kvobjGetAllocPtr(o));",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #14704 Avoid zmalloc_size() in kvobjAllocSize() and approximate instead :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

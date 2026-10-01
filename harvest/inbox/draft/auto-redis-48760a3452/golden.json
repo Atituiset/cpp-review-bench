@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/evict.c",
+      "anchor": "overhead += asmGetMigrateOutputBufferSize();",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #14934 Fix client output buffer memory tracking not accounting for copy-avoided bulk string references :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/defrag.c",
+      "anchor": "if (reg == NULL || reg->by_id == NULL) return DEFRAG_DONE;",
+      "line": 1,
+      "function": null,
+      "rationale": "PR #15628 Fix potential defrag issues in the hash template registry :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

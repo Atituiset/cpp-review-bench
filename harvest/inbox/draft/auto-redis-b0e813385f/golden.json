@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/t_zset.c",
+      "anchor": "if (cardinality == 0) break;",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #14932 Fix memory leak in ZDIFF algorithm 2 on early exit :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

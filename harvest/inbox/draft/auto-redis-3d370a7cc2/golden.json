@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/t_string.c",
+      "anchor": "static int getExpireMillisecondsOrReply(client *c, robj *expire, int flags, int unit, long long *milliseconds);",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #15045 Add INCREX command for atomic increment with ttl and bounds :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

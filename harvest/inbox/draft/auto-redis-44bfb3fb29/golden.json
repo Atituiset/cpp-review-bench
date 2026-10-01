@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/monotonic.c",
+      "anchor": "if (regexec(&cpuGhzRegex, buf, nmatch, pmatch, 0) == 0) {",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #15018 Enable x86 TSC monotonic clock by default with runtime calibration :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

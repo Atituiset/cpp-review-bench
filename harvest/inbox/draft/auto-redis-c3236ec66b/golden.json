@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/client_comp.c",
+      "anchor": "st->output.data = zmalloc(outSize);",
+      "line": 5,
+      "function": null,
+      "rationale": "PR #15499 Account replication compression state in client memory usage :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_v3_request.c",
+      "anchor": "if (r->headers_in.host) {",
+      "line": 1,
+      "function": null,
+      "rationale": "PR #772 HTTP/3: fixed handling :authority and Host with port. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/db.c",
+      "anchor": "if (server.io_threads_num > 1 && old->encoding == OBJ_ENCODING_RAW) {",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #14738 Fix deferring free object that refcount is more than 1 :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/gtls.c",
+      "anchor": "\"+VERS-TLS1.0:+VERS-TLS1.1\";",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #7278 gnutls: set the preferred TLS versions in correct order :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

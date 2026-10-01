@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/rdb.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #15308 Validate stream entries_added/entries_read on RDB/RESTORE load :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

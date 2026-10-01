@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/vector.c",
+      "anchor": "UNUSED(ptr);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #15190 Fix vecClear() to invoke free method on elements :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

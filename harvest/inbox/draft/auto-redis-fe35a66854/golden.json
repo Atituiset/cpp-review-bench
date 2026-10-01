@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/rdb.c",
+      "anchor": "if (server.in_fork_child) dismissObject(kv, dump_size);",
+      "line": 10,
+      "function": null,
+      "rationale": "PR #14979 Dismiss dict bucket arrays in fork child to reduce CoW :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

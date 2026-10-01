@@ -1,0 +1,2 @@
+# AUTO-DRAFT; 真实构建片段由 v0.2 补全
+add_library(auto-redis-9ac02bf621_draft STATIC src/moduleconfigs.c)

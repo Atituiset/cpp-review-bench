@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/asyn-ares.c",
+      "anchor": "#if (ARES_VERSION >= 0x010704)",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #7552 ares: use ares_getaddrinfo() :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

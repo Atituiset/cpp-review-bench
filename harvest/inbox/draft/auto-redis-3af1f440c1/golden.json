@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/replication.c",
+      "anchor": "atomicIncr(server.stat_io_reads_processed[IOTHREAD_MAIN_THREAD_ID], 1);",
+      "line": 4,
+      "function": null,
+      "rationale": "PR #14907 Fix cache line false sharing on per-IO-thread stat counters :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
