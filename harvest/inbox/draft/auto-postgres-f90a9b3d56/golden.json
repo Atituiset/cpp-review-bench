@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/multixact.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT b69356cd789fe963447177a0077c12c6c322c203 Fix autovacuum docs related to widening multixid offsets to 64 bits :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/shmem.c",
+        "anchor": "if (options->size <= 0 && options->size != SHMEM_ATTACH_UNKNOWN_SIZE)",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT c712b0d49b971fe7cf521c057bc7adb63b17760c Allow unknown-size shmem attachments in single-user mode :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

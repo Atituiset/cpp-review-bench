@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/libcmpp.c",
+        "anchor": "if( !zErr ){",
+        "line": 10,
+        "function": null,
+        "rationale": "COMMIT 226a2c0d6ad3f7fb5a291b98c7093b0ce5aba163 Generic internal JS cleanups. No functional changes. Update the preprocessor for the ability to use C-style comments in  :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
