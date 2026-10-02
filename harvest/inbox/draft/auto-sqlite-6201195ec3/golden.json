@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/sqlite3session.c",
+        "anchor": "if( pApply->abPK[ii] ){",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT 9696acb0c77f1c1a7a400446686debc1312c94bc Change the way the session module applies changesets containing two or more UPDATE changes that form a dependency loop i :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/pquery.c",
+        "anchor": "Assert(PortalIsValid(subportal));",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 50d6e533e4d9a0f70d798c534254007c83c0d428 Fix crash when describing a FETCH statement whose cursor is gone :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

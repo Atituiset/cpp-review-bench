@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/catversion.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 1378aa13430e264a990a18597e9d8fdae740927e Report per-index vacuum progress in pg_stat_progress_vacuum :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
