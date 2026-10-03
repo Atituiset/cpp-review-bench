@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/ri_triggers.c",
+        "anchor": "if (fpentry == NULL)",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT 425daf545d9146e008220ae0b21415982220cd3f Remove batching from RI fast-path checks :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

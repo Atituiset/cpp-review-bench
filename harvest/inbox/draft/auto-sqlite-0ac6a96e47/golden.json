@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqldiff.c",
+        "anchor": "int iPKey;",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT ac5f698ccbaba677323cc56f31131ef4d5fad693 Fix the \"sqldiff\" utility so that when using the --primarykey option on :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
