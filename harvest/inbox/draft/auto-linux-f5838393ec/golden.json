@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/bpf_jit_comp.c",
+        "anchor": "if (invoke_bpf_prog(image, ro_image, ctx, tn->nodes[i], regs_off, retval_off,",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 8f150ccedfbd610aa25509ff42365d70fb20478f Merge tag 'bpf-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

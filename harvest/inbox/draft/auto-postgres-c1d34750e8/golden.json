@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/jsonfuncs.c",
+        "anchor": "ColumnIOData columns[FLEXIBLE_ARRAY_MEMBER] pg_attribute_counted_by(ncolumns);",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 6f3bdadaadc4692050ca20dff53d3890088b9272 Write pg_attribute_counted_by() in front of the type :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
