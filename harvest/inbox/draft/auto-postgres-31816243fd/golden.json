@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/var.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT bfa1a69edd768078bc24d3930e069002167e7c9c Set hasSubLinks when expanding a whole-row join alias reference :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

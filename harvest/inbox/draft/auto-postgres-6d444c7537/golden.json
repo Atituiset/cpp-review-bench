@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/repack.c",
+        "anchor": "static void adjust_toast_pointers(Relation relation, TupleTableSlot *dest,",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT e5d25959cf8761c7dbdd7cfbb91338e94a40e8e2 Clear out values from dropped columns during REPACK (CONCURRENTLY) :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
