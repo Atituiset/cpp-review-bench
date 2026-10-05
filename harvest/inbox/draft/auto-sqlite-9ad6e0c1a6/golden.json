@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/fts3_porter.c",
+        "anchor": "c->nAllocated = n+20;",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 52a8a406eb9cda436b10842734c63050da6d8f13 Merge trunk into this branch. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

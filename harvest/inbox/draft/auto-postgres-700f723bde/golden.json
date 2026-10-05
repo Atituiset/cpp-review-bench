@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/planner.c",
+        "anchor": "EXPRKIND_TABLESAMPLE);",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 852fd5b86e1a2ac1139c716eb4c96c09c03a632e Fix join alias expansion in lateral TABLESAMPLE clauses :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
