@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/nodeTableFuncscan.c",
+        "anchor": "if (node->tupstore == NULL)",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT a7f8cd811d65d1a51be87bdb890d7ebf7d49aa45 Use tuplestore_clear instead of tuplestore_end in nodeTableFuncscan.c :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

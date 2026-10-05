@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/qrf.c",
+        "anchor": "if( p->spec.zFpFmt && sqlite3_qrf_ckformat(p->spec.zFpFmt)!=2 ){",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT e8cbe2c96a69b2c674947f2efff4c7d1ada8b66e In QRF, add the zero-pad flag to the default floating-point format in :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

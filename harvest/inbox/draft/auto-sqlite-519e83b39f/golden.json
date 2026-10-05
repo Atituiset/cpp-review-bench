@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/expr.c",
+        "anchor": "if( pCollName->n>0 ){",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT d54522a5b832422ab893a1e9fa7a99ab314ea4e2 Fix expression tree depth calculations for COLLATE. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
