@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/subselect.c",
+        "anchor": "arg = SS_process_sublinks(root, arg, false);",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 6b858a36ddb80bfa4f478afebe3e84de72600e02 Don't reprocess PHV copies within outer aggregates' arguments :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

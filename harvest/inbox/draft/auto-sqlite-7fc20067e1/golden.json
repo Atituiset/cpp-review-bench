@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/btree.c",
+        "anchor": "rc = insertCell(pPage, iCellIdx, pCell-4, nCell+4, pTmp, n);",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 466e0851d9159ca355faa1ba63eb8cf6d11884e6 When a 3-byte cell on the leaf of an index page, which has a reported size :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

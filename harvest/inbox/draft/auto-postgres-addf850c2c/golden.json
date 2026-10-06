@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vacuumparallel.c",
+        "anchor": "\"parallel autovacuum worker updated cost params: cost_limit=%d, cost_delay=%g, cost_page_miss=%d, cost_page_dirty=%d, cost_page_hit=%d\",",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 92a734bf5c7ace23131b711025c75aacd8144482 Fix parallel autovacuum workers ignoring track_cost_delay_timing changes. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

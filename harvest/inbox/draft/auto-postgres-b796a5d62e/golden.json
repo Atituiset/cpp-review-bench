@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/prepjointree.c",
+        "anchor": "subquery->targetList = (List *)",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT d4c15309e7ed6e30e360b5911e1f4d3ca754aa2b Flatten join alias Vars before rechecking subquery pullup safety :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

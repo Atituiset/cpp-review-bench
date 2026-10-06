@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/test1.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 5ee733befea57e6a12943273fe98b4f3d722b8f6 Allow windows clients to open and recover a wal mode database even if an old client still has the *-shm file mapped. For :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

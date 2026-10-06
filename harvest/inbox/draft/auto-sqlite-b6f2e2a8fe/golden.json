@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/attach.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT b642a1d56d3e9dea126a05be03813a99589192eb Ensure that deserializing into a database expires existing prepared statements. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

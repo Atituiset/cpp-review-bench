@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/alter.c",
+        "anchor": "\"FROM %Q.%Q WHERE (%.*s) IS NOT TRUE\",",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 1ad569d147a736ccecb2b94fde2743a80d9ff34a Ensure that it is not a constraint violation if a CHECK constraint that evaluates to NULL for one or more existing rows  :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
