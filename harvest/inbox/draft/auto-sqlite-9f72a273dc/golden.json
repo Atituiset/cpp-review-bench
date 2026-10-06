@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/complete.c",
+        "anchor": "if( state==0 ) state = 2;",
+        "line": 18,
+        "function": null,
+        "rationale": "COMMIT 95170adc372e2a3d7ca664c3f3673a5258b0dd78 Fixes to sqlite3_incomplete() so that it does not appear to presume a :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

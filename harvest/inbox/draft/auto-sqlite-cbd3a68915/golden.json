@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbeaux.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 8532bf12f45ba35d156fcbfc1afa0d808435e63b Correctly rollback \"OR REPLACE\" changes following a \"datatype mismatch\" error. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

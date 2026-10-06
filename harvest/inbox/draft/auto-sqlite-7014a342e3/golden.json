@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/lemon.c",
+        "anchor": "static int noResort = 0;",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT f0c7055db79a8827dfd487acb80713b8af63a99b Omit the -r command-line option from Lemon.  That does not affect :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
