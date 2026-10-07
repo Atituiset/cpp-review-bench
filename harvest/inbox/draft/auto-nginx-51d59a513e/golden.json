@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/ngx_quic_reuseport_helper.c",
+        "anchor": "if (start + offset > end) {                                               \\",
+        "line": 4,
+        "function": null,
+        "rationale": "PR 1756 QUIC: support BPF reload and binary upgrade :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/main.c",
+        "anchor": "rc = sqlite3_wsd_init(4096, 24);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT a3426a5bcc467f98490d49c83e8e1cd1255ad9a4 Fix the build for SQLITE_OMIT_WSD. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

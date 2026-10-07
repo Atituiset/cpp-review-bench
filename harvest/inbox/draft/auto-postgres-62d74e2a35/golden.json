@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/pg_walsummary.c",
+        "anchor": "if (limit_block != InvalidBlockNumber)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 2a8ce0f684a4aa3da8f8c6f2d255048d545e96ff pg_walsummary: Fix --quiet to suppress limit block output :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

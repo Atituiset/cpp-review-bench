@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/os_unix.c",
+        "anchor": "if( zName",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 9f05c6e66b0034c490479a589dcc141d7e4cb626 Fix the implementation of O_TMPFILE so that it actually works. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/repack.c",
+        "anchor": "TupleDesc\tdesc = slot->tts_tupleDescriptor;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT e40b509c08f34e245bfab4124e24297ddaf4d535 Concurrent REPACK: Clear out dropped-column values from all tuples :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
