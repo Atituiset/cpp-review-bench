@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/reindexdb.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT e9c03f0f1bf698c0c603c51baaacfa60dc8c91c7 reindexdb: Forbid index-level REINDEX with CONCURRENTLY and multiple jobs :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/walreceiver.c",
+        "anchor": "if (!force && wal_receiver_status_interval <= 0)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT cc33773482e879ea746256cc344ab029df1243d9 Fix remote_apply waits with wal_receiver_status_interval set to zero :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

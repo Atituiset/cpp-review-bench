@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/plpy_cursorobject.c",
+        "anchor": "Py_tp_doc, (char *) PLy_cursor_doc",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 73d4ba85059bc08b9be8f65a3fd9d1ed13eb979b Use unconstify_constexpr :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
