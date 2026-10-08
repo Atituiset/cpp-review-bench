@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/be-secure-openssl.c",
+        "anchor": "errmsg(\"SSL configuration not reloaded, SNI remains %s\", SSL_hosts->sni_enabled ? \"on\" : \"off\"),",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 5c74e122ef295e251be43a8ce0c561e91fcd000d Fix warning message translatability :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

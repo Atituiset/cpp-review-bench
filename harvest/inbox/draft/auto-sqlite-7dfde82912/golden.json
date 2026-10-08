@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbe.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 74675a9e87c45888a4ba2ea009a91fbc769539f8 Assign the correct encoding to the BLOB values read from an overflow page. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

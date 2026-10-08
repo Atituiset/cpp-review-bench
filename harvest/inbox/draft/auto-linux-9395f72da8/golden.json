@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/dm-ioctl.c",
+        "anchor": "if (param->data_start < param_size)",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 0f2732620d6ec49d3e6c06831575eaec6bc99d42 Merge tag 'for-7.3/dm-fixes-2' of git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm :: PR 修复动作推断：修复前越界访问（加边界/长度检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
