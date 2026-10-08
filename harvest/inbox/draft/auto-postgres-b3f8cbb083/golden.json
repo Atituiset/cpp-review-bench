@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/xlogreader.c",
+        "anchor": "size_t\t\tdecomp_result = ZSTD_decompress(tmp.data,",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT ce3387b74b708a679282ba5c72990b532d661bb8 Reuse zstd decompression contexts when restoring WAL images :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
