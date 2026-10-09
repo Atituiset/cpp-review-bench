@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/where.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 644fa62518a4f7b15a2d9b3b1c15aa5012c6782b Fix processing of LEFT JOIN when the right operand is controlled by an IN :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

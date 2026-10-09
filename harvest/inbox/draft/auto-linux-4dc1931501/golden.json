@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/macb_main.c",
+        "anchor": "if (!(netdev->features & NETIF_F_HW_CSUM) ||",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 6b48ed85ae0ca37c7403ef5d512be75975844f2f net: macb: check TX ring before modifying skb :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

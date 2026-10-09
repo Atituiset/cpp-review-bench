@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/execPartition.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 1b5dd3a24a48659e8413ef8ddd8adb6653507a9d Fix incorrect reinit of run-time pruning for EPQ rechecks :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
