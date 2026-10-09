@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/setrefs.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 0f7dfd7936b9e99f9aeca00f52ab1692898ffff4 Fix failure of setrefs.c to process child_append_relid_sets :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

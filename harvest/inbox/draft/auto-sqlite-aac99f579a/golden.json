@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/sqldiff.c",
+        "anchor": "pStmt = db_prepare(\"SELECT sql FROM aux.sqlite_schema\"",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT f19a90c56977df9e8d85e6b162c684f5bdd89467 Improvements to the display of DDL SQL statements in the CLI and in :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

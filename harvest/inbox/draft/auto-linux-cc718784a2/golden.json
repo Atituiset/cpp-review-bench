@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/nf_conntrack_bridge.c",
+        "anchor": "if (skb->ip_summed == CHECKSUM_PARTIAL &&",
+        "line": 2,
+        "function": null,
+        "rationale": "COMMIT 6785011f8b16abf40b1e9d8b2e332232b3e68822 ipv4: validate checksum_start before completing checksum :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

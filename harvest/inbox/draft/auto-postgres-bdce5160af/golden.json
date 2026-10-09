@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/astreamer_gzip.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT f884f359f5acb29bd423001b4878b85f51406b42 Handle concatenated gzip members in astreamer decompressor :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/where.c",
+        "anchor": "sqlite3VdbeAddOp1(v, OP_NullRow, pLevel->u.in.aInLoop[m].iCur);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 97048e902ce5d46e17901f347f9391308a07f788 Update check-in [e71b0465b9fa13db] so that it does not try to to generate :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
