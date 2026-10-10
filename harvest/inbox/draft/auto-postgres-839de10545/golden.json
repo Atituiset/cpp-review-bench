@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/test_resowner_many.c",
+        "anchor": "if (nkinds < 0)",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT 5f36942fd3196259ad5ad691f5ecbe4ce555ab7c Fix check on test function's arguments :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

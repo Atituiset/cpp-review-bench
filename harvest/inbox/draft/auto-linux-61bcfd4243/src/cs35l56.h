@@ -1,0 +1,7 @@
+// AUTO-DRAFT from torvalds/linux PR #5f6ee187fa3a7b3cee4b9dae6c3dda6d1d3237db
+
+#define CS35L56_SDW1_PLAYBACK_PORT			1
+#define CS35L56_SDW1_CAPTURE_PORT			3
+
+#define CS35L56_NUM_BULK_SUPPLIES			3
+#define CS35L56_NUM_DSP_REGIONS				5
