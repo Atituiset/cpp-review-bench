@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vec1.c",
+        "anchor": "if( nAcc>1 ) aAcc[0] = I (aAcc[0], aAcc[1]);                         \\",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 012589ecabb5debd4b9a37e96da027e4f41b8838 Bring the tree-tracker branch up-to-date with trunk. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

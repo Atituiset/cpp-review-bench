@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbe.c",
+        "anchor": "assert( pOp[1].p2==pOp[0].p2 );",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT fc96a3c4530bbc66274133d3727a556821dddce6 Add the tree-tracker optimization. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

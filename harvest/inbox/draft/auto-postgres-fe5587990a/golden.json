@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/xloginsert.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 6873a138f782cf816e6019bbe922857050df96c9 Fix crash with wal_debug in EXEC_BACKEND child processes :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
