@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/hashpage.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 173cf85a079516fdd2b09ed853702b05fbfcd15e Fix hash index scans that start during a bucket split. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/plancat.c",
+        "anchor": "if (IsA(elem->expr, Var))",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 62e46c00c657fc2e092ceec0cd79d16035798afe Fix ON CONFLICT inference for index expressions simplified to a Var :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
