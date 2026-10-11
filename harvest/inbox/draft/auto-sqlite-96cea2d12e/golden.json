@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqliteInt.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 6e35c19f170958b1e846e01c55318988f2d192e0 Merge branch-3.54 fixes into trunk. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

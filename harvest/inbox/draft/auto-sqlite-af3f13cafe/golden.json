@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/sqliteInt.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT d85a80711cfef59a0742362a9b2ee5c70f5b8267 Back out a minor performance optimization associated with :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
