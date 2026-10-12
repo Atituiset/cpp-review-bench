@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/json.c",
+        "anchor": "pFromCache = jsonCacheSearch(ctx, pArg);",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT c5115c777078b53e8e6fda4793e6eb50d0f38d15 Merge fixes from branch-3.54 :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
