@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/where.c",
+        "anchor": "if( (pWInfo->wctrlFlags & WHERE_GROUPBY)==0 ){",
+        "line": 11,
+        "function": null,
+        "rationale": "COMMIT 50575da52ca09eba39e84b370e7913edc80894d2 Another fix to the order-by-subquery optimization :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

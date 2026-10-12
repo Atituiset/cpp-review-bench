@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/select.c",
+        "anchor": "if( ExprHasProperty(pExpr, EP_OuterON) ){",
+        "line": 12,
+        "function": null,
+        "rationale": "COMMIT 513c19fa3894dc96b98ee770d80df6a0fa64703c Fix a problem in the query flattener associated with RIGHT JOIN, as :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

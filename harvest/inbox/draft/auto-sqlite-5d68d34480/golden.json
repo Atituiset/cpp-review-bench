@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/fossildelta.c",
+        "anchor": "static int delta_output_size(const char *zDelta, int lenDelta){",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 891eb44d4dfe8c1afc304d6bf0c17fe7376fd8c1 Minor hardening of the fossil delta extension against malformed deltas. Based on suggestions from Dan Mestas. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/json.c",
+        "anchor": "pFromCache = jsonCacheSearch(ctx, pArg);",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 03e00d6b84ab636c25093daddb2fb255998882cd Do not allow the json_valid() routine to use a cached (and possibly edited) :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
