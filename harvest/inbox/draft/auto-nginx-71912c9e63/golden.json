@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_event_quic_frames.c",
+      "anchor": "p = ngx_slprintf(p, last, \"ACK n:%ui delay:%uL \",",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #1592 Format specifier fixes in error logging :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

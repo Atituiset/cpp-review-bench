@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_http_charset_filter_module.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #1474 Nginx 1.31.2 with security fixes :: PR 修复动作推断：修复前越界访问（加边界/长度检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

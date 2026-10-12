@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/module.c",
+      "anchor": "ctx->client->user = user;",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #15371 Fix ACL key-name leak in BCAST client-side caching invalidations :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

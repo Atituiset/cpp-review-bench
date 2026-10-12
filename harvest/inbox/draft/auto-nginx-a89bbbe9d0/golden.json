@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_http_proxy_v2_module.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #1314 Proxy: fix keepalive for HTTP/2 when no body is specified :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

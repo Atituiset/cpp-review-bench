@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/rax.c",
+      "anchor": "if (it->leaf_slot_idx >= 0)",
+      "line": 5,
+      "function": null,
+      "rationale": "PR #15508 rax: fix random walk from inlined leaves :: PR 修复动作推断：修复前越界访问（加边界/长度检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

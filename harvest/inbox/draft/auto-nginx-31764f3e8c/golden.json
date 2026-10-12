@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ngx_kqueue_module.c",
+      "anchor": "kev.udata = 0;",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #777 kqueue build fixes :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

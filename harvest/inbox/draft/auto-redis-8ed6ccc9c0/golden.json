@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/t_string.c",
+      "anchor": "if (*milliseconds <= 0) {",
+      "line": 2,
+      "function": null,
+      "rationale": "PR #15626 Fix overflowing relative expiration times in SET :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

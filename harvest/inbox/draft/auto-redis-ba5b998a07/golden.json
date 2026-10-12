@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/hotkeys.c",
+      "anchor": "zfree(temp_slots);",
+      "line": 3,
+      "function": null,
+      "rationale": "PR #15561 Fix quadratic search of slot duplicates in hotkeys command :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
