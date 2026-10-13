@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pg_dump.c",
+        "anchor": "tbinfo->needs_override = tbinfo->needs_override || (tbinfo->attidentity[j] == ATTRIBUTE_IDENTITY_ALWAYS);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT cde33148c9d8cc432296992eaa5c2f58a126712d pg_dump: Don't emit OVERRIDING SYSTEM VALUE for dropped identity columns :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

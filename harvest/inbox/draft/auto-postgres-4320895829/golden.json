@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/pgstat_shmem.c",
+        "anchor": "if (do_drop != NULL && !do_drop(ps, match_data))",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 44539786b8296b6e73035142670e0d1ff2639078 Allow a stats kind to use its own dshash in pgstats :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

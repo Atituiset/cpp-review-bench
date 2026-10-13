@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/optname.c",
+        "anchor": "const char *sqlite3_optimization_name(sqlite3_int64 mask){",
+        "line": 12,
+        "function": null,
+        "rationale": "COMMIT 77b2a47a202f83d5a48aa259f62346ce497af122 Fix compiler warnings, mostly associated with the new ext/misc/optname.c :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
