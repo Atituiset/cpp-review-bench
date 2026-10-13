@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/expr.c",
+        "anchor": "if( NEVER(pDef==0) || (pDef->funcFlags & SQLITE_RESULT_SUBTYPE)!=0 ){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 7815214b6cbc7bb43fdebd65aa05caccf445815e An unknown function can be seen in exprNodeCanReturnSubtype(), but only :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
