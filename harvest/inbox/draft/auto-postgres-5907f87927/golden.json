@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/jsonb_gin.c",
+        "anchor": "if (jsp->type == jpiOr)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT b28a2b2bfa50cb7aa3fcea069f0afad0ebcb6491 Fix two errors in extraction of GIN indexquals from jsonpath queries. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/walsender.c",
+        "anchor": "Assert(xlogreader != NULL);",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT f2dd2a3bd44eb1d158e6e507b86dc3df787043b1 Fix potential use-after-frees in WAL sender :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

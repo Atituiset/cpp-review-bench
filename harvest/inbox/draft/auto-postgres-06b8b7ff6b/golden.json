@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/partprune.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT eacee6b618718f9e5298df0629d9720fa4dd5e45 Don't use SubPlan-containing expressions for startup-time pruning :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
