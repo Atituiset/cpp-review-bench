@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/iothread.c",
+        "anchor": "serverAssert(pthread_equal(pthread_self(), server.main_thread_id));",
+        "line": 4,
+        "function": null,
+        "rationale": "PR 15869 Fix crashes when a module thread pauses IO threads :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

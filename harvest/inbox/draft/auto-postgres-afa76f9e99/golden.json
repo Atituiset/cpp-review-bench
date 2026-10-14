@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/joinrels.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT b84ad0cd90414970a453e37983624a13921421ca Disallow joins whose lateral references can never be satisfied :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

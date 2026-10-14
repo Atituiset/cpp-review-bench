@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/xlogreader.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 2246c04e7b99519010cd47be636273a5700b0b0d Fix typo in xlogreader.c :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

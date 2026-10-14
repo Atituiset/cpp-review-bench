@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vec1_algo_test.c",
+        "anchor": "aBest[ii] = vec1PqBestMatch(",
+        "line": 2,
+        "function": null,
+        "rationale": "COMMIT c8922e6f6b90eda21bf81073496efbccd44a2fe9 Merge fixes to vec1 made on trunk into this branch. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
