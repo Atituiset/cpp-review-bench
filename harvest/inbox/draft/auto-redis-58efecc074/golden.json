@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/t_hash.c",
+        "anchor": "if (hta->values[field_idx]) sdsfree(hta->values[field_idx]);",
+        "line": 6,
+        "function": null,
+        "rationale": "PR 15604 Fix hashTypeAllocSize() for TMPL_ARRAY :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

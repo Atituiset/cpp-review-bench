@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/wal.c",
+        "anchor": "+ iLast*sizeof(ht_slot);",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 09a55130084c903bb0d1b6a2a8a672660b4bce37 Within a checkpoint, avoid allocating memory for *-shm pages that will not be processed as they have already been comple :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/xlogrecovery.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT c2c696c1a4827cde5fdaf8c8f03f9991d43ebfad Fix checkpointer restartpoint assertion failure :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
