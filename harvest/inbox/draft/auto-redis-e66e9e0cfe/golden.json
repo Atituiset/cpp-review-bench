@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/monotonic.c",
+      "anchor": "fprintf(stderr, \"monotonic: x86 linux, kernel clocksource is not 'tsc'\\n\");",
+      "line": 2,
+      "function": null,
+      "rationale": "PR 15710 Route monotonic clock fallback diagnostics through serverLog instead of stderr :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
