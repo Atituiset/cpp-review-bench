@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/openssl.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "COMMIT 961c95fea6e097ef4dbc19ee996e5127e58acbac openssl: fix DER buffer leak in Apple SecTrust verification :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

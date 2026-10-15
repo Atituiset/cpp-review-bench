@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/util.c",
+      "anchor": "if(exit_event) {",
+      "line": 4,
+      "function": null,
+      "rationale": "COMMIT 7babac86904c7ac0b34a22240737c7261cb059eb servers: fix HANDLE leak in UWP builds :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

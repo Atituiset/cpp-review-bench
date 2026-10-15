@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/tool_urlglob.c",
+      "anchor": "if(size >= 100000)",
+      "line": 4,
+      "function": null,
+      "rationale": "COMMIT 1098e1044e6aadb471999c88bd184132c3ebc3d8 tool_urlglob: fix memory-leak on glob range overflow :: PR 修复动作推断：修复前越界访问（加边界检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/vtls_spack.c",
+      "anchor": "result = spack_decdata16(&pval8, &s->quic_tp_len, &buf, end);",
+      "line": 5,
+      "function": null,
+      "rationale": "COMMIT 0dc22b690dd8dba4048d494f09a50122dd7c0dd4 ssls: fix potential memory leak on import :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
