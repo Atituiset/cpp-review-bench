@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/curl_darwinssl.c",
+      "anchor": "if(sep == NULL)",
+      "line": 3,
+      "function": null,
+      "rationale": "PR 115 Fix CA certificate bundle handling in darwinssl. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/nss.c",
+      "anchor": "case CURL_SSLVERSION_TLSv1:",
+      "line": 4,
+      "function": null,
+      "rationale": "PR 3262 nss: fix max-tls to be 1.3/1.2 :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

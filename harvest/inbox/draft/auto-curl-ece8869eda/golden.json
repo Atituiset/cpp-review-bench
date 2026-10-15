@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-415",
+      "file": "src/getinfo.c",
+      "anchor": "free(info->contenttype);",
+      "line": 2,
+      "function": null,
+      "rationale": "PR 1017 curl_easy_reset does not reset status code :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
