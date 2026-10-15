@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/initdb.c",
+        "anchor": "if (newindent_if_tab <= oldindent)",
+        "line": 9,
+        "function": null,
+        "rationale": "COMMIT d870be195b3b7ee224a58ff562c1f1c252a96814 initdb: Pad rewritten GUC lines with spaces instead of tabs. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
