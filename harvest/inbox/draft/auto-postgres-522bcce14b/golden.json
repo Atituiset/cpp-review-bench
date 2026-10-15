@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/analyzejoins.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 91b1872ff2de16cd353598edbc650a185e649226 Clear more substructure of a dead relation during join removal. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

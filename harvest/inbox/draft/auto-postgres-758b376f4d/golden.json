@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pgstat.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 0d110901f0ef362fcf24b07357c20745f971c602 Fix crash when reading stats file at startup with fixed-sized kinds :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

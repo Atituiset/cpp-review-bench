@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/basebackup_incremental.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT cedd2cec7d537ccae01ab5041cdcaf15aa8618e0 pg_basebackup: Report correct size estimate for incremental backups :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

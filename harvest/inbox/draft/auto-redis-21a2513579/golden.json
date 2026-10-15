@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/debug.c",
+        "anchor": "if (-1 == (dir = open(path_buff,  O_RDONLY | O_DIRECTORY))) return 0;",
+        "line": 9,
+        "function": null,
+        "rationale": "PR 15891 Bound a stuck crash report so the process still exits. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/nbtreadpage.c",
+        "anchor": "if (cur->sk_strategy == BTEqualStrategyNumber)",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 1d45c5da3a0ad22b8e172da352ed25bd70a2253a Unset SK_SEARCHARRAY when inequality arrays degenerate. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

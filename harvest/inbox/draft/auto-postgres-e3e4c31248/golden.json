@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/ri_triggers.c",
+        "anchor": "typedef struct RI_CompareHashEntry RI_CompareHashEntry;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 964d88fac464a9b5f55c3d0c9c2ec72bcde5847d Remove RI fast-path code for calling cast functions :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
