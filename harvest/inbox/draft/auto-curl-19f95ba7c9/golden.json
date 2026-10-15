@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/multi.c",
+      "anchor": "if(!ufds)",
+      "line": 4,
+      "function": null,
+      "rationale": "PR 15155 multi: Make curl_multi_waitfds consistent with the documentation. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

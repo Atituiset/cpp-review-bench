@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/ws-data.c",
+      "anchor": "curl_off_t l1, l2;",
+      "line": 4,
+      "function": null,
+      "rationale": "PR 11799 CI: add a 32-bit i686 Linux build :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

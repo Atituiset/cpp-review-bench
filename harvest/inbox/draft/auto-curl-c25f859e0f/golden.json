@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/http2.c",
+      "anchor": "if((sweight_wanted(data) != sweight_in_effect(data)) ||",
+      "line": 3,
+      "function": null,
+      "rationale": "PR 11384 HTTP/2, fix crash in handling stream weights :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
