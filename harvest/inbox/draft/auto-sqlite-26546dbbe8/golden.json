@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/json.c",
+        "anchor": "if( x + jsonbPayloadSize(&p->sParse, x, &sz) == p->i ) break;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 2023a2b37593073de0e789455b6a362ceeecd1d1 Fix json_tree() when it is given a root that ends with an array index so :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

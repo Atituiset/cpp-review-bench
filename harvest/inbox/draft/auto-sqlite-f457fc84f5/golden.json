@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/build.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 77a30f6648342615b1afa10ad750397f2f98e585 Ensure the internal DBFLAG_SchemaKnownOk flag is always cleared :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

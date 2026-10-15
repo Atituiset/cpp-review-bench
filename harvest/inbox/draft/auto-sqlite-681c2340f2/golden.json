@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/where.c",
+        "anchor": "if( sqlite3ExprIsVector(pX->pLeft) ){",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 90687aa700d1d0a7af8fe95f8a4c841df6fa15ba Ensure the correct collation sequence is used for expressions like \"a IN (SELECT b COLLATE ...)\" when using an index on  :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

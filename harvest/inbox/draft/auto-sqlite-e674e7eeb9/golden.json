@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/delete.c",
+        "anchor": "if( pIdx->aiColumn[j]>=0 ){",
+        "line": 11,
+        "function": null,
+        "rationale": "COMMIT fb0878ac38d23ebf699109e2c472e0469dd67be3 Fix indexes on typeless generated columns that pull from REAL columns so :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
