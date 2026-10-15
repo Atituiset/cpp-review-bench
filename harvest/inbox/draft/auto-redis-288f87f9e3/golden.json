@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/cluster_legacy.c",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR #15530 Fix replica left as a sub-replica after a failover :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
