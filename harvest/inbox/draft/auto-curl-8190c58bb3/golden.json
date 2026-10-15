@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-787",
+      "file": "src/pop3.c",
+      "anchor": "return CURLE_RECV_ERROR;",
+      "line": 3,
+      "function": null,
+      "rationale": "PR 8506 pop3/smtp: return *WEIRD_SERVER_REPLY when not understood :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

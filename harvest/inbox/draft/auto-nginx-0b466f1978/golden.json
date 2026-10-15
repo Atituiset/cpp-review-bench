@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/ngx_cycle.c",
+      "anchor": "if (cycle->conf_param.data == NULL) {",
+      "line": 3,
+      "function": null,
+      "rationale": "PR 1082 Prevent Undefined Behaviour in memcpy(3) via ngx_init_cycle() :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}

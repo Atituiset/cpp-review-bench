@@ -1,0 +1,14 @@
+{
+  "must_find": [
+    {
+      "scenario": "cwe-476",
+      "file": "src/nginx.h",
+      "anchor": null,
+      "line": null,
+      "function": null,
+      "rationale": "PR 1475 Nginx 1.30.3 with security fixes :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+      "severity": "medium"
+    }
+  ],
+  "must_not_find": []
+}
