@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/tableam.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT ba51d62be465c420b0fbe3b0efd0ccd488e79922 Fix Parallel TID Range Scan rescans with a different TID range :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

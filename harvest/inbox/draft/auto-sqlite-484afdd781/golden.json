@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/func.c",
+        "anchor": "int n;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 848cad0ec0b9008690af0b3e95b95814875a8c27 Deal with harmless 32-bit integer overflow on parameters to some extension :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

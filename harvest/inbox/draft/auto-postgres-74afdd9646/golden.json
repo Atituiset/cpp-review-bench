@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vacuumparallel.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT a39e53a700c5b728f2f7dab964e33b157979fb3a Fix DROP DATABASE FORCE failing on parallel autovacuum workers. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

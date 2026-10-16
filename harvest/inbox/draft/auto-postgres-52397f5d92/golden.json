@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/format_type.c",
+        "anchor": "if (left < (slen + 2))",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT a999971331301a4a2f945220733b11af90cc2962 Use StringInfo to build the result in oidvectortypes() :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

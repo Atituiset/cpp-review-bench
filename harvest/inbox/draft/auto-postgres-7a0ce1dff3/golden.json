@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vacuum.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT e0b995e5b23116450646fd1004db4bdcdbe213e4 Avoid dangling shared memory pointers in parallel vacuum. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

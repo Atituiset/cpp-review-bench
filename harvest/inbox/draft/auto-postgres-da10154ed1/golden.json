@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/bufmgr.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT eb7cc1d09e742d369540016455d0f55c619106f2 Fix argument given to buffer_readv_encode_error() :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

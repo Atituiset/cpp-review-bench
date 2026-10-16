@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/decimal.c",
+        "anchor": "if( N>0 ) decimal_round(p, N);",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 848cad0ec0b9008690af0b3e95b95814875a8c27 Deal with harmless 32-bit integer overflow on parameters to some extension :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

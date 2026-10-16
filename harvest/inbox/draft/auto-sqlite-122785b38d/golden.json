@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/where.c",
+        "anchor": "if( j==pLoop->u.btree.nEq ){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 8351ef7256e58e799d2e92c9f73b082a9019501a Avoid a spurious corruption report in some cases when processing an ORDER BY .. NULLS LAST query against a WITHOUT ROWID :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
