@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/socks.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "PR 20813 socks: ensure DNS is freed in failure cases. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

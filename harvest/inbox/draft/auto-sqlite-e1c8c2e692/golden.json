@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbemem.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT ef3e33c3df1cebefb98f3eb1b9e83112121c1c3a Fix DEFAULT so that BLOB values cast to text use the database encoding. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

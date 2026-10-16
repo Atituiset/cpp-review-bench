@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/wherecode.c",
+        "anchor": "sqlite3VdbeAddOp2(v, OP_Integer, 1, (int)pLevel->iLikeRepCntr);",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT e4facb4585c7ef4d1e314e1314b81512408aeab1 When a single loop uses an IN(...) expression and a LIKE/GLOB expression with an index, nest the 2-iteration loop that s :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
