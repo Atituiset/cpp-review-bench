@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbe.c",
+        "anchor": "rc = sqlite3VdbeMemSetStr(pDest, pBuf, len, encoding,",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 7fd436eaf965da688c22babb5b5042149ff12947 Fix a problem with reading large UTF16 strings with a BOM out of the :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/test1.c",
+        "anchor": "Tcl_Mutex m;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT c3e073420ff9e35ea80c783e3664e32449b5b703 In test file test1.c, use a static SQLite mutex to protect the hash table instead of a Tcl mutex. A Tcl mutex is a no-op :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
