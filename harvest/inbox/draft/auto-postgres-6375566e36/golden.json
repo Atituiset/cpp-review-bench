@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/repack.c",
+        "anchor": "inhoids = find_all_inheritors(relid, NoLock, NULL);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT af090508018be5ace443ba6e2814500c10842a4d Warn when REPACK or CLUSTER skips foreign partitions :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

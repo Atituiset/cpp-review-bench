@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/multixact_read_v18.c",
+        "anchor": "if (nextMXOffset == 0)",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 2323f03a1789bc52bee980c56b8057470458701a pg_upgrade: Fix last multixid ending at offset wraparound :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
