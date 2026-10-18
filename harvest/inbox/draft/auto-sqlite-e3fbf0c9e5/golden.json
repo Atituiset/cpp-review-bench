@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/qrf.c",
+        "anchor": "sqlite3_free(sqlite3_str_finish(pLine));",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 8e1b59b6dc35197ec43b4dc2d31000fbd9d4c291 Enhance QRF to deal with zero-length column names. :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
