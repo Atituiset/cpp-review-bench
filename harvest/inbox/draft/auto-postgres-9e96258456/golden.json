@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/nbtpreprocesskeys.c",
+        "anchor": "if (subkey->sk_flags & SK_ISNULL)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 45fc51fcbf4534ea2f6f85e36f8155dbd5ba9851 Fix nbtree unsatisfiable row compare assertion failure. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

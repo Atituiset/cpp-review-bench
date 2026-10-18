@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/initsplan.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 7787aec8ab000932a8704a988b175b39ff816f2f Fix bogus outer-join commutation with lateral refs in PlaceHolderVars :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
