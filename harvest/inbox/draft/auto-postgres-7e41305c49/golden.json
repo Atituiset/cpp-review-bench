@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/launch_backend.c",
+        "anchor": "volatile PMSignalData *PMSignalState;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 22ff4fc5a21bce3ccf0376e0e91fde8fd2f28655 Fix casting away of volatile qualifier :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

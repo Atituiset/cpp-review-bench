@@ -1,0 +1,164 @@
+# auto-postgres-6a6b97d0d9
+
+> 本文件是**移植 blueprint**：draft 不是半成品用例，accept = 承诺参照真实案例移植重写一个可编译用例。
+
+## 溯源
+
+| 项 | 值 |
+|---|---|
+| 源仓 | postgres/postgres |
+| 源 PR | [#23192ac644e2a8f0597692aacb269321ee5acd99](https://github.com/postgres/postgres/commit/23192ac644e2a8f0597692aacb269321ee5acd99) |
+| 许可证 | PostgreSQL |
+| 移植策略 | direct（宽松许可，可直接移植） |
+| 采集时间 | 2026-10-19 |
+| track 方向 | defect 候选（polarity=must_find） |
+| 外部依赖数（dep_count） | 37 |
+| 编译错误数（gcc syntax-only） | 32（0=切片已达编译地板） |
+
+- 采集工具: pr-mining（GitHub 已合并 fix-PR 爬取）
+- 采集信号: 标题/修复 diff 含缺陷特征（fix/leak/overflow/null/...）
+- 源 PR: #23192ac644e2a8f0597692aacb269321ee5acd99 (https://github.com/postgres/postgres/commit/23192ac644e2a8f0597692aacb269321ee5acd99)
+- 候选初判 scenario: **cwe-476（候选猜测，待 LLM/人审定，非真值）**
+- 候选初判锚点行: 5（原始 PR diff 行 37；PR 修复前的代码，待确认是否为 bug）
+
+## 缺陷描述与触发条件
+
+COMMIT 23192ac644e2a8f0597692aacb269321ee5acd99 Add pg_attribute_returns_nonnull to various memory allocation functions :: PR 修复动作推断：修复前解引用（疑似缺判空）
+
+- 触发条件（一句话复述，移植者补写）：
+
+> 移植者须知：accept 前必须能用一句话复述触发条件，并在本文件补写
+
+## 真实修复 diff（PR 改了什么）
+
+```diff
+@@ -34,22 +34,22 @@
+  * "Safe" memory allocation functions --- these exit(1) on failure
+  * (except pg_malloc_extended with MCXT_ALLOC_NO_OOM)
+  */
+-extern char *pg_strdup(const char *in);
+-extern void *pg_malloc(size_t size);
+-extern void *pg_malloc0(size_t size);
++pg_attribute_returns_nonnull extern char *pg_strdup(const char *in);
++pg_attribute_returns_nonnull extern void *pg_malloc(size_t size);
++pg_attribute_returns_nonnull extern void *pg_malloc0(size_t size);
+ extern void *pg_malloc_extended(size_t size, int flags);
+-extern void *pg_realloc(void *ptr, size_t size);
++pg_attribute_returns_nonnull extern void *pg_realloc(void *ptr, size_t size);
+ extern void pg_free(void *ptr);
+ 
+ /*
+  * Support for safe calculation of memory request sizes
+  */
+ extern Size add_size(Size s1, Size s2);
+ extern Size mul_size(Size s1, Size s2);
+-extern void *pg_malloc_mul(Size s1, Size s2);
+-extern void *pg_malloc0_mul(Size s1, Size s2);
++pg_attribute_returns_nonnull extern void *pg_malloc_mul(Size s1, Size s2);
++pg_attribute_returns_nonnull extern void *pg_malloc0_mul(Size s1, Size s2);
+ extern void *pg_malloc_mul_extended(Size s1, Size s2, int flags);
+-extern void *pg_realloc_mul(void *p, Size s1, Size s2);
++pg_attribute_returns_nonnull extern void *pg_realloc_mul(void *p, Size s1, Size s2);
+ 
+ /*
+  * Variants with easier notation and more type safety
+@@ -75,17 +75,17 @@ extern void *pg_realloc_mul(void *p, Size s1, Size s2);
+ #define pg_realloc_array(pointer, type, count) ((type *) pg_realloc_mul(pointer, sizeof(type), count))
+ 
+ /* Equivalent functions, deliberately named the same as backend functions */
+-extern char *pstrdup(const char *in);
+-extern char *pnstrdup(const char *in, Size size);
+-extern void *palloc(Size size);
+-extern void *palloc0(Size size);
++pg_attribute_returns_nonnull extern char *pstrdup(const char *in);
++pg_attribute_returns_nonnull extern char *pnstrdup(const char *in, Size size);
++pg_attribute_returns_nonnull extern void *palloc(Size size);
++pg_attribute_returns_nonnull extern void *palloc0(Size size);
+ extern void *palloc_extended(Size size, int flags);
+-extern void *repalloc(void *pointer, Size size);
++pg_attribute_returns_nonnull extern void *repalloc(void *pointer, Size size);
+ extern void pfree(void *pointer);
+-extern void *palloc_mul(Size s1, Size s2);
+-extern void *palloc0_mul(Size s1, Size s2);
++pg_attribute_returns_nonnull extern void *palloc_mul(Size s1, Size s2);
++pg_attribute_returns_nonnull extern void *palloc0_mul(Size s1, Size s2);
+ extern void *palloc_mul_extended(Size s1, Size s2, int flags);
+-extern void *repalloc_mul(void *p, Size s1, Size s2);
++pg_attribute_returns_nonnull extern void *repalloc_mul(void *p, Size s1, Size s2);
+ 
+ #define palloc_object(type) ((type *) palloc(sizeof(type)))
+ #define palloc0_object(type) ((type *) palloc0(sizeof(type)))
+@@ -95,7 +95,7 @@ extern void *repalloc_mul(void *p, Size s1, Size s2);
+ #define repalloc_array(pointer, type, count) ((type *) repalloc_mul(pointer, sizeof(type), count))
+ 
+ /* sprintf into a palloc'd buffer --- these are in psprintf.c */
+-extern char *psprintf(const char *fmt, ...) pg_attribute_printf(1, 2);
++pg_attribute_returns_nonnull extern char *psprintf(const char *fmt, ...) pg_attribute_printf(1, 2);
+ extern size_t pvsnprintf(char *buf, size_t len, const char *fmt, va_list args) pg_attribute_printf(3, 0);
+ 
+ #endif							/* FE_MEMUTILS_H */
+```
+
+## 移植要点
+
+before 切片依赖的外部符号（启发式粗判，移植时需补桩/声明）：
+
+- 外部函数：`add_size`
+- 外部函数：`exit`
+- 外部函数：`mul_size`
+- 外部函数：`palloc`
+- 外部函数：`palloc0`
+- 外部函数：`palloc0_mul`
+- 外部函数：`palloc0_object`
+- 外部函数：`palloc_extended`
+- 外部函数：`palloc_mul`
+- 外部函数：`palloc_mul_extended`
+- 外部函数：`palloc_object`
+- 外部函数：`pfree`
+- 外部函数：`pg_attribute_printf`
+- 外部函数：`pg_free`
+- 外部函数：`pg_malloc`
+- 外部函数：`pg_malloc0`
+- 外部函数：`pg_malloc0_mul`
+- 外部函数：`pg_malloc_extended`
+- 外部函数：`pg_malloc_mul`
+- 外部函数：`pg_malloc_mul_extended`
+- 外部函数：`pg_realloc`
+- 外部函数：`pg_realloc_array`
+- 外部函数：`pg_realloc_mul`
+- 外部函数：`pg_strdup`
+- 外部函数：`pnstrdup`
+- 外部函数：`psprintf`
+- 外部函数：`pstrdup`
+- 外部函数：`pvsnprintf`
+- 外部函数：`repalloc`
+- 外部函数：`repalloc_array`
+- 外部函数：`repalloc_mul`
+- 大写宏：`FE_MEMUTILS_H`
+- 大写宏：`MCXT_ALLOC_NO_OOM`
+- 外部类型：`Equivalent`
+- 外部类型：`Safe`
+- 外部类型：`Size`
+- 外部类型：`Support`
+- 外部类型：`Variants`
+- 外部类型：`size_t`
+
+- **src/ 是原始切片，不可直接编译**；移植时要补全上下文使其独立编译。
+- `// <<< BUG ANCHOR` 标记在移植时必须删除，golden anchor 改用重写后真实代码行。
+- **依赖重（dep_count≥10）**：可考虑只做 PR/diff 形态评审，不做独立 case。
+
+## accept 检查清单
+
+- [ ] 编译通过（重写后的 src/ 可独立编译）
+- [ ] golden anchor 真实存在于 src/
+- [ ] 触发条件已用一句话复述（见「缺陷描述与触发条件」）
+- [ ] license 策略已遵守（rewrite 仓代码已重写表达）
+- [ ] `// <<< BUG ANCHOR` 标记已清除
+- [ ] notes 三段式已补全（缺陷描述 / 移植要点 / 契约安全（contract 候选））
+
+## 接受后流程（accept → case）
+
+1. 完成上面检查清单后评论 `/case accept auto-postgres-6a6b97d0d9` → 本草稿移入 `cases/defect/auto-postgres-6a6b97d0d9/`（五文件齐备）
+2. `ci.yml` 在 PR 合并后对该 case 跑 9 工具（KLEE/CodeQL/Infer/CSA/CppCheck/clang-tidy/CodeChecker/Joern/Cooddy）
+3. `tools/eval.py` 对照 golden 判四态（PASS/FN/FP/EXTRA），回流到报告
+4. 正式仓由你手动触发 LLM 评审（agent-reviewer）定 scenario 真值，写入 golden

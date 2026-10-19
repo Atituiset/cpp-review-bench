@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vec1.c",
+        "anchor": "static int vec1FinishWriter(Vec1Tab *pTab, int bDiscard){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT cc758d2fba50f108d479c642f68a5ebb70252df3 Fix a vec1 problem with issuing a 'rebuild' command within a transaction that has already written to the table. Report [ :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

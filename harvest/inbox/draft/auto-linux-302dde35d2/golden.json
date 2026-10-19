@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/bsg-lib.c",
+        "anchor": "job->reply_len = SCSI_SENSE_BUFFERSIZE;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT f909e534f5e34feb2ea2701d54df63e21aa506fc Merge tag 'scsi-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
