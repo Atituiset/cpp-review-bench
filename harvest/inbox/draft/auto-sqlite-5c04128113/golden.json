@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/decimal.c",
+        "anchor": "decimal_add(pA, pB);",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 4e512bf10d4f6a1bc613c4c0679b003d4570c0de Fix the decimal extension to correctly deal with NULL parameters. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

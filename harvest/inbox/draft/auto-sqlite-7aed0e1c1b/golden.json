@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/decimal.c",
+        "anchor": "if( i64<-2147483648LL || i64>2147483647LL ){",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 623bc0b1d5e5a45236c8d2f46f52f96dfe90b780 Fix harmless compiler warnings. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

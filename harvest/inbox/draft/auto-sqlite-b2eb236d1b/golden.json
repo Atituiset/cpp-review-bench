@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/wherecode.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT b1f3151bb75205d4ab34dbd7659bbfc80c79d175 If terms on the SELECT on the RHS of a vector IN are removed, then the :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

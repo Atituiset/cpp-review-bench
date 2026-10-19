@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/float.h",
+        "anchor": "extern float8 float8in_internal(char *num, char **endptr_p,",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 2db51901c48e44369f5e6f209a65983c206075da Change float{4,8}in_internal take const char * input argument :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
