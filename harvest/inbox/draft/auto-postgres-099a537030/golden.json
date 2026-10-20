@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/aset.c",
+        "anchor": "set->maxBlockSize = maxBlockSize;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 7b84cf8cfc7935d9ef275ea425c7bbd6e40b8c90 Recompute allocChunkLimit when reusing an AllocSet context :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
