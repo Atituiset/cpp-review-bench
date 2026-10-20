@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/module.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "PR 15995 RED-220725: Preserve BLESS across module value replacement :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

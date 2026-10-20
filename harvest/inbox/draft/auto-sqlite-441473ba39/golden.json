@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqlite3session.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 1f3e5e763dbee918ae8f8c44b84bb98f8d0fa2d6 Merge the latest branch-3.54 fixes into trunk :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
