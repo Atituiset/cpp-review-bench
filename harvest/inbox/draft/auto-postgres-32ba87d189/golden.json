@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/ruleutils.c",
+        "anchor": "case T_XmlExpr:",
+        "line": 9,
+        "function": null,
+        "rationale": "COMMIT b536d5a0bd7a0e35c3168f3022183f37cb5c2058 In deparsing, parenthesize IS DOCUMENT where it is an operand. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

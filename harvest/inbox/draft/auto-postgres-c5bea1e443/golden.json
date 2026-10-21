@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/equivclass.c",
+        "anchor": "if (em->em_is_child &&",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 456ee18045d03f8eb7194f7b7fcf53595704b44b Fix sorting a child rel by an expression containing a PlaceHolderVar :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

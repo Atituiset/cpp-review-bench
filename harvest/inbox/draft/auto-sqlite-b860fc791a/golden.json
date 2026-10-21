@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/test1.c",
+        "anchor": "xDel = SQLITE_STATIC;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 2f0c895a4e4098c6541cfb82a6a4dafb2abc1246 Fix the sqlite3_carray_bind() interface so that it works with :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

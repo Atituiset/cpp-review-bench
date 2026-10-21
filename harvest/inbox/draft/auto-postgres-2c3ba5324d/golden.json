@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/ruleutils.c",
+        "anchor": "if (IsA(plan, ModifyTable))",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 1999fe227df70249dce7c9037147b54c1090b4ad Fix OLD/NEW aliases that EXPLAIN prints in RETURNING SubPlans. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
