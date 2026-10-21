@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbemem.c",
+        "anchor": "assert( pVal && pVal->z && pVal->flags==(MEM_Str|MEM_Term) );",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 12b80e71b6d1d4a9b39bc8b402be52f8f818f676 When a real value is specified as a default for a text column, avoid various inconsistencies by ensuring that it is alwa :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

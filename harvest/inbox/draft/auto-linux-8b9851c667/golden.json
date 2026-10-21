@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/cifsfs.h",
+        "anchor": "int cifs_fileattr_set(struct mnt_idmap *idmap, struct dentry *dentry,",
+        "line": 1,
+        "function": null,
+        "rationale": "COMMIT 2c455ddca7827ad8fa3a64fdbf5a60efb928b46a smb client: fix mis-merge with fileattr_set taking a const idmap :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

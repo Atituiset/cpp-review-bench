@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/_int_bool.c",
+        "anchor": "lval = strtol(nnn, NULL, 0);",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 3745790f53bc5dd87b2df3d5a0c9c62d7ff0360d contrib/intarray: always parse query_int integers as decimal. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
