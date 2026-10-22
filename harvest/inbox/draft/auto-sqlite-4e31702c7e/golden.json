@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/expr.c",
+        "anchor": "return sqlite3ExprInt32(db, 0);",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 0168a3f32b41cbe0e08f145c0b52882aa7666c6c Mark the AND optimization as \"not-a-real-0-or-1\" so as not to confuse :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

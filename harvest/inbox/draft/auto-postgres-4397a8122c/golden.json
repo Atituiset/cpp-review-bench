@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/tab-complete.in.c",
+        "anchor": "COMPLETE_WITH(\"CASCADE\", \"RESTRICT\");",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT f2edf5dd00d174c7b1396f0a777375368a26c752 psql: Fix tab completion for DROP INDEX CONCURRENTLY :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

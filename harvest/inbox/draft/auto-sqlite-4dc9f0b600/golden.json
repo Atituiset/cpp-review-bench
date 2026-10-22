@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fts5_storage.c",
+        "anchor": "if( rc==SQLITE_OK && pConfig->eContent==FTS5_CONTENT_NORMAL ){",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 4259cf526426208b1e5514e5f04c056e68958ebc Avoid orphaning an fts5 %_content table when dropping or renaming an fts5 table that uses contentless_unindexed=1. Repor :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
