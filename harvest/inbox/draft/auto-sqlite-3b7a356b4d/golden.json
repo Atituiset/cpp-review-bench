@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/fts5_main.c",
+        "anchor": "const char *z = 0;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 4f6dc901fec3d7a932665f3e4c805f5a9ffc8e60 Do not synthesize position-lists for UNINDEXED fts5 columns in detail=none mode. Report [bugs:/info/2026-10-20T20:40:52Z :: PR 修复动作推断：修复前越界访问（加边界/长度检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
