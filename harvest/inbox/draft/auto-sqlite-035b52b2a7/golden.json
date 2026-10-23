@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbeapi.c",
+        "anchor": "aRec = sqlite3DbMallocRaw(db, nRec);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT bc766d966a3690f848e8c9ace9f01380f98ab9cd Merge branch-3.54 fixes into trunk :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

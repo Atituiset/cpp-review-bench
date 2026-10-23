@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/parse_expr.c",
+        "anchor": "static Node *GetJsonBehaviorConst(JsonBehaviorType btype, int location);",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 1910daf98317bc321562e7d7436a791538825d0e Fix handling of some SQL/JSON locations in query jumbling :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
