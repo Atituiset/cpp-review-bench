@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/parse_utilcmd.c",
+        "anchor": "if (relation->schemaname != NULL &&",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT b6dae498dfa60c9d15abf791d51434e8d23e5cae Qualify unqualified names in CREATE SCHEMA elements again. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

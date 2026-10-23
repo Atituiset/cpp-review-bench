@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sequencesync.c",
+        "anchor": "LogicalRepSequenceInfo *seqinfo;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 219334a2252729054db98288df64e61b2968f2b7 Add error context for sequence synchronization. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

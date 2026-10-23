@@ -1,0 +1,8 @@
+// AUTO-DRAFT from torvalds/linux PR #79132ddf81d78d9b84d9b8f05c7c5c3a3e912537
+					 SECCOMP_FILTER_FLAG_SPEC_ALLOW | \
+					 SECCOMP_FILTER_FLAG_NEW_LISTENER | \
+					 SECCOMP_FILTER_FLAG_TSYNC_ESRCH | \
+					 SECCOMP_FILTER_FLAG_WAIT_KILLABLE_RECV)  // <<< BUG ANCHOR
+
+/* sizeof() the first published struct seccomp_notif_addfd */
+#define SECCOMP_NOTIFY_ADDFD_SIZE_VER0 24
