@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/wal.c",
+        "anchor": "rc = SQLITE_READONLY_RECOVERY;",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 9a9446f3b088bf3b8215311fbbdcc60a46045bed Fix a race condition with a writer that could cause a connection with a read-only *-shm file to return a spurious SQLITE :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

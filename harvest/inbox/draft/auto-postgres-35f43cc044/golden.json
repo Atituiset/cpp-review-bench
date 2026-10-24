@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/nodeHashjoin.c",
+        "anchor": "if (!isnull)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 126976a8ffcfa47f40d3df09243ebf4606001912 Emit null-keyed hash join outer tuples immediately when feasible. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

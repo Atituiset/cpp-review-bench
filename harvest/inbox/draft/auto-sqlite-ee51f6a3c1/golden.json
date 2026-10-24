@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vdbeapi.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 0bb1247fca6393c2b23cbff6c26669150d6ea412 Follow documented behavior when casting a zeroblob() to text on a UTF-16 :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/test_vfs.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 19e832b3b32a7fa0e6af88882b04907d7aac2849 Merge WAL race condition fixes from branch-3.54 :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
