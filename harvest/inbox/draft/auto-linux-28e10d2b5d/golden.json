@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pci_root.c",
+        "anchor": "if (!(root->osc_control_set & OSC_PCI_EXPRESS_NATIVE_HP_CONTROL))",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 17bb0e2f6c8043f70a693a5f3797471cbed354c8 Merge tag 'pci-v7.4-changes' of git://git.kernel.org/pub/scm/linux/kernel/git/pci/pci :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
