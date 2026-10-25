@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/fts5_vocab.c",
+        "anchor": "\"CREATE TABlE vocab(\" FTS5_VOCAB_COL_SCHEMA  \")\",",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT e7dfb3cae950e593696f5e58aa216be005ce4fbd Make the fts5_vocab virtual table WITHOUT ROWID, so that RIGHT JOIN and OR queries work properly with it. Report [bugs:/ :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

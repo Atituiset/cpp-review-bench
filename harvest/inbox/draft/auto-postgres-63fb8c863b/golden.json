@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/jsonb_gin.c",
+        "anchor": "key_entry = GIN_FALSE;",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 1b0b45c5ab1aa5dc3c71cfa8e228306c2b92875c Fix GIN index search for root strings in strict jsonpath queries. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

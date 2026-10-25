@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/os_unix.c",
+        "anchor": "int seconds = (microseconds+999999)/1000000;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 9410bfb94645c995f604bfc1032c9955ab51e0fb Use 64-bit math to avoid integer overflow in unixSleep() on the rare :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/pcache1.c",
+        "anchor": "static PgHdr1 *pcache1PinPage(PgHdr1 *pPage){",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 31b1a10a9c623fa1078e0a95a8d711e1ae2d0f84 Change the order of fields in an internal structure to avoid the possibility of leaking heap address information when a  :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
