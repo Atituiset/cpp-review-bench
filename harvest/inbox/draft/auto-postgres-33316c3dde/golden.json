@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/tab-complete.in.c",
+        "anchor": "COMPLETE_WITH(\"NO DATA\", \"DATA\");",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 54f36adcbcda8dec03e78c1cec453b9ebf3db3d2 Fix tab completion for concurrent matview refresh :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

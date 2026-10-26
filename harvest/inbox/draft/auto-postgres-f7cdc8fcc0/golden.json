@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/relnode.c",
+        "anchor": "if (lc == list_head(apath->subpaths))",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT f9bc96514afc9c71d533568f62dc613be8356c4d Look through wrapper paths when collecting enforced clause serials. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

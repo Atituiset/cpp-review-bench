@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/fts3_write.c",
+        "anchor": "<= (i64)p->nPendingData );",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 4546f13d179a310ca6a890e3b4e0069e704ed709 Increase the size of the Fts3Table.nPendingData field to 64 bits to :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

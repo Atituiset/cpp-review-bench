@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fts3_write.c",
+        "anchor": "<= (i64)p->nPendingData );",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 1820defd768c50e0ea33476c9b396de7c2c60bc4 Merge all recent branch-3.54 fixes into trunk :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
