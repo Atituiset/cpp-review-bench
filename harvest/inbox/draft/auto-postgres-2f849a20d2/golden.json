@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/equivclass.c",
+        "anchor": "if (bms_overlap(cur_em->em_relids, top_parent_relids))",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 022a80fe6c1d82f7777bd52f9d3e5f9952533109 Don't build child-join EC members that reference outside rels :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/posix_sema.c",
+        "anchor": "nextSemKey = statbuf.st_ino;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 6e06f62816fc99e7cc2e5ea8210fe413916d74cf Fix \"variable set but not used\" warning with unnamed POSIX semaphores. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

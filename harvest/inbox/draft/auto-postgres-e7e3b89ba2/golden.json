@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/async.c",
+        "anchor": "if (localChannelTable != NULL)",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT dfd7ede529f288639760444a9c69f3f7bb65450c Fix leaked hash scans in pg_listening_channels(). :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
