@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/execdesc.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT e5d5d1ad1e3aa495609e19fa716dcea6a39db1bb Add custom extension states to QueryDesc :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

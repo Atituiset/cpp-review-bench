@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/snapmgr.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 6e9e5681b8a7ff3c5eea09db980e888c8e81ad9c Avoid waiting for a safe snapshot in notify-reading transactions. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

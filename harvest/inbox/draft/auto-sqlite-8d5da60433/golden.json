@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fts5_index.c",
+        "anchor": "pLvl->iLeafPgno += (iOff - pLvl->iOff) + 1;",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 6fd45c5ce98159eeb49421092672b3d31447a173 Avoid a signed integer overflow in fts5 when processing a corrupt database. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

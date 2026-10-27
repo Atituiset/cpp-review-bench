@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/pg_stat_statements.c",
+        "anchor": "pgss_enabled(nesting_level))",
+        "line": 9,
+        "function": null,
+        "rationale": "COMMIT 23bf901fa5306b245e23ace52e5a6777ea08bed6 pg_stat_statements: Fix toplevel tracking across nesting levels :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
