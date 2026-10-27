@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbe.c",
+        "anchor": "serial_type += (u32)pRec->u.nZero*2;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 4303eaf22199bf952a7931068a407ce5a9e50a46 Reorganize OP_MakeRecord slightly to avoid signed 32-bit integer overflow :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

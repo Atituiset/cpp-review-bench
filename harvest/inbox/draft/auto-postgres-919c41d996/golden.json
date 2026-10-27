@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/heap.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 700b422af7e26cf310caf3fb76d78f4c8ca39c1f Disallow NOT NULL NO INHERIT constraints on partitioned tables :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

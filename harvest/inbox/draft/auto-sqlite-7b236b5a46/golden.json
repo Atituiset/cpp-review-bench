@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqlite3session.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 9902ebadb862a7af5c08e3d7c0c9869d8dad8ae4 Improve detection of corrupt changesets in session module function sqlite3changeset_next(). :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

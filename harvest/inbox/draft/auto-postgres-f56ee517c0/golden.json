@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/heapam_handler.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 99ea4a55270d5ce48bc33b9daf5d641818e03b89 Count the last block of the validation scan in a concurrent index build :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
