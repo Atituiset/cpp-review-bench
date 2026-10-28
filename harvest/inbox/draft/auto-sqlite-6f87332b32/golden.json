@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/func.c",
+        "anchor": "if( b<=0.0 ) return;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 3cf93639e3685fb66149ce5f407f036fb2ea395e Fix the log(B,N) function so that it works for 0.0&lt;B&lt;1.0. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/execGrouping.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 227de22095c8101905ce41e1ebf425239feed079 Fix broken indentation caused by 34d52e6d3 :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
