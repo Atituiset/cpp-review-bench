@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqlite3expert.c",
+        "anchor": "pNew = (IdxConstraint*)idxMalloc(pRc, sizeof(IdxConstraint) * nColl + 1);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 814fd8ef4d42d6567f1613a66f556c8194764d06 Merge branch-3.54 fixes into trunk :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

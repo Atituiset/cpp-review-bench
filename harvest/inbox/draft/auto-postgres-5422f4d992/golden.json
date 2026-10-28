@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/basebackup.c",
+        "anchor": "struct stat statbuf;",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT 4a92c8c29bd0068ecc747cca5d77949660b5f0a8 Avoid torn copy of the control file in base backups :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
