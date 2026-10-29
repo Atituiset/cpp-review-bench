@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/relnode.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 27c844034f827b3910bc8a358780c6609ba87a41 Fix eager aggregation below volatile join clauses :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

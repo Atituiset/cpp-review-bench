@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/networking.c",
+        "anchor": "if (!(pcmd->flags & PENDING_CMD_FLAG_PREPROCESSED)) {",
+        "line": 4,
+        "function": null,
+        "rationale": "PR 15804 Redis 8.10.2 :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

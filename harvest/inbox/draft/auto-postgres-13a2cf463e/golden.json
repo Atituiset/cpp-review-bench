@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/execExprInterp.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT b6e41c16f8ccbfca0d51c94bdb6043b6e8393d6f SQL/JSON: fix error handling when coercing to a domain fails softly :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
