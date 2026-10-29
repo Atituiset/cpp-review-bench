@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/allpaths.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT abda2a2c9b2a76687513ef223f782b333951149f Empty partial_pathlist when unsetting consider_parallel flag :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

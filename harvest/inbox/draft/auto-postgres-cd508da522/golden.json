@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/parse_jsontable.c",
+        "anchor": "jfe->passing = jt->passing;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 35b349a530c61628f4b7a7968212e594297523c6 Fix JSON_TABLE with sublinks in PASSING arguments :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

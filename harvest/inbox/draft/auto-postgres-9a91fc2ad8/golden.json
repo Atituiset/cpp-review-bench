@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/xlogrecovery.c",
+        "anchor": "Assert(XLogRecHasBlockImage(record, block_id));",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 27caf4ca5ae5ecfe66822d5a9c5803e0d1bc2ed0 Do not take a full-page image for REGBUF_NO_CHANGE buffers :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
