@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqlite3expert.c",
+        "anchor": "if( rc!=SQLITE_OK ){",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 05f5ad235f1421a593fb4605e859aefd4c494289 In the Expert extension, correctly quote names that begin with a digit. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

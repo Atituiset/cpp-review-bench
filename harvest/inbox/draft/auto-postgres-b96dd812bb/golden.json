@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/pgpa_scan.c",
+        "anchor": "if (!beneath_any_gather)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT a054b77e40d0579a9ee1218e2447d5af045d1083 pg_plan_advice: Suppress advice from unflattened set operations. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/basebackup.c",
+        "anchor": "char\t\tcontrolFile[PG_CONTROL_FILE_SIZE];",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT c97931c16d89c848696d2110a0f4831e4d6d1b69 Work around failure with SPARC in base backup code :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
