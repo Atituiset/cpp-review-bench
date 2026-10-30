@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/resolve.c",
+        "anchor": "if( pTab->iPKey==iCol ) iCol = -1;",
+        "line": 13,
+        "function": null,
+        "rationale": "COMMIT b281238e9249f947fba3fc9aca3e21b62b88794c Fix RENAME COLUMN on an IPK column that is also part of a UNIQUE constraint. Report [bugs:/info/2026-10-23T03:08:04Z | 2 :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

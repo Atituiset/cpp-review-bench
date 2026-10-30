@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/test_custom_types.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 4f89416c9dbc78da5679d32072315af56fbeb8ed Fix more issues with extended statistics on expressions :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

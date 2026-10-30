@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/test_struct_ops_assoc.c",
+        "anchor": "static void test_st_ops_assoc_in_timer_no_uref(void)",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 46806af187f448b0d5481f284e7c900a57ee6a6d Merge tag 'bpf-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

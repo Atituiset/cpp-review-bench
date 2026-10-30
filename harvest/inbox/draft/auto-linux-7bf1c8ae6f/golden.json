@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/kdb_main.c",
+        "anchor": "snprintf(kdb_prompt_str, CMD_BUFLEN, kdbgetenv(\"PROMPT\"),",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 5fade975d5632280855d03699edd22c0689e3a3f Merge tag 'kgdb-7.4-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/danielt/linux :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

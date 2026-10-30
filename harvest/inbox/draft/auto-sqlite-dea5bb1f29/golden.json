@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/build.c",
+        "anchor": "if( pSelect==0 && sqlite3ShadowTableName(db, p->zName) ){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT c1bf3367ea188a82153b830399b00e82652db439 Do not let a TEMP table or an uninitialized schema prevent unauthorized :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
