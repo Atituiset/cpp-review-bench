@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/createplan.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT c1c930376854dda25ce07a74d34d1a16f91cd3aa Fix nestloop parameter assignment for PHVs evaluated above outer joins :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
