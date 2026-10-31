@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/alter.c",
+        "anchor": "if( pStep->pUpsert && rc==SQLITE_OK ){",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 9306117df843c2630d2ac5083574d5a8cbd4c40c Fix ALTER TABLE so that it works when a trigger contains an UPSERT with more than one ON CONFLICT clause. Report [bugs:/ :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

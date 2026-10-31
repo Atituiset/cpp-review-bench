@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/dev.c",
+        "anchor": "if (!IS_ENABLED(CONFIG_FUSE_PASSTHROUGH))",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT ac1bf565f140154ee27db56c80f29c9eeb9a77c3 Merge branch 'fixes-from-sasha' :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

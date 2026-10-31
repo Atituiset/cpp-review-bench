@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/sqlite3rbu.c",
+        "anchor": "sqlite3_int64 nByte = (2*sizeof(char*) + sizeof(int) + 3*sizeof(u8)) * nCol;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT dd33a69869fa628f572cd6b04d4487f19a526f3a Update RBU to correctly handle short-rows with non-NULL default values. Report [bugs:/info/2026-10-20T03:22:29Z | 2026-1 :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
