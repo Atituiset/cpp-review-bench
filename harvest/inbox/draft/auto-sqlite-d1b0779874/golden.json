@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbeapi.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 98ddcd30c0e3c3f4f732ca4fc5692be0306a4224 A proof-of-concept for a compile-time-provided hook to notify when the library disposes of certain memory. The use case  :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
