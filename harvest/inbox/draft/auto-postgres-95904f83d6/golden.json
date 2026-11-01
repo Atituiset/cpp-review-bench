@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/objectaddress.c",
+        "anchor": "const char *schema = quote_identifier(get_namespace_name(schema_oid));",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 77705d1e5a616339c3e92f586bbfa7b6bb562beb Fix two crashes on a concurrently dropped schema :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

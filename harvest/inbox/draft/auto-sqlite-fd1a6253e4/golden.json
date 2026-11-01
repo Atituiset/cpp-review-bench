@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/alter.c",
+        "anchor": "\"sql = sqlite_rename_table(%Q, type, name, sql, %Q, %Q, %d) \"",
+        "line": 2,
+        "function": null,
+        "rationale": "COMMIT 7a10892266877305bfd8acb717f5625cf2838a4f Fix an ALTER TABLE problem with renaming a temp table when there is a temp trigger defined on a main db table of the sam :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

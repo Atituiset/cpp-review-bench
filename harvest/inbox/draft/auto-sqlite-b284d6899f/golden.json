@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vdbeaux.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 9e2a3083e165cf30d7d3b7d3ca4b268ac7cc3d22 Add SQLITE_DISPOSAL_NOTIFIER call for sqlite3_context. Experimentally use that to provide sane lifetime mappings for sql :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
