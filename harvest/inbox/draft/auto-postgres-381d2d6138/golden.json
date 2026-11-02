@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/execParallel.c",
+        "anchor": "int\t\t\tplan_node_id[FLEXIBLE_ARRAY_MEMBER];",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 633dee1bd1b41145f81619423d573754c7ad2b9e Add more pg_attribute_counted_by() to various flexible array members :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

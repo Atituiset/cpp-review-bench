@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/nodeSubplan.c",
+        "anchor": "if (node->hashtable == NULL || planstate->chgParam != NULL)",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 303c9b36205d11e41c7d5d61a1802ec50bccbf5a Fix reuse of stale hash tables by duplicated hashed SubPlans :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

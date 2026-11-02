@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/irq-msi-lib.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 65cac1217004da03c3d2418bd7a7fda038117809 Merge tag 'irq-urgent-2026-11-01' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

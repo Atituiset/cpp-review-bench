@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/xml.c",
+        "anchor": "if (xmlSaveClose(ctxt) == -1 || xmlerrcxt->err_occurred)",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 01131ca43bbf798be6ec237a33f6bef67bede888 Fix double-free when XMLSERIALIZE(... INDENT) output exceeds 1GB. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

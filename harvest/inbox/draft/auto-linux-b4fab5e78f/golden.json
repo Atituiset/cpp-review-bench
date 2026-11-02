@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/clocksource.c",
+        "anchor": "watchdog_timer.expires += WATCHDOG_INTERVAL;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 7a3d2740d1b1b5ed8d22e1e5430de3b5046cf6a9 Merge tag 'timers-urgent-2026-11-01' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fileio.c",
+        "anchor": "for(; zCopy[i]!='/' && i<nCopy; i++);",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT e4f7bc615fd7f77f28a8ba50cd41f4231e7bfff3 Improved handling of empty filenames in the writefile() function that :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
