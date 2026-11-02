@@ -1,0 +1,38 @@
+// AUTO-DRAFT from torvalds/linux PR #7a3d2740d1b1b5ed8d22e1e5430de3b5046cf6a9
+#ifndef _LINUX_HRTIMER_H
+#define _LINUX_HRTIMER_H
+
+#include <linux/hrtimer_rearm.h>
+#include <linux/hrtimer_types.h>
+#include <linux/init.h>
+/* …（同文件无关代码省略）… */
+enum hrtimer_mode {
+	HRTIMER_MODE_ABS	= 0x00,
+	HRTIMER_MODE_REL	= 0x01,
+	HRTIMER_MODE_PINNED	= 0x02,
+	HRTIMER_MODE_SOFT	= 0x04,
+	HRTIMER_MODE_HARD	= 0x08,
+	HRTIMER_MODE_LAZY_REARM	= 0x10,
+
+	HRTIMER_MODE_ABS_PINNED = HRTIMER_MODE_ABS | HRTIMER_MODE_PINNED,
+	HRTIMER_MODE_REL_PINNED = HRTIMER_MODE_REL | HRTIMER_MODE_PINNED,
+
+	HRTIMER_MODE_ABS_SOFT	= HRTIMER_MODE_ABS | HRTIMER_MODE_SOFT,
+	HRTIMER_MODE_REL_SOFT	= HRTIMER_MODE_REL | HRTIMER_MODE_SOFT,
+
+	HRTIMER_MODE_ABS_PINNED_SOFT = HRTIMER_MODE_ABS_PINNED | HRTIMER_MODE_SOFT,
+	HRTIMER_MODE_REL_PINNED_SOFT = HRTIMER_MODE_REL_PINNED | HRTIMER_MODE_SOFT,
+
+	HRTIMER_MODE_ABS_HARD	= HRTIMER_MODE_ABS | HRTIMER_MODE_HARD,
+	HRTIMER_MODE_REL_HARD	= HRTIMER_MODE_REL | HRTIMER_MODE_HARD,
+
+	HRTIMER_MODE_ABS_PINNED_HARD = HRTIMER_MODE_ABS_PINNED | HRTIMER_MODE_HARD,
+	HRTIMER_MODE_REL_PINNED_HARD = HRTIMER_MODE_REL_PINNED | HRTIMER_MODE_HARD,
+};
+/* …（同文件无关代码省略）… */
+static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
+#endif
+
+/* Basic timer operations: */
+extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
+				   u64 range_ns, const enum hrtimer_mode mode);

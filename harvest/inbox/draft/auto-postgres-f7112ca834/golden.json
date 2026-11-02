@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/joinpath.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT f8da64e6ddfd5f33f1d70b3ae6f8561f1de09368 Make cache keys of other Params a Memoize subplan depends on :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

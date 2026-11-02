@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/prepare.c",
+        "anchor": "|| sqlite3_stricmp(argv[0],\"trigger\")!=0 );",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 0e5046b30118f0ff1219c5997c18fe0e3c28bff7 Fix a slightly incorrect assert() in [afa137dbeb020fae]. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
