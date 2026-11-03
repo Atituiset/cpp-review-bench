@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/brin_minmax_multi.c",
+        "anchor": "Datum\t\td;",
+        "line": 15,
+        "function": null,
+        "rationale": "COMMIT c230e14b44d2bc40d0d141861e4cbd3839843df9 Handle numeric overflow in numeric_minmax_multi_ops :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

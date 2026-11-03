@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pg_waldump.c",
+        "anchor": "LSN_FORMAT_ARGS(xlogreader_state->ReadRecPtr),",
+        "line": 1,
+        "function": null,
+        "rationale": "COMMIT 30faf13889b14e1bdfd0b5883291f3297135ce02 pg_waldump: Align WAL read error locations with other tools :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

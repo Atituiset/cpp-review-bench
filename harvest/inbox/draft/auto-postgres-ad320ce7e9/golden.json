@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/joinpath.c",
+        "anchor": "(void) memoize_add_cache_key((Node *) lfirst(lc), param_exprs,",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 45ff0b4a317f14539567a3500eb41ec8b06cde3d Make Memoize cache keys only of Params from outer query levels :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

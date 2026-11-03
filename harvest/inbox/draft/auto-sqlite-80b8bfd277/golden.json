@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/trigger.c",
+        "anchor": "if( db->init.busy==0 && pName2->n==0 && pTab",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 53c0bc98ac671f972cc4522a5007eb27ecc84e3c Avoid errors that sometimes occur when running ALTER TABLE or VACUUM when there are tables in the TEMP database with the :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
