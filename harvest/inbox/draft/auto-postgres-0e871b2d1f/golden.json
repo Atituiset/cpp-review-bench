@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/brin_minmax_multi.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 4b6735c21fa4c43be041c6c610d7be6463c2c1f9 Fix BRIN minmax-multi distance calculation for OID :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

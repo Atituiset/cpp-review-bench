@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/xlogreader.c",
+        "anchor": "LSN_FORMAT_ARGS(state->ReadRecPtr));",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 01b3d24c41629c577ca172f3077ec7bfc2ca9bf3 Fix incorrect LSNs in WAL decoding error messages :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
