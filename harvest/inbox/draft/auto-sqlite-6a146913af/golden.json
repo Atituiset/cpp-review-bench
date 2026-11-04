@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/mptest.c",
+        "anchor": "sqlite3_config(SQLITE_CONFIG_LOG, sqlErrorCallback, 0);",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT a1a0e82231e9192934de1fc18cd9e9851da1681a Always cast the second argument of SQLITE_CONFIG_LOG to (void*) to avoid :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

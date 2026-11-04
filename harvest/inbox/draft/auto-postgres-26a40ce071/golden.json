@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/trgm_gist.c",
+        "anchor": "result->flag = ALLISTRUE;",
+        "line": 16,
+        "function": null,
+        "rationale": "COMMIT 8aea84d2b8a1233ae44bb0dc0fde2a2ab0f5e35f Fix possible index corruption in pg_trgm GiST indexes :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

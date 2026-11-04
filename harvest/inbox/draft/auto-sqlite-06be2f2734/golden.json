@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pager.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 936f40746b6a4b14ed3a5428ca7fa5bf2d7d9a2a Fix corruption of a file-backed temporary database caused by committing a transaction that modifies zero pages when the  :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

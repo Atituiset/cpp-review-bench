@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fkey.c",
+        "anchor": "int iChild = sqlite3TableColumnToStorage(pFKey->pFrom,aiCol[i])",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 0290d4b7778eb75714d5cb97eefd14b5fd1f4096 Fix foreign key processing for the case where a row is its own parent and the parent key uses a non-binary collation. Re :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

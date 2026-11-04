@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/where.c",
+        "anchor": "if( idxCols & MASKBIT(i) ) continue;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 2a9537b719e4e5fc3d5b5ef1bcd6fff8a7387df2 Ensure that all automatic-indexes constructed on WITHOUT ROWID tables always include all PK columns, sorted using either :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

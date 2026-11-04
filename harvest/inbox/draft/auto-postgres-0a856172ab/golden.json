@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/nodeAppend.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 73a28d2733ab1a9895f533785901aa2865a5864c Fix comment in ExecAppendAsyncReset. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
