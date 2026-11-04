@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/ri_triggers.c",
+        "anchor": "spi_result = SPI_execute_snapshot(qplan,",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT e5f6a7a28c4ab82a80fd0fa89d9f77b80ae97c07 Don't free a cached RI plan that may be in use :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

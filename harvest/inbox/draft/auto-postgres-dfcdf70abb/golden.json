@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/subselect.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT b7eee09eab738e085d6b62d35788f542dd233877 Fix NOT IN to anti-join conversion with coerced sub-select outputs :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
