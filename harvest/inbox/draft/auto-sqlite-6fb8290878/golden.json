@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/alter.c",
+        "anchor": "if( pCol->notNull && !pDflt ){",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT a595e9daaa8ec4d4bd238a94cf705103380e9379 Do not allow ALTER TABLE to add a NOT NULL column with a default expression that is not a literal NULL but evaluates to  :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

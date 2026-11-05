@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/method_io_uring.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 953c6dabdb52663a6b96ad354b33496284d8ed73 Fix io_uring resource leaks across crash restarts :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

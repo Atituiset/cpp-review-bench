@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/walsummarizer.c",
+        "anchor": "VISIBILITYMAP_FORKNUM,",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT b5545d3f5f924289051eb8221c88e72563771928 Fix stale visibility maps in incremental backups after heap truncation :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
