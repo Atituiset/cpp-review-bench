@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/subscriptioncmds.c",
+        "anchor": "values[Anum_pg_subscription_subtwophasestate - 1] =",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT fc1900915b140aaed33fdcccdf85eec1a0035755 Avoid resetting subscription two_phase state to pending when already enabled. :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

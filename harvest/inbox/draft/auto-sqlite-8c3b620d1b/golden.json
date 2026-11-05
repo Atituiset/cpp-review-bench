@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/wherecode.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 93f9f2ff23f9692d949e7936aaa46f038ccf0daf Do not run the WHERE_IN_SEEKSCAN optimization and the :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

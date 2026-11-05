@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/execExpr.c",
+        "anchor": "scratch->opcode = EEOP_JSONEXPR_PATH;",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT ee7cfb99a34cfba1cffdd456dc269243ddc69f3b SQL/JSON: Fix ON EMPTY/ERROR state leakage on NULL input :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

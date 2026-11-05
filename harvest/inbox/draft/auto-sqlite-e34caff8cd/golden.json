@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqliteInt.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT f4ebb9943ff6fe8a69f82f1acc59f409be387fbb Fix a problem with ALTER TABLE in cases where an identifier in a view or trigger's ORDER BY clause matches a column bein :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

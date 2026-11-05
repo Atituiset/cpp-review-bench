@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/execExprInterp.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 627c4df3b73ae00a0dfd08f4216514fb9ea44b5d SQL/JSON: Fix NULL result leakage in JSON_VALUE() RETURNING json/jsonb :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
