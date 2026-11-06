@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/json.c",
+        "anchor": "pParse->iDepth = pPretty->nIndent;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 1d41e2da9afcdc94a83d0216caa3e09c1a58ae1c Fix overly aggressive recursion depth limitations in json_pretty(). :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/nodeWindowAgg.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 46ed1b831fa1e2ebb95f52c939577db560c0d3a6 Fix indentation in 69b20fdd20d. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
