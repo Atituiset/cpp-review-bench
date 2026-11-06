@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/fts5_index.c",
+        "anchor": "SQLITE_PREPARE_PERSISTENT|SQLITE_PREPARE_NO_VTAB,",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT bedc31875f5b9e241d8420c68575c2eb44e6b2ff Prevent fts5 from being used to bypass the trusted_schema=0 setting using the SQLITE_PREPARE_FROM_DDL flag. Report [bugs :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

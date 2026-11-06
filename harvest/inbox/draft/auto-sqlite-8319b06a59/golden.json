@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbe.c",
+        "anchor": "pIn1->flags &= ~MEM_Int;",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT bf331a4d0c8066ea2a7bfc9cacf51e924725cdef Fix cases where a dual-representation sqlite3_value can cause problems. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

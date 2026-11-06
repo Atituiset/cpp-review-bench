@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/rangetypes.c",
+        "anchor": "Datum\t\tv1 = PG_GETARG_DATUM(0);",
+        "line": 15,
+        "function": null,
+        "rationale": "COMMIT d06ac896faa7ff14e6eca5c9bc27a34818adf634 Handle numeric overflow when handling range values :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
