@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/jsonb.c",
+        "anchor": "bool\t\thas_mutable = false;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT b58a9a97fe783c8ce897fa1a5da23c59234aa6bf Revert \"make immutability tests in to_json and to_jsonb complete\" :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

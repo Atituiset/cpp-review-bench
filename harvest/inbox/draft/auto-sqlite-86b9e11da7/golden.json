@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fts5_storage.c",
+        "anchor": "sqlite3_bind_blob(pReplace, 2, pBuf->p, pBuf->n, SQLITE_STATIC);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 32dc28665df7cf989225c6df252f3c2ec064e9bc Handle sqlite3_bind_blob() returning SQLITE_TOOBIG in fts5. This should only be possible with a very small SQLITE_LIMIT_ :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

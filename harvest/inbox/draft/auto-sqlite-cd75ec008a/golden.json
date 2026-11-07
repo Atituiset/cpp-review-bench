@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vec1.c",
+        "anchor": "static float *vec1TrainingVector(Vec1TrainVectors *p, int iVec){",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT 52f43226157d862f96532f1bad7292ad71641693 In vec1, avoid fixed buffers and 32-bit arithmatic when loading training vectors. Report [bugs:/info/2026-11-06T17:58:29 :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
