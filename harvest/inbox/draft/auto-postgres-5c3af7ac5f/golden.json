@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/xlog.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 4a934833fb02ac2a18d0a3f86b67b493d7fe8979 Fix some typos in comments :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

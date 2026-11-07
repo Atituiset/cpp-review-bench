@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/select.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 812558083845078bcc5924e5beb353aa8e138a6b Merge the fix for [bugs:/info/2026-11-05T22:23:54Z|bug 2026-11-05T22:23:54Z] :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

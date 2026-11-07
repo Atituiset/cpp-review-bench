@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pgrowlocks.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 3c5a4dcaaa8d5bef429bd8143d1a6e9f92fa0b74 pgrowlocks: Reject unlogged and temp tables during recovery :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

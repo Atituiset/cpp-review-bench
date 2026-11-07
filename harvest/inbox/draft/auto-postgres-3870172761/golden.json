@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/file_fdw.c",
+        "anchor": "MemoryContext tupcontext;",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 72b9498df9a369e747f8d96efb5a6cd33c2451e2 file_fdw: Fix ANALYZE crashes with DEFAULT markers :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
