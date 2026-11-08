@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/fts5_config.c",
+        "anchor": "assert( *pConfig->pzErrmsg==0 );",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT a105f448ef55340802960e02c1df0ca2aa5e34ed Fix an assertion fault in FTS5 error handling.  Discovered by dbsqlfuzz. :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
