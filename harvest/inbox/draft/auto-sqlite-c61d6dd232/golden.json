@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/expr.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 5753ef1cb769ae3088ec3a5c22b4fdbe7e6eba8d Fix sqlite3ExprAnalyzeAggregate() so that it does not translate :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
