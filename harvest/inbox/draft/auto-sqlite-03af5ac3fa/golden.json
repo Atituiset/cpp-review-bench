@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/libcmpp.c",
+        "anchor": "if( !zErr ){",
+        "line": 10,
+        "function": null,
+        "rationale": "COMMIT 1a16a44e9598c8757c05f125b4ae0061a61810bf Latest upstream preprocessor to fix missing file/line error info in some contexts. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
