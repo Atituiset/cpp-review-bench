@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/nodeAppend.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 58aecdd064c5f156e04e96c3fa4074f4ae3e19ca Improve comments for ExecAppendAsyncEventWait. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/insert.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 90ab1c833b5093be59376836fe550b01f843ffb8 Ensure that affinities are applied to the excluded.* values in a DO UPDATE clause associated with an IPK confict. Report :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
