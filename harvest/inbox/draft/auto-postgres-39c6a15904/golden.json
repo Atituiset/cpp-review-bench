@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/applyparallelworker.c",
+        "anchor": "ErrorData\tedata;",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 952bab8b74d40fcfd25e1949865c3907e676504e Simplify leader error reporting for parallel apply worker failures. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

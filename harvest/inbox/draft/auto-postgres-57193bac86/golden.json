@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/heaptuple.c",
+        "anchor": "HeapTupleHeaderSetDatumLength(targetTHeader, len);",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 245eb832f88631c986a2dadad2cbe94f57089fd6 Introduce attribute versioning to prevent unsafe deforming :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

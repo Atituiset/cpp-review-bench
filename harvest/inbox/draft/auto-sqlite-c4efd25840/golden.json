@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/select.c",
+        "anchor": "if( pRet==0 && ALWAYS(iCol<p->pEList->nExpr) ){",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT a8bdc0ba6bf7108f5ca872d0b91bf60265ab11d1 When a VALUES clause is part of a compound SELECT, do not ignore collation sequences attached to rows or SELECTs to the  :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
