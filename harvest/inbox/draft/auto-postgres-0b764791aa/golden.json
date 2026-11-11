@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/nodeMemoize.c",
+        "anchor": "pfree(eqfuncoids);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 76c0df7381e5e4d3fba06abddcb51216821c02bc Remove needless initialization work in ExecInitMemoize :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
