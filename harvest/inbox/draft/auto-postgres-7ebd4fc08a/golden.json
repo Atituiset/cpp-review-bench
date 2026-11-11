@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/setrefs.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 9b80b3170b9c5be2f22540facea52f5e38915704 Fix stale initplans after removing a plan level in setrefs.c :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

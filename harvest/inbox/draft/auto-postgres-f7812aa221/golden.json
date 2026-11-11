@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/initsplan.c",
+        "anchor": "if (OidIsValid(typentry->hash_proc) && OidIsValid(typentry->eq_opr))",
+        "line": 12,
+        "function": null,
+        "rationale": "COMMIT 8cdf3c9214feb48179a3cc0fbb0bae0e0f38f2cb Fix Memoize using the wrong equality operator for cache keys :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

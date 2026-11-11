@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pg_dump.c",
+        "anchor": "appendNamedArgument(out, fout, \"inherited\", \"boolean\",",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 35def3385998099f3e80e34f9d7bf6444af5bf1c pg_dump: Fix inherited flag in extended stats from pre-v15 servers :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

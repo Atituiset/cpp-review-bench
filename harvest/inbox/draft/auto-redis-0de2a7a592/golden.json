@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/cluster_legacy.c",
+        "anchor": "size_t msglen = sizeof(clusterMsg)-sizeof(union clusterMsgData);",
+        "line": 7,
+        "function": null,
+        "rationale": "PR 16074 Redis 8.6.8 :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

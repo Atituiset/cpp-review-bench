@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/tsgistidx.c",
+        "anchor": "maxoff = OffsetNumberNext(maxoff);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 1d657c6e013e152ed37b42a22ee9f291179ee50f Fix uninitialized cache use in gtsvector_picksplit() :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
