@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vacuumparallel.c",
+        "anchor": "parallel_vacuum_bulkdel_all_indexes(ParallelVacuumState *pvs, long num_table_tuples,",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 8d87367b39e44b0913ca585c733795cc2d30bff1 Fix the type of heap tuple count passed to parallel vacuum. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

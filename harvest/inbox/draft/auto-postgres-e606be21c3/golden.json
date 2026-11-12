@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/attribute_stats.c",
+        "anchor": "&converted);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 2656f664616dac41e99495b39e2bc3bc1d81b1e7 Allow empty arrays of values in pg_restore_attribute_stats() :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
