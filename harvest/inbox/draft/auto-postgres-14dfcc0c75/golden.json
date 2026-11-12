@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/partition.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 9a849767eb281c9502aab4a7384a654004ec6ffe Fix crash decoding a change to a partition pending detach. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

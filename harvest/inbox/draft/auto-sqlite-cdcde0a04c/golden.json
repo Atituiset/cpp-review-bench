@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/func.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT f0b267e858b8137e4dbcdec347858cfe18364e16 Fix a boundary case in substr(). :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

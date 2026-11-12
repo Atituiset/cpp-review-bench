@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/ngx_http_priority.c",
+        "anchor": "return NGX_ERROR;",
+        "line": 3,
+        "function": null,
+        "rationale": "PR 1814 Fixed Priority parsing of large integers on 32-bit platforms :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/insert.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT d785a1234e632131ea4f5643eb148a3824747abb Ensure a statement that uses REPLACE conflict handling uses a statement journal if a later index is on an expression or  :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

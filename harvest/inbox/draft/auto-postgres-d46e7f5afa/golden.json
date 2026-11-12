@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/prepjointree.c",
+        "anchor": "bms_make_singleton(sourcerti),",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT cf44f3fa19b6c35633e043621d325d55a760e472 Further varnullingrels fixes for MERGE WHEN NOT MATCHED BY SOURCE. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
