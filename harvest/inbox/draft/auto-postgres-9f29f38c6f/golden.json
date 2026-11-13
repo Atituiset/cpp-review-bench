@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/nodeModifyTable.c",
+        "anchor": "false);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 7fffb114377507fca5e8c2b4db1820a4ec11615b Fix MERGE into inheritance parent with extra child columns. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
