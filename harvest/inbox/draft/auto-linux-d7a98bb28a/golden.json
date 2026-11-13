@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/virtio_net.h",
+        "anchor": "if (skb->protocol == htons(ETH_P_IPV6))",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 7683df331d296819a8f596dd752bbf95aa2e3478 Merge branch 'net-virtio-validate-outer-protocol-of-udp-tunnel-gso-packets' :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

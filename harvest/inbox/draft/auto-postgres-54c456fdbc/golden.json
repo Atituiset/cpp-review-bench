@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/functioncmds.c",
+        "anchor": "if (inParameterNames_list)",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 8e27c9261c9dd6127e16ced998d37ed7a8cb2b7d Fix assorted confusion about parameter names. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

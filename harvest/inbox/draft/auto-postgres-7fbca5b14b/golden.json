@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/initsplan.c",
+        "anchor": "if (!index->nullsnotdistinct &&",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 48938780c3577835dda3dd17db4f8c968bb1e166 Fix GROUP BY column removal for NULLS NOT DISTINCT indexes :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

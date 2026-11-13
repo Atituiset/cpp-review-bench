@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fossildelta.c",
+        "anchor": "case 3:   sum += (z[2] << 8);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 3b703ebf5bb2abe37484c0694e7e956028adc734 Apply a signed int overflow fix from upstream/downstream [https://fossil-scm.org/home/info/e196b5f8dd4cc870|Fossil check :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

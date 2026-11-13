@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/window.c",
+        "anchor": "**   if( reg1>='' ) goto addrGe;",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 8c7ca7db873fb042d3fcb8c5e398039d30eff1e2 Avoid integer overflows when calculating DESC RANGE windows. Report [bugs:/info/2026-11-04T20:35:05Z | 2026-11-04T20:35: :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
