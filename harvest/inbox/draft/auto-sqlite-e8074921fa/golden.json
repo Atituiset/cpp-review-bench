@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/dbstat.c",
+        "anchor": "nUnused = get2byte(&aHdr[5]) - nHdr - 2*p->nCell;",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 9b0f74e9615f1c79e43fa876b84f8a5952030e8a Fix the dbstat virtual table so that it shows the correct number of :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

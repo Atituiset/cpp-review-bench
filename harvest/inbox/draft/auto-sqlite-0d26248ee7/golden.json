@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pragma.c",
+        "anchor": "sqlite3_str_appendf(&acc, \"=%Q\", pCsr->azArg[0]);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 73ed981f3e2c8b1dc2fef21d1026e692a4d6bc00 The pragma virtual table mechanism preserves datatype on the pragma argument. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/libcmpp.c",
+        "anchor": "if( !arg ){",
+        "line": 10,
+        "function": null,
+        "rationale": "COMMIT d3b7c03bdfa9a1bd379f967df73439256b6b68e6 Internal cleanups and bug fixes in the JS preprocessor. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/cs420x.c",
+        "anchor": "SND_PCI_QUIRK(0x8086, 0x7270, \"MacBookAir 7,2\", CS4208_MAC_AUTO),",
+        "line": 1,
+        "function": null,
+        "rationale": "COMMIT 2800868f63227c8237d70c41e70d441c919620d6 Merge tag 'sound-7.4-rc3' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
