@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/expr.c",
+        "anchor": "|| (op==TK_FUNCTION && pExpr->affExpr==SQLITE_AFF_DEFER)",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 6590ca855f645a1d163ba99eae4a611acb102f30 Avoid applying RealAffinity to a USING column of a FULL JOIN subquery if it is materialized. Report [bugs:/info/2026-10- :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

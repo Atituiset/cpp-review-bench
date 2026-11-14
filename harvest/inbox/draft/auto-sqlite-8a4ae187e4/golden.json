@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/whereInt.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 5feff8c9b784fc80b266bcb8ddbab186e010eb6d Fix the IN-early-out optimization for row-value cases when the NULL bypass skips a required affinity on the LHS. This ex :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
