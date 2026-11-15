@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/htup_details.h",
+        "anchor": "extern void heap_copytuple_with_tuple(HeapTuple src, HeapTuple dest);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 81b2179b492e3af891544813b7e22a42386b34d0 Remove unused tuple expansion and copying functions :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

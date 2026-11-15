@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/libcmpp.c",
+        "anchor": "if( !n ){",
+        "line": 10,
+        "function": null,
+        "rationale": "COMMIT cfa787c24d13323b9ec8701f58ed827a52842c31 JS preprocessor: consolidate some of the argument interpolation and lay the groundwork for first-class list- and object- :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
