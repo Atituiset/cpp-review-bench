@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/tryeval.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT c5f86d0198519e70265ceaa3dbbfd14b283f3479 Include the tryeval extension in the CLI, but disable it in safe mode. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

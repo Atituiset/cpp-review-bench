@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/t_zset.c",
+        "anchor": "if (count == 0) {",
+        "line": 4,
+        "function": null,
+        "rationale": "PR 16165 Fix crashes when a module reads a zset emptied by ZPOP from its notification :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

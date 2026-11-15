@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/expr.c",
+        "anchor": "int eType = sqlite3_value_type(pL);",
+        "line": 11,
+        "function": null,
+        "rationale": "COMMIT 4042a19a2d8c495fe9a242252ce391bb54770e45 Fix a harmless compiler warning added by [116a220245803639]. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
