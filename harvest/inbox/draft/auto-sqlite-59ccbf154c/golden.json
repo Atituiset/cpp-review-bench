@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/treeview.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 530016b058d1e18e6ad222294395a759c953fa88 New debugging interface, callable from gdb or similar: :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
