@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/util.c",
+        "anchor": "sqlite3Fp2Convert10(v, e, (iRound<=0||iRound>=18)?18:iRound+1, &v, &exp);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT bcbbcee64ee7edd0b9883029da7251f9af1745d2 In sqlite3FpDecode() with a low rounding precision, add a couple of extra :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

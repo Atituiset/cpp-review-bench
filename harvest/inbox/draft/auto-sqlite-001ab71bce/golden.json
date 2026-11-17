@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pragma.c",
+        "anchor": "sqlite3_result_text(ctx, pCsr->azArg[i-pTab->iHidden],-1,SQLITE_TRANSIENT);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 2439a84bbd1304c4b93184da04370f5ce32801c0 Enhance the pragma vtab so that it returns the schema hidden column. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

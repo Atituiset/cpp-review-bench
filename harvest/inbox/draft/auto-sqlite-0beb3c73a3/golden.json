@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/amatch.c",
+        "anchor": "\"SELECT \\\"%w\\\" FROM \\\"%w\\\"\",",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT e830a56ab386d0b082c1ace30c7111b19d8ee089 Fix a stray comma in the amatch extension which causes a variadic call to do the wrong thing. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

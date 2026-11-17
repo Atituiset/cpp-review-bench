@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/test1.c",
+        "anchor": "unsigned char *v = Tcl_GetByteArrayFromObj(objv[i+i], &n);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 0d885a61d22b66bb5472616a1512665c9d05d59f Fix temptrigfault.test expectations to not rely on values which vary across by builds. Fix an array mis-write in the tes :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
