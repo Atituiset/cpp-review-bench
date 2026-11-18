@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/dbstat.c",
+        "anchor": "iName = i;",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT fbc8069be8bb97d818eee963756b0d85bdc5c21e Fix two dbstat bugs: NOCASE name lookups and pgsize/pgoffset for :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

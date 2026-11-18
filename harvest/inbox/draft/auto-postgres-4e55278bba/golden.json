@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/pgstat_io.c",
+        "anchor": "bktype == B_STANDALONE_BACKEND || bktype == B_STARTUP ||",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 45047c51aab3b02035217088ef35220b2be905d7 Fix temporary relation I/O statistics in single-user mode :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

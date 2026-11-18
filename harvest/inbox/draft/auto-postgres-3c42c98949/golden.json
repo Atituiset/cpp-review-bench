@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/hash_xlog.c",
+        "anchor": "(void) XLogReadBufferForRedoExtended(record, 0, RBM_NORMAL, true, &bucketbuf);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 8becd1123c98cd9338678c6c2d4ae6b4d56a6fb9 Fix hash index redo reading a torn primary bucket page. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

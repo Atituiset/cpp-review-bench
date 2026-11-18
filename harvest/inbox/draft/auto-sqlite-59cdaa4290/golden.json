@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fts5_index.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 18e33b9a201bfce0351e8ed4a19ae6b89efd4eb6 When a term is completely deleted from an fts5 index in secure-delete mode, ensure any prefix of it is also removed from :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

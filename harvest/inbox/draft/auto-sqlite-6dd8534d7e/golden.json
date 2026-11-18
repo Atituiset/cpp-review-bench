@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fts5_config.c",
+        "anchor": "int bDummy = 0;",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT b8f3f5e1d5d475ba07945ec86e3255e5efdc0135 Make it an error to configure secure-delete mode on a contentless_delete=1 fts5 table. Prior to this it was not an error :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

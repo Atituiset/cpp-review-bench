@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/whereexpr.c",
+        "anchor": "|| ENC(db)==SQLITE_UTF16LE             /* (4) */",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 4c8eb82e9df01db0ace92d3e1e7fb556bd521041 Do not accept U+d7ff as a prefix character for the LIKE optimization since :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
