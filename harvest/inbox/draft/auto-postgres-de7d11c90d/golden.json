@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/receivelog.c",
+        "anchor": "writeTimeLineHistoryFile(stream,",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 5dce44589444704a917b2d2f70c99d9ae357da73 Stop WAL streaming on timeline history file write failures :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

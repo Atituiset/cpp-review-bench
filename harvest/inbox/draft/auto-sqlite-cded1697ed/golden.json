@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/sqlite3expert.c",
+        "anchor": "rc = sqlite3_exec(p->dbv, zCreate, 0, 0, pzErr);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 90ba7148c6d943ec5233002927c18e57cc8a5589 Merge all recent trunk changes into this branch. :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

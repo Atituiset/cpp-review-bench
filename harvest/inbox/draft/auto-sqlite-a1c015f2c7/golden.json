@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pragma.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 6abdfa68f496262d4c11e98f056e35284b57b5c3 Enhance PRAGMA integrity check to find surplus entries in a partial index. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

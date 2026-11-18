@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/tuplesort.c",
+        "anchor": "void",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT d9c6f22c3b2beaf34e47cf47fd21703886be8011 Remove tuplesort_set_allowbounded() and adjust tuplesort_reset() :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

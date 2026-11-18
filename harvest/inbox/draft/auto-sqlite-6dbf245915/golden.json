@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/amatch.c",
+        "anchor": "\"SELECT \\\"%w\\\" FROM \\\"%w\\\"\",",
+        "line": 10,
+        "function": null,
+        "rationale": "COMMIT 90ba7148c6d943ec5233002927c18e57cc8a5589 Merge all recent trunk changes into this branch. :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

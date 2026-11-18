@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/printf.c",
+        "anchor": "width -= (infop->flags>>PREFIXOFST)&3;",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 7f4f5482308541a833841f1772b9fad6b61b1436 Remove a harmless code redundancy and compiler warning left over :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
