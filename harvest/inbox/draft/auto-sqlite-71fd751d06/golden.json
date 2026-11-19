@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/upsert.c",
+        "anchor": "if( jj>=nn ){",
+        "line": 16,
+        "function": null,
+        "rationale": "COMMIT c30e731ac37f5a063736565c4829ad6d05b093f7 Fix issues on UPSERT with a UNIQUE index with duplicate columns. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

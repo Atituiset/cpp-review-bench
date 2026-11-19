@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbe.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT ee31b82bae312ecb1ac4fbea077fee92c69d1265 Fix possible btree corruption caused by a multirow INSERT that deletes :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

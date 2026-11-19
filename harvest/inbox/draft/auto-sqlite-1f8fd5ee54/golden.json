@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/update.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 13aaeee46de74ae7e74f9905837c242bbfd1d10f Disable the before-trigger-read optimization if the trigger uses a :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

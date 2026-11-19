@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/dbcommands.c",
+        "anchor": "if (dbicurules == NULL)",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 11910736bf19c806ee55ff5d5d801dbb60bbcdce Fix CREATE DATABASE when template0 has ICU rules. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

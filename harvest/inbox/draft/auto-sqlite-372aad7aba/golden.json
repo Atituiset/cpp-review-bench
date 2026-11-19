@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/window.c",
+        "anchor": "if( (op==OP_Ge && !bDesc) || (op==OP_Le && bDesc) ){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 27f8ba89beb1140e740817da85e1c6edc1b10093 Fix processing of window function RANGE frames that end at \"0.0 PRECEDING\". :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/reconstruct.c",
+        "anchor": "if (b < latest_source->truncation_block_length &&",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 4280abf88409d09e5828c4642219df053220a650 Fix pg_combinebackup handling of intermediate truncations :: PR 修复动作推断：修复前越界访问（加边界/长度检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
