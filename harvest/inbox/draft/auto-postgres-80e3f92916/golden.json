@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/dt_common.c",
+        "anchor": "pstr++;",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 6ec71e1ad8c26b3a93e7c5739e797a2d353dc5d6 Fix incorrect pointer increment in pgtypes_defmt_scan() :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

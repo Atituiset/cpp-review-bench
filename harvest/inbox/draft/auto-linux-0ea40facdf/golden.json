@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/dlmglue.c",
+        "anchor": "iter = ocfs2_dlm_next_res(&priv->p_iter_res, priv);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 4405c18c95d2d0f99f6c581ef0ee8591a1aa6ccd Merge tag 'mm-nonmm-hotfixes-stable-2026-11-18-00-06' of git://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

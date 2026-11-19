@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/slotsync.c",
+        "anchor": "if (!found_consistent_snapshot)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT ba11c48390004ed49b889cbd718c9e5f691fe493 Don't persist synced slots before a consistent snapshot is built. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/wait.h",
+        "anchor": "init_wait_entry(&__wq_entry, exclusive ? WQ_FLAG_EXCLUSIVE : 0);\t\\",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT cea5f91daa3ac86c98b63b3a2e89da622670ccf6 wait-event: clean up the internal helper arguments :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

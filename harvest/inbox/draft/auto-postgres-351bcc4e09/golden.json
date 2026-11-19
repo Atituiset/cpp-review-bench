@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/string_utils.c",
+        "anchor": "while (strstr(str, delimBuf->data) != NULL)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 514bfe2c6dffba2d7a6b7ea7cf029e04a7c41563 Avoid rescanning prefixes when choosing a dollar-quote delimiter :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

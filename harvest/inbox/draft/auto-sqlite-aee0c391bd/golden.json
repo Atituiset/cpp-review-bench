@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/os_unix.c",
+        "anchor": "osMunmap(p->apRegion[i], p->szRegion);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 57eb96ac7d5bd8cd1bf1b71233b4c8e811e8c9ff Merge fixes from the bugs-ac23256beb.  This completes everything needed :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

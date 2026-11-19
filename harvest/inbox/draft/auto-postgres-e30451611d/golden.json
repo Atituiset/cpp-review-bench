@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/walreceiver.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 5c06a7ef24c70226db22310b4c6bad546b6f3335 Avoid delaying WAL receiver shutdown while draining WAL :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
