@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/memdb.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT ef1ce9fa9f103f43a49432f6b47360b686a9aee8 In sqlite3_deserialize(), when built with SQLITE_ENABLE_API_ARMOR return SQLITE_MISUSE if the db is larger than the targ :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
