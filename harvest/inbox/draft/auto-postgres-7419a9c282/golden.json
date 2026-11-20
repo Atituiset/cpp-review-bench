@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pg_upgrade.c",
+        "anchor": "if (GET_MAJOR_VERSION(new_cluster.major_version) >= 1700)",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 09b40d2cf07b783a3aee31e046a64771f23f5d65 pg_upgrade: Remove unnecessary checks on target cluster's version :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

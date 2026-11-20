@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/local_source.c",
+        "anchor": "src->common.get_current_wal_insert_lsn = NULL;",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 4a26e36f87f6f30a93bfe1b95264b4b12d6b9ac3 pg_rewind: Fix recovery delays at WAL page boundaries :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
