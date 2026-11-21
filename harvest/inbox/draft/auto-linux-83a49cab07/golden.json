@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/qaic_data.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT c44104f3642da720164042623e4832836aefdd8e Merge tag 'drm-fixes-2026-11-21' of https://gitlab.freedesktop.org/drm/kernel :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

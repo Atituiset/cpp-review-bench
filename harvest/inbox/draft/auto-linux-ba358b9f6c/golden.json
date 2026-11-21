@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pinctrl-ocelot.c",
+        "anchor": "irq = platform_get_irq_optional(pdev, 0);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT b152d7176339f11f05457799be609268e1a61cf2 Merge tag 'pinctrl-v7.4-2' of git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-pinctrl :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

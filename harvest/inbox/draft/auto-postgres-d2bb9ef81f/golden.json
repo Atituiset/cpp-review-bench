@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/multixact.c",
+        "anchor": "pfree(members);",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 67c10344ddbd1073f1b7aafb09d1b196a48735a1 Always prune dead members in MultiXactIdExpand, to fix assertion :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
