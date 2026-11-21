@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/receivelog.c",
+        "anchor": "if (walfile != NULL && stream->walmethod->ops->close(walfile, CLOSE_NO_RENAME) != 0)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 0cb41ee8070fb0930d2ead13e19304d11d405636 pg_receivewal: Fix resource leaks and error reporting during cleanup :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

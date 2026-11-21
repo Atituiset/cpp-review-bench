@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/rewriteSearchCycle.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 65ebed1f5e2f16d56234b5a27b8d508d18c3854d Fix SEARCH/CYCLE when the recursive term is SELECT DISTINCT. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

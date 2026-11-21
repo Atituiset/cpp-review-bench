@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/sqlite3session.c",
+        "anchor": "sqlite3_int64 nByte = 1 + sessionVarintLen(nVal) + (i64)nVal;",
+        "line": 15,
+        "function": null,
+        "rationale": "COMMIT 291abc0c02154e8633668feaf7c3665d33c66fc7 Enhance the sqlite3changegroup_change_blob() API so that it returns an error :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

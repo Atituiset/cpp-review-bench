@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/server.c",
+        "anchor": "vsnprintf(query, sizeof(query), fmt, args);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 32dd742b075e999fa358570bc13778b93f8025d4 pg_upgrade: Preserve template0 ICU rules :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

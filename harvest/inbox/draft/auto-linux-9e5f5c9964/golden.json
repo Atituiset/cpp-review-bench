@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/cxl.c",
+        "anchor": "kfree(entry);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT b98adc197f7300e875fbcd4cf5dfa5ebe3d6dc08 Merge tag 'cxl-fixes-7.4-rc4' of git://git.kernel.org/pub/scm/linux/kernel/git/cxl/cxl :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
