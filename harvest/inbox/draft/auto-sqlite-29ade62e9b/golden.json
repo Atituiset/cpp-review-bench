@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqlite3session.c",
+        "anchor": "int nStr = sqlite3Strlen30(zStr)*2 + 2 + 2;",
+        "line": 9,
+        "function": null,
+        "rationale": "COMMIT d64f3d492cd3938ac9e7e5f2eefa2ff6ba05c174 Block a signed integer overflow in sessions given a ridiculous input. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

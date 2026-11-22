@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/vmwgfx_gmrid_manager.c",
+        "anchor": "ida_free(&gman->gmr_ida, id);",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT c44104f3642da720164042623e4832836aefdd8e Merge tag 'drm-fixes-2026-11-21' of https://gitlab.freedesktop.org/drm/kernel :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

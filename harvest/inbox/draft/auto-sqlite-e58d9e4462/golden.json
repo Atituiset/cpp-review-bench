@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vdbeInt.h",
+        "anchor": "bft expired:2;          /* 1: recompile VM immediately  2: when convenient */",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 5f5624caf4150f08a8aa357b1e111802710c53d9 Small performance gain and size reduction by changing Vdbe.expired from a bit :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
