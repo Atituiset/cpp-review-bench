@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fts5_hash.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 7dbc51b920798d4e44195e57c42a26c9c0bd2598 Avoid signed integer overflow in the hash flush threshold of FTS5. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
