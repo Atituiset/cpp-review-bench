@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fts5_hash.c",
+        "anchor": "sqlite3_int64 nNew = (i64)p->nAlloc * 2;",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 317c040e352e2dcbd993588cf6d1dcfad0c01d2f Fix a harmless compiler warning in FTS5 :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

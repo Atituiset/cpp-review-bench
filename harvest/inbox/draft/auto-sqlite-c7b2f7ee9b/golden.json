@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/fts5_index.c",
+        "anchor": "if( p->rc!=SQLITE_OK || pDoclist[iOff]==0x01 ){",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT fe3fb0a154009420268c5b7d1afd5a860a03b4b7 Fix to UPDATE in FTS5 secure-delete when the doclist is large. :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

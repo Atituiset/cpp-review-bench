@@ -1,0 +1,13 @@
+// AUTO-DRAFT from torvalds/linux PR #2681617eb9317444247380298564f58142fc4ff8
+#define _PAGE_KERNEL		(_PAGE_READ \
+				| _PAGE_WRITE \
+				| _PAGE_PRESENT \
+				| _PAGE_ACCESSED \
+				| _PAGE_DIRTY \
+				| _PAGE_GLOBAL)
+
+#define PAGE_KERNEL		__pgprot(_PAGE_KERNEL)
+#define PAGE_KERNEL_READ	__pgprot(_PAGE_KERNEL & ~_PAGE_WRITE)
+#define PAGE_KERNEL_EXEC	__pgprot(_PAGE_KERNEL | _PAGE_EXEC)
+#define PAGE_KERNEL_READ_EXEC	__pgprot((_PAGE_KERNEL & ~_PAGE_WRITE) \
+					 | _PAGE_EXEC)

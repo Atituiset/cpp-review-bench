@@ -1,0 +1,9 @@
+// AUTO-DRAFT from torvalds/linux PR #fdcd45bc9cfee488b92efc4b7f43d6865ec82770
+#define CFGR1_PCSPOL_MASK	GENMASK(11, 8)
+#define CFGR1_NOSTALL	BIT(3)
+#define CFGR1_HOST	BIT(0)
+#define FCR_RXWATER	GENMASK(18, 16)
+#define FCR_TXWATER	GENMASK(2, 0)
+#define FSR_TXCOUNT	(0xFF)
+#define RSR_RXEMPTY	BIT(1)
+#define TCR_CPOL	BIT(31)

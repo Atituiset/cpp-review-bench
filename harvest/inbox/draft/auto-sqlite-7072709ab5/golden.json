@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vdbemem.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 812ef7c0187b3e60b1bb67ab6c9c4bb2896c0096 Avoid signed integer overflow when trying to zero-terminate a transient binding :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
