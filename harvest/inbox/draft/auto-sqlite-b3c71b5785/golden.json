@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqliteInt.h",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT dc9b3226d01620a2087811a142f9cfb03b22728c Fix a minor inaccuracy how the [135ed9e2cc9bd37c] reimplementation of the :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

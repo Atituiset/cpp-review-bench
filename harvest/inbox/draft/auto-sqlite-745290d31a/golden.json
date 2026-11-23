@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/window.c",
+        "anchor": "if( pVal && sqlite3_value_int(pVal)>0 ){",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 774768ac159d8bab59579ffcba6e470c96c6e355 Use sqlite3_value_int64() instead of sqlite3_value_int() in one place deep :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

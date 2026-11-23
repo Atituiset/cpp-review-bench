@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vdbe.c",
+        "anchor": "u32 serial_type;       /* Type field */",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 9e7e99e39356aabd9148a102a11bf1573691d2c1 Increase the size of a variable in OP_MakeRecord to u64 to ensure that it does :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
