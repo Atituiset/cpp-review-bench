@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/reorderbuffer.c",
+        "anchor": "rb->message(rb, txn, lsn, false, prefix, message_size, message);",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 7bb8cc295b538df21d854e55e12a32dbbd8609b1 Add an xid argument to the logical decoding message callbacks. :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/bulk_write.c",
+        "anchor": "if (bulkstate->start_RedoRecPtr != GetRedoRecPtr())",
+        "line": 7,
+        "function": null,
+        "rationale": "COMMIT 9931482364a938af876307e84ae88ff4839838b0 Avoid DELAY_CHKPT_START in smgr_bulk_finish() :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

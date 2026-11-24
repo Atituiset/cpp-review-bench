@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/pragma.c",
+        "anchor": "if( !isQuick ){",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 67a23f5ce761fcce65029c4d7d555614932e54b8 Fix PRAGMA quick_check so that it verifies PRIMARY KEY order on  :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

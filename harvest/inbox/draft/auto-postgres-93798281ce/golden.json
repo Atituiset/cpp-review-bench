@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/conflict.c",
+        "anchor": "if (!tableslot)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 6a0a66b3e7ac394c499708b790effea9a564ef0d Record logical replication conflicts in the conflict log table. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
