@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/vdbeaux.c",
+        "anchor": "pB->expmask |= pA->expmask;",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT 795e28a89e40246b7029f62440519229109c0503 Fix recalculation of expmask and smimask made as part of a reprepare operation. Report [bugs:/info/2026-11-20T01:00:21Z  :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

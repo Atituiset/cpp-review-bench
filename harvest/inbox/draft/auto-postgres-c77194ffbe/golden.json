@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/btree_date.c",
+        "anchor": "if (res > 0)",
+        "line": 14,
+        "function": null,
+        "rationale": "COMMIT 15b3dc140d9109e37082454bc5041a9e6bddbd8e Fix overflow problems in btree_gist's penalty and distance functions. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
