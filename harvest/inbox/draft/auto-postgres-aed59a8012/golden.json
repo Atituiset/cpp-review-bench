@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/input.c",
+        "anchor": "for (cur_ptr = (char *) cur_hist->line; *cur_ptr; cur_ptr++)",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 5ff67951c46d304d5ac4cda62eb99d64cd292c8c Fix -Wcast-qual warnings in psql :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

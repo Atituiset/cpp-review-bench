@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/common.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT 14644e123839e5fe2d63797c9c0d16626ff9c420 Fix psql's non-autocommit mode for REPACK :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

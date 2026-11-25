@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/walsender.c",
+        "anchor": "static void WalSndWait(uint32 socket_events, long timeout, uint32 wait_event);",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT bc85373ff1344c03abf0d74e698b3631936ca3c7 Fix lost wakeups in logical WAL senders :: PR 修复动作推断：修复前越界访问（加边界检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
