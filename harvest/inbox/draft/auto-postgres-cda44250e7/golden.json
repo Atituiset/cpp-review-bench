@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/guc_funcs.c",
+        "anchor": "char\t   *values[NUM_PG_SETTINGS_ATTS];",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 470d9948965835a8c3bfb3ac102384bcc84a604c Fix -Wcast-qual warning in guc_funcs.c :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

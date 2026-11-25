@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/timestamp.c",
+        "anchor": "if (tzn != NULL)",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 93e2b79f5f66ee305338bd956e70a96c9d114ac7 Avoid null pointer crash after pg_localtime()/pg_gmtime() failure. :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

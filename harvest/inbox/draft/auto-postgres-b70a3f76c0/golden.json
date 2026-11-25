@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/tablecmds.c",
+        "anchor": "errmsg(\"column \\\"%s\\\" of table \\\"%s\\\" is not marked NOT NULL\",",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 2bdbde8b3bd782ec18168e19b70ccaa945ab0177 Adjust an error message to emphasize the inheritance relationship :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

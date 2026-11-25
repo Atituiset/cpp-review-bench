@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-415",
+        "file": "src/completion.c",
+        "anchor": "sqlite3_prepare_v2(pCur->db, \"PRAGMA database_list\", -1,",
+        "line": 9,
+        "function": null,
+        "rationale": "COMMIT b5fb535663df6593c749cb48d1f5d5672988d959 Improve error propagation in the completion extension. [bugs:238acde3c8|Bug report 2026-11-25T00:55:42Z]. :: PR 修复动作推断：修复前释放/双重释放（加释放守卫）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
