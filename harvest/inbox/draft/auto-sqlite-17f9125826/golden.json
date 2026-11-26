@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/vdbeaux.c",
+        "anchor": "p->usesStmtJournal = (u8)(pParse->isMultiWrite && pParse->mayAbort);",
+        "line": 3,
+        "function": null,
+        "rationale": "COMMIT ad110ce72022f3da86715efab3ba09ddbc941512 Add a bit to SQLITE_TESTCTRL_OPTIMIZATIONS that will disable the :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

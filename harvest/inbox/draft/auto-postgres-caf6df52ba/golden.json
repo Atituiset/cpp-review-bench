@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/check.c",
+        "anchor": "if (GET_MAJOR_VERSION(old_cluster.major_version) <= 1800)",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 388f2db2994e216f15f004c4addbe4851871f954 pg_upgrade: Don't run the not-null inheritance check on v18 clusters :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/namespace.c",
+        "anchor": "Assert(nargs >= 0 || !(expand_variadic | expand_defaults));",
+        "line": 2,
+        "function": null,
+        "rationale": "COMMIT 9872a0de75b1d4b178681008543a0e2dffd5fda4 Use logical OR (||) rather than bitwise OR (|) for bools :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
