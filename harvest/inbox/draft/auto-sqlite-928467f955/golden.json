@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/where.c",
+        "anchor": "assert( pX->op>=TK_GT && pX->op<=TK_GE );",
+        "line": 4,
+        "function": null,
+        "rationale": "COMMIT 1fbc68ef3f950ff2a9b54424232ce05f5817d6de For a row-value inequality against a virtual table column in a WHERE clause (e.g. WHERE (a, b) > (...)), do not incorrec :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

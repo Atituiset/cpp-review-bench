@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/pager.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT d8ab154a39beefc971f88c217283e6f04d71d954 Recovery from a journal with a missing super-journal should truncate or :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

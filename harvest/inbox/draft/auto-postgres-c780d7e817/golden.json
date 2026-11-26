@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/policy.c",
+        "anchor": null,
+        "line": null,
+        "function": null,
+        "rationale": "COMMIT b8bf28800559a9ad71360fb2384d4b9981d24fa8 Fix assorted issues in conflict log table handling. :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

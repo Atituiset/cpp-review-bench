@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/repack.c",
+        "anchor": "static List *build_new_indexes(Relation NewHeap, Relation OldHeap, List *OldIndexes);",
+        "line": 5,
+        "function": null,
+        "rationale": "COMMIT 060eebf4179b40d8eacd56f2e6670a531f8b0733 Remove OldHeap argument from build_new_indexes() :: PR 修复动作推断：修复前解引用（疑似缺判空）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/read.c",
+        "anchor": "while (*local_str == ' ' || *local_str == '\\n' || *local_str == '\\t')",
+        "line": 1,
+        "function": null,
+        "rationale": "COMMIT 56227fd51c452624b1c08947e4ed910a8d78748e Speedup pg_strtok() with a static lookup table :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
