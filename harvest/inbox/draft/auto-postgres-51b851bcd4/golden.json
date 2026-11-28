@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/fe-connect.c",
+        "anchor": "if (*p1 == '\\\\' && p1[1] != '\\0')",
+        "line": 6,
+        "function": null,
+        "rationale": "COMMIT 7622c7db525377a924e7b7fce2b9c74bda7c9856 libpq: Do not leave residue in result of passwordFromFile() :: PR 修复动作推断：修复前缺判空即解引用（短路保护 if(ptr && ptr->...)）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

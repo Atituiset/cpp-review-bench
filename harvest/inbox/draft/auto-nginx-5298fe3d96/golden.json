@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/ngx_resolver.c",
+        "anchor": "ttl = (an->ttl[0] << 24) + (an->ttl[1] << 16)",
+        "line": 4,
+        "function": null,
+        "rationale": "PR 1680 Resolver: avoid signed overflow assembling values from DNS responses :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/sqldiff.c",
+        "anchor": "for(n2=n; az[n2]; n2++){}",
+        "line": 1,
+        "function": null,
+        "rationale": "COMMIT e2b1503ded381d24ed0edbfd8f4be9616eae995d sqldiff: more consistently apply IS NOT NULL to columns which exist only in the destination db. [bugs:85ed8086f4|Bug rep :: 标题含缺陷信号（fix/leak/overflow/...），未从 diff 定位修复动作",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
