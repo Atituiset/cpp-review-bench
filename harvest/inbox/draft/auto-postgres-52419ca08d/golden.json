@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-476",
+        "file": "src/be-secure-openssl.c",
+        "anchor": "if (bio == NULL)",
+        "line": 9,
+        "function": null,
+        "rationale": "COMMIT e9526740926a801554cc92ea4d5620fca3546fe8 Let OpenSSL auto-select DH parameters by default :: PR 修复动作推断：修复前缺判空即解引用（加 null 检查）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}

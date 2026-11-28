@@ -1,0 +1,16 @@
+{
+  "expected": {
+    "must_find": [
+      {
+        "scenario": "cwe-787",
+        "file": "src/btree_numeric.c",
+        "anchor": "DatumGetNumeric(DirectFunctionCall1(float8_numeric, \\",
+        "line": 8,
+        "function": null,
+        "rationale": "COMMIT cf9d92d1f7550063aefbb219e1160e58ddb760ac Introduce get_numeric_infinity() and get_numeric_nan(). :: merged fix-PR（默认候选，待 LLM/人审定真值）",
+        "severity": "important"
+      }
+    ],
+    "must_not_find": []
+  }
+}
